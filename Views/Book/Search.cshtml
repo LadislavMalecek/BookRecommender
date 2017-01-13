@@ -1,0 +1,28 @@
+@model BookRecommender.Models.SearchModel
+
+<h3> Search:
+
+    <form action="/Book/Search" method="POST" class="form-inline">
+        <input type="text" name="SearchPhrase" class="form-control" />
+        <button type="submit" value="Submit" class="btn btn-default">Search</button>
+    </form>
+
+    @if (@ViewData["search"] != null){
+    <h3> You have searched for '@ViewData["search"]'' </h3>
+    <h3> Result:</h3>
+    <table class="table table-striped">
+        <thead>
+            <th>Book name</th>
+            <th>Author</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Harry Potter</td>
+                <td>J.K.Rowling</td>
+            </tr>
+            <tr>
+                <td>Hobit</td>
+                <td> J.R.R. Tolkien</td>
+            </tr>
+    </table>
+    }

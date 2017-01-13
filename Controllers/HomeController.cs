@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace learningApp.Controllers
+namespace BookRecommender.Controllers
 {
     public class HomeController : Controller
     {
         public IActionResult Index()
         {
+            ViewData["Logged"] = "yes";
             return View();
         }
 
