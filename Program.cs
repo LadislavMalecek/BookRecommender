@@ -12,10 +12,20 @@ namespace BookRecommender
     {
         public static void Main(string[] args)
         {
+            
+            // var config = new ConfigurationBuilder()
+            //     .AddCommandLine(args)
+            //     .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+            //     .Build();
+
+            // Get environment variables
             var config = new ConfigurationBuilder()
-                .AddCommandLine(args)
-                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+                .AddEnvironmentVariables()
                 .Build();
+                
+            var insideDocker = config["INSIDE_DOCKER"] == "yes";
+            System.Console.WriteLine("Are we inside docker: " + insideDocker);
+            string url = insideDocker ? "0.0.0.0" : "localhost";
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
@@ -23,6 +33,8 @@ namespace BookRecommender
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
+                .UseUrls($"http://{url}:5000")
+                // .UseUrls("http://0.0.0.0:5000")
                 .Build();
 
             host.Run();

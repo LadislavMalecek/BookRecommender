@@ -11,10 +11,10 @@ namespace BookRecommender.Controllers
 
         // GET: /Book/Detail
         public IActionResult Detail(){
-            var Book = new Book(){
-                Name = "My book"
-            };
-            return View(Book);
+            // var Book = new Book(){
+            //     Name = "My book"
+            // };
+            return View();
         }
 
 
@@ -26,7 +26,7 @@ namespace BookRecommender.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult Search(SearchModel search){
+        public IActionResult Search(Search search){
             ViewData["method"] = Request.Method.ToString();
             ViewData["search"] = search.SearchPhrase; 
             return View();

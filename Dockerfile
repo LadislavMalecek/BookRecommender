@@ -1,13 +1,23 @@
-FROM microsoft/dotnet:latest
+# To build image run:
+## dotnet publish
+## docker build -t <image name> <path to project root>
 
-COPY . /app
+# To run image:
+## docker run -d -p 5000:5000 <image name>
 
+
+FROM microsoft/aspnetcore
+
+ENV INSIDE_DOCKER="yes"
+
+# COPY . /app
+
+COPY bin/Debug/netcoreapp1.1/publish/ /app/
 WORKDIR /app
 
-RUN ["dotnet", "restore"]
+# RUN ["dotnet", "restore"]
+# RUN ["dotnet", "build"]
 
-RUN ["dotnet", "build"]
+EXPOSE 5000
 
-EXPOSE 5000/tcp
-
-CMD ["dotnet", "run", "--server.urls", "http://*:5000"]
+CMD ["dotnet", "BookRecommender.dll"]

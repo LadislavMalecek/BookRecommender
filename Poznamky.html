@@ -1,0 +1,26 @@
+<h1> Poznamky k praci </h1>
+<hr/>
+<h3> Vytvoreni noveho projektu </h3>
+<ul>
+    <li> nainstalovani npm - soucast balicku pri instalaci node.js</li>
+    <li> nainstalovani Yeoman - <code> npm install -g yo generator-aspnet bower </code> </li>
+    <li> vytvoreni prazdneho projektu <code> yo aspnet </code> </li>
+    <li> pridani MVC do project.json a do startup.cs </li>
+    <li> pridani Razor do projektu </li>
+    <li> vytvoreni Models, Views, Controlers slozek </li>
+    <li> vytvoreni uvodni _Layout.cshtml sablony</li>
+    <li> pridani do gitu </li>
+</ul>
+
+<hr/>
+
+
+<h3> Integrace entity frameworku do projektu, code first, vytvoreni databaze z existujicich modelu dat</h3>
+<ul>
+    <li> Pridani zavislosti entity frameworku do souboru project.json</li>
+    <li> Oanotovani modelu dat a pridani modelu do <code>BookRecommenderContext.cs </code></li>
+    <li> Vytvoreni a spusteni databaze prostrednictvim <code>C:\Program Files\Microsoft SQL Server\130\Tools\BinnSqlLocalDB.exe start MSSQLLocalDB </code> </li>
+    <li> Pridani modelu do databaze pres import entity frameworku <code> dotnet ef migrations add Initial-Migration </code> a <code> dotnet ef database update </code>
+        <br> EF vezme modely dat a provede transformace do sql kodu a vytvori potrebne tabulky, indexy atd...</li>
+    <li> pripojeni do databaze skrze mssql rozsireni vs code <code> (localdb)\MSSQLLocalDB </code>
+</ul>

@@ -2,7 +2,7 @@ using System;
 
 namespace BookRecommender.Models
 {
-    public class SearchModel
+    public class Search
     {
         public string SearchPhrase { get; set; }
     }
