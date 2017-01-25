@@ -10,7 +10,7 @@ namespace BookRecommender.Models
         [Required]
         public int AuthorId{ get; set; }
         [Required]
-        public string URI { get; set; }
+        public string Uri { get; set; }
         public string Name { get; set; }
         public string NameEn { get; set; }
         public string NameCs { get; set; }

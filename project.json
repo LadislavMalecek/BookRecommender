@@ -25,7 +25,8 @@
         "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0",
         "Microsoft.EntityFrameworkCore.Design": "1.1.0",
         "Microsoft.EntityFrameworkCore.SqlServer.Design": "1.1.0",
-        "Microsoft.EntityFrameworkCore.SQLite": "1.1.0"
+        "Microsoft.EntityFrameworkCore.SQLite": "1.1.0",
+        "Newtonsoft.Json": "9.0.2-beta2"
     },
     "tools": {
         "BundlerMinifier.Core": "2.2.306",
@@ -44,7 +45,8 @@
     },
     "buildOptions": {
         "emitEntryPoint": true,
-        "preserveCompilationContext": true
+        "preserveCompilationContext": true,
+        "debugType": "portable"
     },
     "runtimeOptions": {
         "configProperties": {

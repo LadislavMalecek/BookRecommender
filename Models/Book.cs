@@ -10,7 +10,7 @@ namespace BookRecommender.Models{
         [Required]
         public int BookId{ get; set; }
         [Required]
-        public string URI { get; set; }
+        public string Uri { get; set; }
         public string NameEn { get; set; }
         public string NameCs { get; set; }
         public string NameOrig { get; set; }
@@ -18,7 +18,6 @@ namespace BookRecommender.Models{
         public virtual ICollection<BookGenre> Genre { get; set; }
         public string OrigLang { get; set; }
         public virtual ICollection<Character> Characters { get; set; }
-        [Required]
         public string Title { get; set; }
         public DateTime? PublicationDate { get; set; }
         public string Publisher { get; set; }

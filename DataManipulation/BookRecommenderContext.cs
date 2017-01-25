@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using BookRecommender.Models;
+using BookRecommender.Models.Database;
 
-namespace BookRecommender.Models.Database
+namespace BookRecommender.DataManipulation
 {
     public class BookRecommenderContext : DbContext{
-//        public BookRecommenderContext(DbContextOptions<BookRecommenderContext> options) : base(options)
+        //public BookRecommenderContext(DbContextOptions<BookRecommenderContext> options) : base(options)
         public BookRecommenderContext() : base()
         {
         }
@@ -15,10 +18,31 @@ namespace BookRecommender.Models.Database
         public DbSet<Tag> Tags { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder){
-            optionBuilder.UseSqlite("Filename=C://netcore//SQLite//BookRecommender.db");
+                optionBuilder.UseSqlite("Filename=C://netcore//SQLite//BookRecommender.db");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder){
+            modelBuilder.Entity<Book>()
+                .HasAlternateKey(c => c.Uri)
+                .HasName("AlternateKey_Uri");
+            
+            modelBuilder.Entity<Author>()
+                .HasAlternateKey(c => c.Uri)
+                .HasName("AlternateKey_Uri");
+
+            modelBuilder.Entity<Character>()
+                .HasAlternateKey(c => c.Uri)
+                .HasName("AlternateKey_Uri");
+
+            modelBuilder.Entity<Genre>()
+                .HasAlternateKey(c => c.Uri)
+                .HasName("AlternateKey_Uri");
+
+
+            modelBuilder.Entity<Country>()
+                .HasAlternateKey(c => c.Uri)
+                .HasName("AlternateKey_Uri");
+
             // modelBuilder.Entity<BookAuthor>()
             // .HasKey(c => c.BookAuthorId);
 

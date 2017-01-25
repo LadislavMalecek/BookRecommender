@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using BookRecommender.DataManipulation;
 
 namespace BookRecommender
 {
@@ -12,6 +9,11 @@ namespace BookRecommender
     {
         public static void Main(string[] args)
         {
+
+            if(args.Length == 1 && args[0].ToLower() == "--mine"){
+                MineSPARQL.Mine();
+                return;
+            }
             
             // var config = new ConfigurationBuilder()
             //     .AddCommandLine(args)

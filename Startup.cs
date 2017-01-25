@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using BookRecommender.Models.Database;
+using BookRecommender.DataManipulation;
 
 namespace BookRecommender
 {

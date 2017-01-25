@@ -5,6 +5,7 @@ using BookRecommender.Models.Database;
 
 namespace BookRecommender.Models{
     public class Character {
+        [Required]
         public int CharacterId { get; set; }
         [Required]
         public string Uri { get; set; }
