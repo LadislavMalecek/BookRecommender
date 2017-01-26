@@ -10,6 +10,10 @@ FROM microsoft/aspnetcore
 
 ENV INSIDE_DOCKER="yes"
 
+
+# Copy database
+COPY C:/netcore/SQLite/BookRecommender.db /app/db/
+
 # COPY . /app
 
 COPY bin/Debug/netcoreapp1.1/publish/ /app/

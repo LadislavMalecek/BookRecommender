@@ -3,42 +3,42 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System;
+using System.Net;
+using System.IO;
+
 namespace BookRecommender.DataManipulation{
 
 
-    class JsonSparqlParser
+    class WikiDataMiner : IMiner
     {
-        public class ParsedData
-        {
-            public List<string> Variables = new List<string>();
-            public List<List<string>> Data = new List<List<string>>();
-
-            public override string ToString(){
-                var sB = new StringBuilder();
-                foreach(var variable in Variables){
-                    sB.Append(variable + " ,");
-                }
-                sB.Append(Environment.NewLine);
-                sB.Append("----------------");
-                sB.Append(Environment.NewLine);
-                foreach(var data in Data){
-                    foreach(var item in data){
-                        sB.Append(item + " ,");
-                    }
-                    sB.Append(Environment.NewLine);
-                }
-                return sB.ToString(); 
-            }
-
+        public SparqlResult MineData(string query){
+                var queryResult = ExecQuery(query);
+                var normalizedData = JsonToSparqlResult(queryResult);
+                return normalizedData;
         }
 
-        public static ParsedData JsonToList(string json)
+        string ExecQuery(string query)
+        {
+            var request = WebRequest.Create(
+                $"https://query.wikidata.org/sparql?query={query}&format=json"
+            );
+            request.Method = "GET";
+            var httpResponse = (HttpWebResponse)request.GetResponseAsync().Result;
+            
+            //var statusCode = httpResponse.StatusCode;
+            
+            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                return streamReader.ReadToEnd();
+            }
+        }
+        SparqlResult JsonToSparqlResult(string json)
         {
             var jObject = JObject.Parse(json);
 
             var head = jObject?["head"]?["vars"]?.Children();
 
-            var returnData = new ParsedData();
+            var returnData = new SparqlResult();
 
             //Load variables from json to list
             foreach (var variable in head)
@@ -56,7 +56,7 @@ namespace BookRecommender.DataManipulation{
             foreach (var obj in objects)
             {
 
-                var objectList = new List<string>();
+                var objectList = new Dictionary<string,string>();
 
                 //try to retrive data for every variable, else get empty string
                 foreach (var variable in returnData.Variables)
@@ -64,11 +64,11 @@ namespace BookRecommender.DataManipulation{
                     var value = (string)obj?[variable]?["value"];
                     if (value == null)
                     {
-                        objectList.Add(string.Empty);
+                        objectList.Add(variable, string.Empty);
                     }
                     else
                     {
-                        objectList.Add(value);
+                        objectList.Add(variable, value);
                     }
                 }
                 returnData.Data.Add(objectList);

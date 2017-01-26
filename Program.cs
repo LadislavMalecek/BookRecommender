@@ -11,6 +11,7 @@ namespace BookRecommender
         {
 
             if(args.Length == 1 && args[0].ToLower() == "--mine"){
+                System.Console.WriteLine("Mining mode active, server will not start");
                 MineSPARQL.Mine();
                 return;
             }
