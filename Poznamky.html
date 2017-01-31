@@ -24,3 +24,13 @@
         <br> EF vezme modely dat a provede transformace do sql kodu a vytvori potrebne tabulky, indexy atd...</li>
     <li> pripojeni do databaze skrze mssql rozsireni vs code <code> (localdb)\MSSQLLocalDB </code>
 </ul>
+
+
+<h3> Databaze SQLite </h3>
+<p> Problem pomaleho lookupu pri vyhledavani skrz uri</p>
+<p> Scenar: vyhledam pomoci uri v tabulce, upravim zaznam pridanim cca 3 string polozek nazvu</p>
+<ul>
+    <li> Dlouhe uri 14,2s /5000 zaznamu </li>
+    <li> Kratke uri 12,6s /5000 zaznamu </li>
+    <li> Int uri 11,2s /5000 zaznamu </li>
+</ul>

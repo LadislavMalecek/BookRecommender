@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BookRecommender.DataManipulation
 {
-    public class SparqlResult
+    public class SparqlData
     {
         // Stores the names of Query variables
         public List<string> Variables = new List<string>();
@@ -22,6 +22,19 @@ namespace BookRecommender.DataManipulation
 
         public bool HasVariable(string name){
             return Variables.Contains(name);
+        }
+
+        public void InsertLine(List<string> line){
+            if(line.Count != Variables.Count){
+                throw new ArgumentException("Line is not the same size as Variables");
+            }
+
+            var retDictionary = new Dictionary<string,string>();
+            for (int i = 0; i < line.Count; i++)
+            {
+                retDictionary.Add(Variables[i],line[i]);
+            }
+            Data.Add(retDictionary);
         }
 
         IEnumerable<string> GetColumn(string name){

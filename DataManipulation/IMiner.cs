@@ -3,6 +3,7 @@
 namespace BookRecommender.DataManipulation{
     interface IMiner
     {
-        SparqlResult MineData(string query);
+        string MineData(string query);
+        SparqlData MineDataParse(string query);
     }
 }

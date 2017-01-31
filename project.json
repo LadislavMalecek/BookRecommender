@@ -27,7 +27,9 @@
     "Microsoft.EntityFrameworkCore.SqlServer.Design": "1.1.0",
     "Microsoft.EntityFrameworkCore.SQLite": "1.1.0",
     "Newtonsoft.Json": "9.0.2-beta2",
-    "System.ValueTuple": "4.3.0"
+    "System.ValueTuple": "4.3.0",
+    "dotnet-test-mstest": "1.1.2-preview",
+    "MSTest.TestFramework": "1.0.8-rc2"
   },
   "tools": {
     "BundlerMinifier.Core": "2.2.306",
@@ -75,5 +77,6 @@
   },
   "tooling": {
     "defaultNamespace": "BookRecommender"
-  }
+  },
+  "testRunner": "mstest"
 }
