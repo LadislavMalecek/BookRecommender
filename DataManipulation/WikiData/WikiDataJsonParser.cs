@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace BookRecommender.DataManipulation{
+namespace BookRecommender.DataManipulation.WikiData{
     class WikiDataJsonParser
     {
         public SparqlData Parse(string data)

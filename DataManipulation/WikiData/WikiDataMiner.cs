@@ -6,7 +6,7 @@ using System;
 using System.Net;
 using System.IO;
 
-namespace BookRecommender.DataManipulation
+namespace BookRecommender.DataManipulation.WikiData
 {
     class WikiDataMiner : IMiner
     {
