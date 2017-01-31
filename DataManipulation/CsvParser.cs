@@ -7,7 +7,7 @@ namespace BookRecommender.DataManipulation
 {
     class CsvParser
     {
-        enum CharType { Comma, Quote, CR, LF, Other }
+        enum CharType { Comma, Quote, CR, LF, Other, Nothing }
         string data;
 
         public CsvParser(string data)
@@ -15,13 +15,15 @@ namespace BookRecommender.DataManipulation
             this.data = data;
         }
 
-        public List<List<string>> Parse(){
+        public List<List<string>> Parse()
+        {
             var list = new List<List<string>>();
-            foreach(var line in GetEnumerable()){
+            foreach (var line in GetEnumerable())
+            {
                 list.Add(line);
             }
             return list;
-        } 
+        }
         IEnumerable<List<string>> GetEnumerable()
         {
             var valuesBuffer = new List<string>();
@@ -32,7 +34,8 @@ namespace BookRecommender.DataManipulation
                 {
                     case CharType.Comma:
                         // If last was comma, then add empty to buffer
-                        if(position == 0 || GetCharTypeOnPos(position - 1) == CharType.Comma){
+                        if (position == 0 || GetCharTypeOnPos(position - 1) == CharType.Comma)
+                        {
                             valuesBuffer.Add(string.Empty);
                         }
                         continue;
@@ -49,7 +52,11 @@ namespace BookRecommender.DataManipulation
                         // So therefore I am waiting for \n
                         continue;
                     case CharType.LF:
-                        //On end of line
+                        //Case if there is empty literal before
+                        if (NeedToInsertEmptyStringBeforeEOL(position))
+                        {
+                            valuesBuffer.Add(string.Empty);
+                        }
                         yield return valuesBuffer;
                         valuesBuffer = new List<string>();
                         break;
@@ -60,9 +67,12 @@ namespace BookRecommender.DataManipulation
                         position = posEndOfValue;
                         valuesBuffer.Add(value);
                         break;
+                    case CharType.Nothing:
+                        throw new IndexOutOfRangeException();
                 }
             }
-            if(valuesBuffer.Count != 0){
+            if (valuesBuffer.Count != 0)
+            {
                 throw new InvalidDataException("CRLN on the end of file mising");
                 // yield return valuesBuffer;
             }
@@ -71,9 +81,9 @@ namespace BookRecommender.DataManipulation
 
         CharType GetCharTypeOnPos(int position)
         {
-            if (position >= data.Length)
+            if (position >= data.Length || position < 0)
             {
-                throw new IndexOutOfRangeException();
+                return CharType.Nothing;
             }
             if (data[position] == '"')
             {
@@ -93,6 +103,26 @@ namespace BookRecommender.DataManipulation
             }
             return CharType.Other;
 
+        }
+
+        bool NeedToInsertEmptyStringBeforeEOL(int position)
+        {
+
+            bool isThereCRBefore = GetCharTypeOnPos(position - 1) == CharType.CR;
+            //skip the CR char
+            if (isThereCRBefore)
+            {
+                position--;
+            }
+
+            var charBefore = GetCharTypeOnPos(position - 1);
+            if (charBefore == CharType.Nothing ||
+                charBefore == CharType.Comma ||
+                charBefore == CharType.LF)
+            {
+                return true;
+            }
+            return false;
         }
         int FindSecondSingleQuote(int posOfFirstQuote)
         {
