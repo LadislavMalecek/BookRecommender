@@ -8,13 +8,13 @@ using Newtonsoft.Json.Linq;
 using BookRecommender.Models;
 using BookRecommender.Models.Database;
 using System.Diagnostics;
+using BookRecommender.DataManipulation.WikiData;
 
 namespace BookRecommender.DataManipulation
 {
 
     public class MineSPARQL
     {
-
         // static string ShortenUri(string uri){
         //     return uri.Substring(uri.LastIndexOf("/") + 1);
         // }
@@ -23,8 +23,7 @@ namespace BookRecommender.DataManipulation
         // }
         public static void Mine()
         {
-
-
+            var endpoint = new WikiDataEndpointMiner();
 
             // using(var db = new BookRecommenderContext()){
             //     var counter = new Counter(db.Books.Count());
@@ -36,43 +35,41 @@ namespace BookRecommender.DataManipulation
             //     }
 
             //     db.SaveChanges();
-
-
             // }
 
             // System.Console.WriteLine("All books removed");
 
 
-            // System.Console.WriteLine("Update book uris");
-            // using (var db = new BookRecommenderContext())
-            // {
+            System.Console.WriteLine("Update book uris");
+            using (var db = new BookRecommenderContext())
+            {
 
-            //     var allBookUris = GetAllBooksUris().ToList();
+                var allBookUris = endpoint.GetBooks_Uri().ToList();
 
-            //     //Create new console progress counter
-            //     var counter = new Counter(allBookUris.Count);
+                //Create new console progress counter
+                var counter = new Counter(allBookUris.Count);
 
-            //     //Insert all books in database
-            //     foreach (var bookUri in allBookUris)
-            //     {
+                //Insert all books in database
+                foreach (var bookUri in allBookUris)
+                {
 
-            //         Console.Write(counter);
-            //         counter++;
-            //         if (db.Books.Where(b => b.Uri == bookUri).Count() > 0)
-            //         {
-            //             continue;
-            //         }
-            //         db.Books.Add(new Book
-            //         {
-            //             Uri = bookUri
-            //         });
+                    Console.Write(counter);
+                    counter++;
+                    if (db.Books.Where(b => b.Uri == bookUri).Count() > 0)
+                    {
+                        continue;
+                    }
+                    db.Books.Add(new Book
+                    {
+                        Uri = bookUri
+                    });
 
-            //     }
-            //     db.SaveChanges();
-            // }
+                }
+                db.SaveChanges();
+            }
 
-            // System.Console.WriteLine();
-            // System.Console.WriteLine("Books uris updated");
+            System.Console.WriteLine();
+            System.Console.WriteLine("Books updated");
 
 
             // System.Console.WriteLine("Books inserted into database");
@@ -191,120 +188,8 @@ namespace BookRecommender.DataManipulation
 
         }
 
+      
 
-        static IEnumerable<string> GetAllBooksUris()
-        {
-            var query = @"SELECT ?item
-                        WHERE {
-                            ?item wdt:P31 wd:Q571.
-                        }";
-            var result = new WikiDataMiner().MineDataParse(query);
-
-            return result["item"];
-        }
-
-        // If using verbatim and interpolation string then we need to double curl brackets and double quotes if we need to use them in string
-        // static SparqlResult GetBookNames(Book book)
-        // {
-
-        //     System.Console.WriteLine(book.Uri);
-        //     var query = $@"SELECT ?title ?label_cs ?label_en
-        //                 WHERE {{
-        //                     ?item wdt:P31 wd:Q571.
-        //                         FILTER(?item = <{book.Uri}>)
-        //                     OPTIONAL{{
-        //                         ?item wdt:P1476 ?title.
-        //                     }}
-        //                     OPTIONAL{{
-        //                         ?item rdfs:label ?label_cs.
-        //                             FILTER(LANG(?label_cs) = ""cs"")
-        //                     }}
-        //                     OPTIONAL{{
-        //                         ?item rdfs:label ?label_en.
-        //                             FILTER(LANG(?label_en) = ""en"")
-        //                     }}
-        //                 }} LIMIT 1";
-
-        //     return new WikiDataMiner().MineData(query);
-        // }
-
-        static SparqlData GetBooksNames()
-        {
-
-            var query = $@"SELECT ?item ?title ?label_cs ?label_en
-                        WHERE {{
-                            ?item wdt:P31 wd:Q571.
-                            OPTIONAL{{
-                                ?item wdt:P1476 ?title.
-                            }}
-                            OPTIONAL{{
-                                ?item rdfs:label ?label_cs.
-                                    FILTER(LANG(?label_cs) = ""cs"")
-                            }}
-                            OPTIONAL{{
-                                ?item rdfs:label ?label_en.
-  	                                FILTER(LANG(?label_en) = ""en"")
-                            }}
-                        }}";
-
-            return new WikiDataMiner().MineDataParse(query);
-        }
-
-        static SparqlData GetBooksOrigName()
-        {
-            var query = @"SELECT ?item ?lang_code ?label
-                        WHERE {
-                            ?item wdt:P31 wd:Q571.
-                            ?item wdt:P364 ?obj.
-                            ?obj wdt:P424 ?lang_code.
-                            ?item rdfs:label ?label.
-                                FILTER(LANG(?label) = ?lang_code)
-                        }";
-            return new WikiDataMiner().MineDataParse(query);
-        }
-
-
-        static SparqlData GetBooksNamesByAuthorCountryLang()
-        {
-            var query = @"SELECT ?item ?country_lang_code ?label
-                            WHERE {
-                                ?item wdt:P31 wd:Q571.
-                                ?item wdt:P50 ?author.
-                                ?author wdt:P27 ?country_citiz.
-                                ?country_citiz wdt:P37 ?country_lang.
-                                ?country_lang wdt:P424 ?country_lang_code.
-                            
-                                ?item rdfs:label ?label.
-                                    FILTER(LANG(?label) = ?country_lang_code)
-                            }";
-            return new WikiDataMiner().MineDataParse(query);
-        }
-
-        // public static IEnumerable<string> GetFromJson(JObject jObject, string whatToRetrive)
-        // {
-        //     try
-        //     {
-        //         return from obj in jObject["results"]["bindings"]
-        //                select (string)obj[whatToRetrive]["value"];
-        //     }
-        //     catch (NullReferenceException ex)
-        //     {
-        //         System.Console.WriteLine(ex);
-        //         return null;
-        //     }
-        // }
-        // public static string GetFromJsonFirst(JObject jObject, string whatToRetrive)
-        // {
-        //     try
-        //     {
-        //         return GetFromJson(jObject, whatToRetrive).FirstOrDefault();
-        //     }
-        //     catch (NullReferenceException ex)
-        //     {
-        //         System.Console.WriteLine(ex);
-        //         return null;
-        //     }
-        // }
     }
 
 }

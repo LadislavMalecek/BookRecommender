@@ -2,25 +2,27 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace BookRecommender.DataManipulation.WikiData{
-    class WikiDataJsonParser
+namespace BookRecommender.DataManipulation.WikiData
+{
+    class WikiDataJsonParser : IParser
     {
-        public SparqlData Parse(string data)
+        public List<Dictionary<string, string>> Parse(string data)
         {
             var jObject = JObject.Parse(data);
 
             var head = jObject?["head"]?["vars"]?.Children();
 
-            var returnData = new SparqlData();
+            var variables = new List<string>();
+            var returnList = new List<Dictionary<string, string>>();
 
             //Load variables from json to list
             foreach (var variable in head)
             {
-                returnData.Variables.Add((string)variable);
+                variables.Add((string)variable);
             }
 
             //If there is no variable in json, there is also no data
-            if (returnData.Variables.Count == 0)
+            if (variables.Count == 0)
             {
                 return null;
             }
@@ -29,10 +31,10 @@ namespace BookRecommender.DataManipulation.WikiData{
             foreach (var obj in objects)
             {
 
-                var objectList = new Dictionary<string,string>();
+                var objectList = new Dictionary<string, string>();
 
                 //try to retrive data for every variable, else get empty string
-                foreach (var variable in returnData.Variables)
+                foreach (var variable in variables)
                 {
                     var value = (string)obj?[variable]?["value"];
                     if (value == null)
@@ -44,9 +46,9 @@ namespace BookRecommender.DataManipulation.WikiData{
                         objectList.Add(variable, value);
                     }
                 }
-                returnData.Data.Add(objectList);
+                returnList.Add(objectList);
             }
-            return returnData;
+            return returnList;
         }
     }
 }

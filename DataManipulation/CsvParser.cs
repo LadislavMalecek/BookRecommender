@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Linq;
 
 namespace BookRecommender.DataManipulation
 {
@@ -15,16 +16,11 @@ namespace BookRecommender.DataManipulation
             this.data = data;
         }
 
-        public List<List<string>> Parse()
+        public List<List<string>> ParseToList()
         {
-            var list = new List<List<string>>();
-            foreach (var line in GetEnumerable())
-            {
-                list.Add(line);
-            }
-            return list;
+            return ParseData().ToList();
         }
-        IEnumerable<List<string>> GetEnumerable()
+        IEnumerable<List<string>> ParseData()
         {
             var valuesBuffer = new List<string>();
 

@@ -10,38 +10,25 @@ namespace BookRecommender.DataManipulation.WikiData
 {
     class WikiDataMiner : IMiner
     {
+        public enum FormatType
+        {
+            Json, Csv
+        }
+        FormatType formatType;
+        public WikiDataMiner(FormatType formatType = FormatType.Csv)
+        {
+            this.formatType = formatType;
+        }
         public string MineData(string query)
         {
-            var queryResult = ExecQueryJson(query);
-            return queryResult;
-        }
-
-        public SparqlData MineDataParse(string query)
-        {
-            string queryResult = ExecQueryCsv(query);
-
-            var normalizedData = new CsvParser(queryResult).Parse();
-
-            var retData = new SparqlData(){
-                Variables = normalizedData[0]
-            };
-
-            foreach(var item in normalizedData.GetRange(1,normalizedData.Count -1)){
-                retData.InsertLine(item);
+            if (formatType == FormatType.Csv)
+            {
+                return ExecQueryCsv(query);
             }
-
-            return retData;
-        }
-
-        string ExecQueryJson(string query)
-        {
-            var request = HttpWebRequest.Create(
-                $"https://query.wikidata.org/sparql?query={query}&format=json"
-            );
-            request.Method = "GET";
-            var httpResponse = (HttpWebResponse)request.GetResponseAsync().Result;
-
-            return Exec(request);
+            else
+            {
+                return ExecQueryJson(query);
+            }
         }
         string ExecQueryCsv(string query)
         {
@@ -53,7 +40,14 @@ namespace BookRecommender.DataManipulation.WikiData
 
             return Exec(request);
         }
-
+        string ExecQueryJson(string query)
+        {
+            var request = HttpWebRequest.Create(
+                $"https://query.wikidata.org/sparql?query={query}&format=json"
+            );
+            request.Method = "GET";
+            return Exec(request);
+        }
         string Exec(WebRequest request)
         {
             var httpResponse = (HttpWebResponse)request.GetResponseAsync().Result;
