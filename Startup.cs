@@ -45,37 +45,7 @@ namespace BookRecommender
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
-
-            // new Author{ 
-            //         URI = "blabla",
-            //         Name = "Evzen",
-            //         DateBirth = new DateTime(1990,10,10),
-            //         DateDeath = DateTime.Now
-            // }
-            // .AddToDb();
-
-
-            // new Author{ 
-            //         URI = "www",
-            //         Name = "AWEFAWEF",
-            //         DateBirth = new DateTime(1680,10,10),
-            //         DateDeath = DateTime.Now
-            // }
-            // .AddToDb();
-
-            // new Author{ 
-            //         URI = "blabla.com",
-            //         Name = "SERG",
-            //         DateBirth = new DateTime(1998,10,10),
-            //         NameEn= "pussy"
-            // }
-            // .AddToDb();
-
-
-
-            
+            loggerFactory.AddDebug();            
 
             if (env.IsDevelopment())
             {

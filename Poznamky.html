@@ -34,3 +34,21 @@
     <li> Kratke uri 12,6s /5000 zaznamu </li>
     <li> Int uri 11,2s /5000 zaznamu </li>
 </ul>
+
+
+<h3>Migrace z project.json na .csproj</h3>
+<h1>Duvod</h1>
+<p> Bug v CLI 1.0.0 preview2 - nemoznost pouziti valueTuple v kolekci -> prechod na novejsi CLI 1.0.0 preview4 -> preview4 nepodporuje project.json, nova podoba specifikacniho souboru </p>
+<h1>Reseni:</h1>
+<ol>
+    <li> Odinstalovani core 1.1 SDK </li>
+    <li> Stahnuti a instalace CLI 1.0.0 preview4 </li>
+    <li> preview4 neobsahuje runtime -> stahnuti a instalace dotnet runtime 1.1.0</li>
+    <li> dotnet migrate -> vygeneruje csproj soubor z project.json</li>
+    <li> smazani souoru <code>runtimeconfig.template.json</code> -> zpusobuje <code>Error: Could not find testhost.dll</code> ktere zapricinuje chybu vkladani informace do 2 souboru do bin... a pokud je info pritomno, tak se aplikace nespusti</li>
+    <li> nahrazeni balicku <code>Microsoft.TestPlatform.TestHost</code> misto <code>Microsoft.NET.Test.Sdk</code> -> zpusobuje error pri spusteni testu <code> Error: Could not find testhost.dll ... Make sure test project has a nuget reference of package "microsoft.testplatform.testhost"</code></li>
+    <li> Ready to go! - cely den prace :|</li>
+    <li> Nefunkcnost serveru - nejspis chybejici kompilacni kontext</li>
+    <li> Odstraneni balastu -> odstraneni cele ItemGroup obsahujici Compile, Zmena sdk na <code>Microsoft.NET.Sdk.Web</code></li>
+    <li> Odstraneni Target scriptu</li>
+</ol>
