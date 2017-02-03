@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using BookRecommender.Models.Database;
 
 namespace BookRecommender.Models{
@@ -19,7 +20,24 @@ namespace BookRecommender.Models{
         public string OrigLang { get; set; }
         public virtual ICollection<Character> Characters { get; set; }
         public string Title { get; set; }
-        public DateTime? PublicationDate { get; set; }
+
+
+        [Column("PublicationDate")]
+        public string PublicationDateString { get; protected set; }
+
+        [NotMapped]
+        public HistoricalDateTime PublicationDate
+        {
+            get
+            {
+                return HistoricalDateTime.FromDatabase(PublicationDateString);
+            }
+            set
+            {
+                PublicationDateString = value.ToDatabaseString();
+            }
+        }
+
         public string Publisher { get; set; }
         public string ISBN10 { get; set; }
         public string ISBN13 { get; set; }
