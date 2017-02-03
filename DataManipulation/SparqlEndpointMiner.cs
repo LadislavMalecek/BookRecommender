@@ -1,15 +1,53 @@
 using System.Collections.Generic;
 using System;
+using System.Linq;
+using System.Reflection;
 
-namespace BookRecommender.DataManipulation{
-    abstract class SparqlEndPointMiner{
-        protected abstract List<Dictionary<string,string>> Execute(string query);
-        public abstract IEnumerable<string> GetBooks_Uri();
+namespace BookRecommender.DataManipulation
+{
+    abstract class SparqlEndPointMiner
+    {
+        protected delegate void LineAction<T>(T line, BookRecommenderContext db);
+        protected void UpdateDatabase<T>(IEnumerable<T> data, LineAction<T> lineAction)
+        {
+            // Writeout the delegate name
+            System.Console.WriteLine(lineAction.GetMethodInfo().Name);
 
-        public abstract IEnumerable<(string uri, string title, string labelCs, string labelEn)> GetBooks_Title_LabelCs_LabelEn();
-
-        public abstract IEnumerable<(string uri, string langCode, string label)> GetBooksNamesByLangOfOrigin();
-
-        public abstract IEnumerable<(string uri, string countryLangCode, string label)> GetBooksNamesByAuthorCountryLang();
+            bool successfull = false;
+            do
+            {
+                try
+                {
+                    //Execute query -- retrieve collection only once
+                    System.Console.WriteLine("Querying Endpoind");
+                    var listData = data.ToList();
+                    System.Console.WriteLine("Updating database");
+                    using (var db = new BookRecommenderContext())
+                    {
+                        //Create new console progress counter
+                        using (var counter = new Counter(listData.Count))
+                        {
+                            //Insert all books in database
+                            foreach (var line in listData)
+                            {
+                                lineAction(line, db);
+                                counter.Update();
+                            }
+                        }
+                        System.Console.WriteLine("Saving database");
+                        db.SaveChanges();
+                        successfull = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Console.WriteLine(ex.ToString());
+                    System.Console.WriteLine("Try again");
+                }
+            } while (!successfull);
+        }
+        protected abstract List<Dictionary<string, string>> Execute(string query);
+        public abstract void UpdateBooks();
+        public abstract void UpdateAuthors();
     }
 }

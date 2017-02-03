@@ -10,9 +10,9 @@ namespace BookRecommender
         public static void Main(string[] args)
         {
 
-            if(args.Length == 1 && args[0].ToLower() == "--mine"){
+            if(args.Length ==2 && args[0].ToLower() == "--mine"){
                 System.Console.WriteLine("Mining mode active, server will not start");
-                MineSPARQL.Mine();
+                MineSPARQL.Mine(args[1]);
                 return;
             }
             

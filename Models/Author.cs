@@ -7,13 +7,15 @@ namespace BookRecommender.Models
 {
     public class Author
     {
+        public enum SexType { male, female }
         [Required]
-        public int AuthorId{ get; set; }
+        public int AuthorId { get; set; }
         [Required]
         public string Uri { get; set; }
         public string Name { get; set; }
         public string NameEn { get; set; }
         public string NameCs { get; set; }
+        public SexType Sex { get; set; }
         public DateTime? DateBirth { get; set; }
         public DateTime? DateDeath { get; set; }
 
