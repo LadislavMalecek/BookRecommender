@@ -47,7 +47,7 @@ namespace BookRecommender.DataManipulation
             } while (!successfull);
         }
         protected abstract List<Dictionary<string, string>> Execute(string query);
-        public abstract void UpdateBooks();
-        public abstract void UpdateAuthors();
+        public abstract void UpdateBooks(List<int> methodList);
+        public abstract void UpdateAuthors(List<int> methodList);
     }
 }

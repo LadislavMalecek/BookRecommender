@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using BookRecommender.DataManipulation;
 using BookRecommender.Models;
+using BookRecommender.Models.Database;
 
 namespace BookRecommender.DataManipulation.WikiData
 {
@@ -18,17 +20,68 @@ namespace BookRecommender.DataManipulation.WikiData
             return parser.Parse(rawData);
         }
 
-        public override void UpdateBooks()
-        {   
-            base.UpdateDatabase(GetBooksUri(), SaveBooksUri);
-            base.UpdateDatabase(GetBooksTitleLabelCsLabelEn(), SaveBooksTitleLabelCsLabelEn);
-            base.UpdateDatabase(GetBooksNamesByLangOfOrigin(), SaveBooksNamesByLangOfOrigin);
-            base.UpdateDatabase(GetBooksNamesByAuthorCountryLang(), SaveBooksNamesByAuthorCountryLang);
-            base.UpdateDatabase(GetBooksLabelsAll(),SaveBookTitleWithNoOtherName);
-            base.UpdateDatabase(GetBooksIdentifiers(),SaveBooksIdentifiers);
+        public override void UpdateBooks(List<int> methodsList)
+        {
+            if (methodsList == null || methodsList.Count == 0)
+            {
+                base.UpdateDatabase(GetBooksUri(), SaveBooksUri);
+                base.UpdateDatabase(GetBooksTitleLabelCsLabelEn(), SaveBooksTitleLabelCsLabelEn);
+                base.UpdateDatabase(GetBooksNamesByLangOfOrigin(), SaveBooksNamesByLangOfOrigin);
+                base.UpdateDatabase(GetBooksNamesByAuthorCountryLang(), SaveBooksNamesByAuthorCountryLang);
+                base.UpdateDatabase(GetBooksLabelsAll(), SaveBookTitleWithNoOtherName);
+                base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers);
+            }
+            else
+            {
+                if (methodsList.Contains(0))
+                {
+                    base.UpdateDatabase(GetBooksUri(), SaveBooksUri);
+                }
+                if (methodsList.Contains(1))
+                {
+                    base.UpdateDatabase(GetBooksTitleLabelCsLabelEn(), SaveBooksTitleLabelCsLabelEn);
+                }
+                if (methodsList.Contains(2))
+                {
+                    base.UpdateDatabase(GetBooksNamesByLangOfOrigin(), SaveBooksNamesByLangOfOrigin);
+                }
+                if (methodsList.Contains(3))
+                {
+                    base.UpdateDatabase(GetBooksNamesByAuthorCountryLang(), SaveBooksNamesByAuthorCountryLang);
+                }
+                if (methodsList.Contains(4))
+                {
+                    base.UpdateDatabase(GetBooksLabelsAll(), SaveBookTitleWithNoOtherName);
+                }
+                if (methodsList.Contains(5))
+                {
+                    base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers);
+                }
+            }
         }
-        public override void UpdateAuthors(){
-
+        public override void UpdateAuthors(List<int> methodsList)
+        {
+            if (methodsList == null || methodsList.Count == 0)
+            {
+                base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri);
+                base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData);
+                base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
+            }
+            else
+            {
+                if (methodsList.Contains(0))
+                {
+                    base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri);
+                }
+                if (methodsList.Contains(1))
+                {
+                    base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData);
+                }
+                if (methodsList.Contains(2))
+                {
+                    base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
+                }
+            }
         }
 
         IEnumerable<string> GetBooksUri()
@@ -245,6 +298,157 @@ namespace BookRecommender.DataManipulation.WikiData
             db.Books.Update(book);
 
         }
-        //------------------------------------------------------------------------------------------------------------------------------------      
+        //------------------------------------------------------------------------------------------------------------------------------------
+
+        IEnumerable<string> GetAuthorsUri()
+        {
+            var query = @"SELECT DISTINCT ?author
+                            WHERE {
+                            ?item wdt:P31 wd:Q571.
+                            ?item wdt:P50 ?author.
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return line["author"];
+            }
+            yield break;
+        }
+        void SaveAuthorsUri(string uri, BookRecommenderContext db)
+        {
+            if (db.Authors.Where(a => a.Uri == uri).Count() > 0)
+            {
+                return;
+            }
+            db.Authors.Add(new Author
+            {
+                Uri = uri
+            });
+        }
+        //------------------------------------------------------------------------------------------------------------------------------------
+        IEnumerable<(string uri, string labelEn, string labelCs, string dateOfBirth, string dateOfDeath)> GetAuthorsData()
+        {
+            var query = @"SELECT DISTINCT ?author ?author_label_en ?author_label_cs ?date_of_birth ?date_of_death
+                            WHERE {
+                            ?item wdt:P31 wd:Q571.
+                            ?item wdt:P50 ?author.
+                            OPTIONAL{
+                                ?author rdfs:label ?author_label_en.
+                                    FILTER(LANG(?author_label_en) = ""en"")
+                            }
+                            OPTIONAL{
+                                ?author rdfs:label ?author_label_cs.
+                                    FILTER(LANG(?author_label_cs) = ""cs"")
+                            }
+                            OPTIONAL{
+                                ?author wdt:P569 ?date_of_birth.
+                            }
+                            OPTIONAL{
+                                ?author wdt:P570 ?date_of_death.
+                            }
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["author"], line["author_label_en"], line["author_label_cs"], line["date_of_birth"], line["date_of_death"]);
+            }
+            yield break;
+        }
+
+        (bool ok, DateTime? date) ConvertDate(string sparqlDate)
+        {
+            if (string.IsNullOrEmpty(sparqlDate))
+            {
+                return (true, null);
+            }
+            // 1952-03-25T00:00:00Z
+            var format = "yyyy-MM-ddTHH:mm:ssZ";
+            try
+            {
+                var retDate = DateTime.ParseExact(sparqlDate, format, CultureInfo.InvariantCulture);
+                return (true, retDate);
+            }
+            catch (Exception)
+            {
+                System.Console.WriteLine(sparqlDate);
+                return (false, null);
+            }
+        }
+        void SaveAuthorsData((string uri, string labelEn, string labelCs, string dateOfBirth, string dateOfDeath) line, BookRecommenderContext db)
+        {
+            var author = db.Authors.Where(a => a.Uri == line.uri)?.FirstOrDefault();
+            if (author == null)
+            {
+                System.Console.WriteLine("author not in database: " + line.uri);
+                return;
+            }
+
+            author.Uri = line.uri;
+            author.NameEn = line.labelEn;
+            author.NameCs = line.labelCs;
+            var bd = ConvertDate(line.dateOfBirth);
+            if (!bd.ok)
+            {
+                System.Console.WriteLine(line.uri);
+            }
+            var dd = ConvertDate(line.dateOfDeath);
+            if (!dd.ok)
+            {
+                System.Console.WriteLine(line.uri);
+            }
+
+
+            // if (!string.IsNullOrEmpty(line.sex))
+            // {
+            //     if (line.sex == "male")
+            //     {
+            //         author.Sex = Author.SexType.Male;
+            //     }
+            //     if (line.sex == "female")
+            //     {
+            //         author.Sex = Author.SexType.Female;
+            //     }
+            // }
+            db.Authors.Update(author);
+            if (dd.ok || bd.ok)
+            {
+                db.SaveChanges();
+            }
+        }
+        //------------------------------------------------------------------------------------------------------------------------------------
+        IEnumerable<(string uriBook, string uriAuthor)> GetAuthorBookRelations()
+        {
+            var query = @"SELECT DISTINCT ?book ?author
+                            WHERE {
+                            ?item wdt:P31 wd:Q571.
+                            ?item wdt:P50 ?author.
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["book"], line["author"]);
+            }
+            yield break;
+        }
+        void SaveAuthorBookRelations((string uriBook, string uriAuthor) line, BookRecommenderContext db)
+        {
+            var author = db.Authors.Where(a => a.Uri == line.uriAuthor)?.FirstOrDefault();
+            if (author == null)
+            {
+                return;
+            }
+
+            var book = db.Books.Where(b => b.Uri == line.uriBook)?.FirstOrDefault();
+            if (book == null)
+            {
+                return;
+            }
+
+            book.BookAuthors.Add(new BookAuthor { Book = book, Author = author });
+
+            db.Authors.Update(author);
+        }
+        //------------------------------------------------------------------------------------------------------------------------------------
+
     }
 }

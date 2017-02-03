@@ -10,9 +10,14 @@ namespace BookRecommender
         public static void Main(string[] args)
         {
 
-            if(args.Length ==2 && args[0].ToLower() == "--mine"){
+            if(args.Length > 0 && args[0].ToLower() == "--mine"){
                 System.Console.WriteLine("Mining mode active, server will not start");
-                MineSPARQL.Mine(args[1]);
+                MineSPARQL.Mine(args);
+                return;
+            }
+
+            if(args.Length > 0){
+                System.Console.WriteLine("Params not supported");
                 return;
             }
             
