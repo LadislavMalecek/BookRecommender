@@ -5,8 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookRecommender.Models.Database{
     public class BookGenre {
-        public int BookGenreId { get; set; }
-        public Book Book;
-        public Genre Genre;
+        public int BookId { get; set ;}
+        public Book Book { get; set; }
+        
+        public int GenreId { get; set; }
+        public Genre Genre { get; set; }
+
+        public BookGenre(Book book, Genre genre){
+            this.Book = book;
+            this.Genre = genre;
+        }
     }
 }

@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using BookRecommender.DataManipulation;
 using BookRecommender.Models.Database;
 
 namespace BookRecommender.Models
 {
+    public enum SexType { Male, Female }
     public class Author
     {
-        public enum SexType { Male, Female }
         [Required]
         public int AuthorId { get; set; }
         [Required]
@@ -16,8 +18,7 @@ namespace BookRecommender.Models
         public string Name { get; set; }
         public string NameEn { get; set; }
         public string NameCs { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public SexType Sex { get; set; }
+        public SexType? Sex { get; set; }
 
 
         [Column("DateBirth")]
@@ -52,15 +53,12 @@ namespace BookRecommender.Models
                 DateDeathString = value.ToDatabaseString();
             }
         }
+        public virtual List<BookAuthor> BooksAuthors { get; set; } = new List<BookAuthor>();
 
+        public IEnumerable<Book> GetBooks(BookRecommenderContext db)
+        {
+            return db.BooksAuthors.Where(ba => ba.Author == this).Select(ba => ba.Book);
+        }
 
-        public virtual ICollection<BookAuthor> BookAuthors { get; set; }
-        public virtual ICollection<Country> CountryCitizenship { get; set; }
-
-        // public Author()
-        // {
-        //     CountryCitizenship = new List<Country>();
-        //     Books = new List<Book>();
-        // }
     }
 }

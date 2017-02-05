@@ -1,17 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using BookRecommender.DataManipulation;
 using BookRecommender.Models.Database;
 
-namespace BookRecommender.Models{
-    public class Genre {
+namespace BookRecommender.Models
+{
+    public class Genre
+    {
         [Required]
-        public int GenreId { get; set;}
+        public int GenreId { get; set; }
         [Required]
         public string Uri { get; set; }
         public string Name_en { get; set; }
         public string Name_cs { get; set; }
 
-        virtual public ICollection<BookGenre> BookWithThisGenre { get; set; }
+        virtual public List<BookGenre> BooksGenres { get; set; } = new List<BookGenre>();
+
+        public IEnumerable<Book> GetBooks(BookRecommenderContext db)
+        {
+            return db.BooksGenres.Where(bg => bg.Genre == this).Select(bg => bg.Book);
+        }
     }
 }
