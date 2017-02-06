@@ -59,30 +59,6 @@ namespace BookRecommender.DataManipulation.WikiData
                 }
             }
         }
-        public override void UpdateAuthors(List<int> methodsList)
-        {
-            if (methodsList == null || methodsList.Count == 0)
-            {
-                base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri);
-                base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData);
-                base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
-            }
-            else
-            {
-                if (methodsList.Contains(0))
-                {
-                    base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri);
-                }
-                if (methodsList.Contains(1))
-                {
-                    base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData);
-                }
-                if (methodsList.Contains(2))
-                {
-                    base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
-                }
-            }
-        }
 
         IEnumerable<string> GetBooksUri()
         {
@@ -110,6 +86,9 @@ namespace BookRecommender.DataManipulation.WikiData
                 Uri = line
             });
         }
+
+        //------------------------------------------------------------------------------------------------------------------------------------
+        // Books
         //------------------------------------------------------------------------------------------------------------------------------------
         IEnumerable<(string uri, string title, string labelCs, string labelEn)> GetBooksTitleLabelCsLabelEn()
         {
@@ -299,6 +278,38 @@ namespace BookRecommender.DataManipulation.WikiData
 
         }
         //------------------------------------------------------------------------------------------------------------------------------------
+        // Authors
+        //------------------------------------------------------------------------------------------------------------------------------------
+
+        public override void UpdateAuthors(List<int> methodsList)
+        {
+            if (methodsList == null || methodsList.Count == 0)
+            {
+                base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri);
+                base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData);
+                base.UpdateDatabase(GetAuthorsData2(), SaveAuthorsData2);
+                base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
+            }
+            else
+            {
+                if (methodsList.Contains(0))
+                {
+                    base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri);
+                }
+                if (methodsList.Contains(1))
+                {
+                    base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData);
+                }
+                if (methodsList.Contains(2))
+                {
+                    base.UpdateDatabase(GetAuthorsData2(), SaveAuthorsData2);
+                }
+                if (methodsList.Contains(3))
+                {
+                    base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
+                }
+            }
+        }
 
         IEnumerable<string> GetAuthorsUri()
         {
@@ -326,9 +337,9 @@ namespace BookRecommender.DataManipulation.WikiData
             });
         }
         //------------------------------------------------------------------------------------------------------------------------------------
-        IEnumerable<(string uri, string labelEn, string labelCs, string dateOfBirth, string dateOfDeath)> GetAuthorsData()
+        IEnumerable<(string uri, string labelEn, string labelCs)> GetAuthorsData()
         {
-            var query = @"SELECT DISTINCT ?author ?author_label_en ?author_label_cs ?date_of_birth ?date_of_death
+            var query = @"SELECT DISTINCT ?author ?author_label_en ?author_label_cs
                             WHERE {
                             ?item wdt:P31 wd:Q571.
                             ?item wdt:P50 ?author.
@@ -340,41 +351,16 @@ namespace BookRecommender.DataManipulation.WikiData
                                 ?author rdfs:label ?author_label_cs.
                                     FILTER(LANG(?author_label_cs) = ""cs"")
                             }
-                            OPTIONAL{
-                                ?author wdt:P569 ?date_of_birth.
-                            }
-                            OPTIONAL{
-                                ?author wdt:P570 ?date_of_death.
-                            }
+                            
                         }";
             var result = Execute(query);
             foreach (var line in result)
             {
-                yield return (line["author"], line["author_label_en"], line["author_label_cs"], line["date_of_birth"], line["date_of_death"]);
+                yield return (line["author"], line["author_label_en"], line["author_label_cs"]);
             }
             yield break;
         }
-
-        (bool ok, DateTime? date) ConvertDate(string sparqlDate)
-        {
-            if (string.IsNullOrEmpty(sparqlDate))
-            {
-                return (true, null);
-            }
-            // 1952-03-25T00:00:00Z
-            var format = "yyyy-MM-ddTHH:mm:ssZ";
-            try
-            {
-                var retDate = DateTime.ParseExact(sparqlDate, format, CultureInfo.InvariantCulture);
-                return (true, retDate);
-            }
-            catch (Exception)
-            {
-                System.Console.WriteLine(sparqlDate);
-                return (false, null);
-            }
-        }
-        void SaveAuthorsData((string uri, string labelEn, string labelCs, string dateOfBirth, string dateOfDeath) line, BookRecommenderContext db)
+        void SaveAuthorsData((string uri, string labelEn, string labelCs) line, BookRecommenderContext db)
         {
             var author = db.Authors.Where(a => a.Uri == line.uri)?.FirstOrDefault();
             if (author == null)
@@ -386,42 +372,71 @@ namespace BookRecommender.DataManipulation.WikiData
             author.Uri = line.uri;
             author.NameEn = line.labelEn;
             author.NameCs = line.labelCs;
-            var bd = ConvertDate(line.dateOfBirth);
-            if (!bd.ok)
-            {
-                System.Console.WriteLine(line.uri);
-            }
-            var dd = ConvertDate(line.dateOfDeath);
-            if (!dd.ok)
-            {
-                System.Console.WriteLine(line.uri);
-            }
 
-
-            // if (!string.IsNullOrEmpty(line.sex))
-            // {
-            //     if (line.sex == "male")
-            //     {
-            //         author.Sex = Author.SexType.Male;
-            //     }
-            //     if (line.sex == "female")
-            //     {
-            //         author.Sex = Author.SexType.Female;
-            //     }
-            // }
             db.Authors.Update(author);
-            if (dd.ok || bd.ok)
-            {
-                db.SaveChanges();
-            }
         }
         //------------------------------------------------------------------------------------------------------------------------------------
+        IEnumerable<(string uri, string dateOfBirth, string dateOfDeath, string sex)> GetAuthorsData2()
+        {
+            var query = @"SELECT DISTINCT ?author ?date_of_birth ?date_of_death  ?sex
+                            WHERE {
+                            ?item wdt:P31 wd:Q571.
+                            ?item wdt:P50 ?author.
+                            OPTIONAL{
+                                ?author wdt:P569 ?date_of_birth.
+                            }
+                            OPTIONAL{
+                                ?author wdt:P570 ?date_of_death.
+                            }
+                            OPTIONAL{
+                                ?author wdt:P21 ?sexObj.
+                                ?sexObj rdfs:label ?sex.
+                                        FILTER(LANG(?sex) = ""en"")
+                            }
+                            
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["author"], line["date_of_birth"], line["date_of_death"], line["sex"]);
+            }
+            yield break;
+        }
+        void SaveAuthorsData2((string uri, string dateOfBirth, string dateOfDeath, string sex) line, BookRecommenderContext db)
+        {
+            var author = db.Authors.Where(a => a.Uri == line.uri)?.FirstOrDefault();
+            if (author == null)
+            {
+                System.Console.WriteLine("author not in database: " + line.uri);
+                return;
+            }
+
+            author.Uri = line.uri;
+
+            author.DateBirth = HistoricalDateTime.FromWikiData(line.dateOfBirth);
+            author.DateDeath = HistoricalDateTime.FromWikiData(line.dateOfDeath);
+
+            if (!string.IsNullOrEmpty(line.sex))
+            {
+                if (line.sex == "male")
+                {
+                    author.Sex = SexType.Male;
+                }
+                if (line.sex == "female")
+                {
+                    author.Sex = SexType.Female;
+                }
+            }
+            db.Authors.Update(author);
+        }
+        //------------------------------------------------------------------------------------------------------------------------------------
+
         IEnumerable<(string uriBook, string uriAuthor)> GetAuthorBookRelations()
         {
             var query = @"SELECT DISTINCT ?book ?author
                             WHERE {
-                            ?item wdt:P31 wd:Q571.
-                            ?item wdt:P50 ?author.
+                            ?book wdt:P31 wd:Q571.
+                            ?book wdt:P50 ?author.
                         }";
             var result = Execute(query);
             foreach (var line in result)
@@ -432,23 +447,15 @@ namespace BookRecommender.DataManipulation.WikiData
         }
         void SaveAuthorBookRelations((string uriBook, string uriAuthor) line, BookRecommenderContext db)
         {
-            var author = db.Authors.Where(a => a.Uri == line.uriAuthor)?.FirstOrDefault();
-            if (author == null)
-            {
-                return;
-            }
-
             var book = db.Books.Where(b => b.Uri == line.uriBook)?.FirstOrDefault();
-            if (book == null)
+            var author = db.Authors.Where(a => a.Uri == line.uriAuthor)?.FirstOrDefault();
+            if (book == null || author == null)
             {
                 return;
             }
 
-            book.BookAuthors.Add(new BookAuthor { Book = book, Author = author });
-
-            db.Authors.Update(author);
+            book.AddAuthor(author, db);
         }
         //------------------------------------------------------------------------------------------------------------------------------------
-
     }
 }

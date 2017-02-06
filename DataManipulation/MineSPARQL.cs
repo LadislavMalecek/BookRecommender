@@ -9,16 +9,17 @@ using BookRecommender.Models;
 using BookRecommender.Models.Database;
 using System.Diagnostics;
 using BookRecommender.DataManipulation.WikiData;
+using BookRecommender.Tests;
 
 namespace BookRecommender.DataManipulation
 {
 
     public class MineSPARQL
     {
-        public static void Mine(string[] param)
+        public static void Mine(string[] args)
         {
             SparqlEndPointMiner endpoint = new WikiDataEndpointMiner();
-            if (param.Length == 1)
+            if (args.Length == 1)
             {
                 // no param to mine -> mine all
                 endpoint.UpdateBooks(null);
@@ -26,21 +27,29 @@ namespace BookRecommender.DataManipulation
             }
             else
             {
+                if (args[1] == "test")
+                {
+                    Test();
+                    return;
+                }
+
                 // longer than one
                 var methodNumberList = new List<int>();
-                for(var i = 2; i < param.Length; i++){
+                for (var i = 2; i < args.Length; i++)
+                {
                     int result;
-                    var isNumber = int.TryParse(param[i], out result);
+                    var isNumber = int.TryParse(args[i], out result);
 
-                    if(!isNumber){
-                        System.Console.WriteLine($"Invalid mine parametres: {param[i]}");
+                    if (!isNumber)
+                    {
+                        System.Console.WriteLine($"Invalid mine parametres: {args[i]}");
                         return;
                     }
 
                     methodNumberList.Add(result);
                 }
 
-                switch (param[1])
+                switch (args[1])
                 {
                     case "books":
                         endpoint.UpdateBooks(methodNumberList);
@@ -53,9 +62,10 @@ namespace BookRecommender.DataManipulation
                         break;
                 }
             }
-
-
-
+        }
+        static void Test()
+        {
+            new CsvParserTests().SingleMultiLine();
         }
     }
 }

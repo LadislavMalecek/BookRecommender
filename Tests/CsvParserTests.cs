@@ -47,6 +47,29 @@ namespace BookRecommender.Tests
             var result = new CsvParser(data).ParseToList();
             Assert.True(result.Count == 0);
         }
+        [Fact]
+        public void Single()
+        {
+            var data = "asdf\r\n";
+            var result = new CsvParser(data).ParseToList();
+            Assert.True(result.Count == 1);
+            Assert.True(result[0].Count == 1);
+            Assert.Equal(result[0][0], "asdf");
+        }
+
+        [Fact]
+        public void SingleMultiLine()
+        {
+            var data = "asdf\r\nasd\r\nas\r\n";
+            var result = new CsvParser(data).ParseToList();
+            Assert.True(result.Count == 3);
+            Assert.True(result[0].Count == 1);
+            Assert.Equal(result[0][0], "asdf");
+            Assert.True(result[1].Count == 1);
+            Assert.Equal(result[1][0], "asd");
+            Assert.True(result[2].Count == 1);
+            Assert.Equal(result[2][0], "as");
+        }
 
 
         [Fact]
@@ -136,7 +159,7 @@ namespace BookRecommender.Tests
             Assert.True(result[0].Count == 1);
             Assert.True(result[1].Count == 1);
             Assert.True(result[2].Count == 1);
-            
+
             Assert.Equal(result[0][0], "");
             Assert.Equal(result[1][0], "");
             Assert.Equal(result[2][0], "");
@@ -149,7 +172,7 @@ namespace BookRecommender.Tests
             Assert.True(result.Count == 2);
             Assert.True(result[0].Count == 2);
             Assert.True(result[1].Count == 1);
-            
+
             Assert.Equal(result[0][0], "asdf");
             Assert.Equal(result[0][1], "");
             Assert.Equal(result[1][0], "aaa");
@@ -162,7 +185,7 @@ namespace BookRecommender.Tests
             Assert.True(result.Count == 2);
             Assert.True(result[0].Count == 2);
             Assert.True(result[1].Count == 1);
-            
+
             Assert.Equal(result[0][0], "\"");
             Assert.Equal(result[0][1], "\n\r");
             Assert.Equal(result[1][0], "aa,a");

@@ -18,8 +18,8 @@ namespace BookRecommender.Tests
 
                 var book = GetTestBook(0, db);
 
-                db.BooksAuthors.Add(new BookAuthor(book, GetTestAuthor(0, db)));
-                db.BooksAuthors.Add(new BookAuthor(book, GetTestAuthor(1, db)));
+                book.AddAuthor(GetTestAuthor(0, db), db);
+                book.AddAuthor(GetTestAuthor(1, db), db);
 
                 db.SaveChanges();
 

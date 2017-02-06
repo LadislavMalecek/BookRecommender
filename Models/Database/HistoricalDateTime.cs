@@ -21,7 +21,7 @@ namespace BookRecommender.Models
 
         static HistoricalDateTime FromString(string s, string format)
         {
-             if (string.IsNullOrEmpty(s))
+            if (string.IsNullOrEmpty(s))
             {
                 return null;
             }
@@ -30,12 +30,12 @@ namespace BookRecommender.Models
             if (s[0] == '-')
             {
                 era = Era.BC;
+                // get rid of the minus
+                s = s.Substring(1);
             }
             else
             {
                 era = Era.AD;
-                // get rid of the minus
-                s = s.Substring(1);
             }
 
 
@@ -56,16 +56,19 @@ namespace BookRecommender.Models
             return FromString(dateSparql, format);
 
         }
-        public static HistoricalDateTime FromDatabase(string date){
+        public static HistoricalDateTime FromDatabase(string date)
+        {
             var format = "yyyy-MM-dd";
-            return FromString(date,format);
+            return FromString(date, format);
         }
 
 
-        public string ToDatabaseString(){
+        public string ToDatabaseString()
+        {
             var format = "yyyy-MM-dd";
             var str = date.ToString(format);
-            if(era == Era.BC){
+            if (era == Era.BC)
+            {
                 str = "-" + str;
             }
             return str;

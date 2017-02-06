@@ -33,7 +33,7 @@ namespace BookRecommender.Models
             }
             set
             {
-                DateBirthString = value.ToDatabaseString();
+                DateBirthString = value?.ToDatabaseString();
             }
         }
 
@@ -50,7 +50,7 @@ namespace BookRecommender.Models
             }
             set
             {
-                DateDeathString = value.ToDatabaseString();
+                DateDeathString = value?.ToDatabaseString();
             }
         }
         public virtual List<BookAuthor> BooksAuthors { get; set; } = new List<BookAuthor>();

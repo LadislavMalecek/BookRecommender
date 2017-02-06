@@ -65,12 +65,16 @@ namespace BookRecommender.Models
         }
         public IEnumerable<Tag> GetTags(BookRecommenderContext db)
         {
-             return db.BooksTags.Where(bt => bt.Book == this).Select(bt => bt.Tag);
+            return db.BooksTags.Where(bt => bt.Book == this).Select(bt => bt.Tag);
         }
 
         public void AddAuthor(Author author, BookRecommenderContext db)
         {
-            db.BooksAuthors.Add(new BookAuthor(this, author));
+            var newBA = new BookAuthor() { BookId = this.BookId, AuthorId = author.AuthorId };
+            if (!db.BooksAuthors.Where(ba => ba.AuthorId == author.AuthorId && ba.BookId == this.BookId).Any())
+            {
+                db.BooksAuthors.Add(newBA);
+            }
         }
         public void AddGenre(Genre genre, BookRecommenderContext db)
         {
