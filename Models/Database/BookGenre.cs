@@ -18,6 +18,7 @@ namespace BookRecommender.Models.Database
             this.Book = book;
             this.Genre = genre;
         }
+        // EF needs simple constructor
         public BookGenre() { }
     }
 }

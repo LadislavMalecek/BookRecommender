@@ -32,6 +32,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SQLite" Version="1.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="1.1.0" />
     <PackageReference Include="System.ValueTuple" Version="4.3.0" />
+    <PackageReference Include="System.Threading.Tasks" Version="4.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.2-beta2" />
     <PackageReference Include="System.Net.Requests" Version="4.3.0" />
     <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="15.0.0-preview-20170125-04" />

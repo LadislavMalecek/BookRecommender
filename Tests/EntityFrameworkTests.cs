@@ -297,6 +297,7 @@ namespace BookRecommender.Tests
             return db.Tags.Where(t => t.Value == TestTag + i).First();
         }
 
+        // Dummy class for accessing the nice 'using' pattern
         class TestData : IDisposable
         {
             public TestData()

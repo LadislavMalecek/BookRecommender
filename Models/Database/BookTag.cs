@@ -18,6 +18,7 @@ namespace BookRecommender.Models.Database
             this.Book = book;
             this.Tag = tag;
         }
+        // EF needs simple constructor
         public BookTag() { }
     }
 }

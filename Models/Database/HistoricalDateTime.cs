@@ -51,7 +51,7 @@ namespace BookRecommender.Models
         }
         public static HistoricalDateTime FromWikiData(string dateSparql)
         {
-
+            // WikiData uses specific data format
             var format = "yyyy-MM-ddTHH:mm:ssZ";
             return FromString(dateSparql, format);
 
@@ -65,6 +65,7 @@ namespace BookRecommender.Models
 
         public string ToDatabaseString()
         {
+            // Used only to mark a day, cut of the time part
             var format = "yyyy-MM-dd";
             var str = date.ToString(format);
             if (era == Era.BC)

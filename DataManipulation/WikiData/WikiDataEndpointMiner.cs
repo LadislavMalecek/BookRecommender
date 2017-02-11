@@ -16,10 +16,15 @@ namespace BookRecommender.DataManipulation.WikiData
 
         protected override List<Dictionary<string, string>> Execute(string query)
         {
+            // Mine data from endpoint
             var rawData = miner.MineData(query);
+            // Proccess data
             return parser.Parse(rawData);
         }
 
+        //------------------------------------------------------------------------------------------------------------------------------------
+        // Books
+        //------------------------------------------------------------------------------------------------------------------------------------
         public override void UpdateBooks(List<int> methodsList)
         {
             if (methodsList == null || methodsList.Count == 0)
@@ -62,21 +67,24 @@ namespace BookRecommender.DataManipulation.WikiData
 
         IEnumerable<string> GetBooksUri()
         {
-
-            var query = @"SELECT ?item
+            // Query which loads all books and returns uri
+            // wdt:P31 - instance of
+            // wd:Q571 - book
+            var query = @"SELECT ?book
                         WHERE {
-                            ?item wdt:P31 wd:Q571.
+                            ?book wdt:P31 wd:Q571.
                         }";
             var result = Execute(query);
             foreach (var line in result)
             {
-                yield return line["item"];
+                yield return line["book"];
             }
             yield break;
         }
 
         void SaveBooksUri(string line, BookRecommenderContext db)
         {
+            // Check for uniqueness
             if (db.Books.Where(b => b.Uri == line).Count() > 0)
             {
                 return;
@@ -87,30 +95,30 @@ namespace BookRecommender.DataManipulation.WikiData
             });
         }
 
-        //------------------------------------------------------------------------------------------------------------------------------------
-        // Books
-        //------------------------------------------------------------------------------------------------------------------------------------
         IEnumerable<(string uri, string title, string labelCs, string labelEn)> GetBooksTitleLabelCsLabelEn()
         {
-            var query = @"SELECT ?item ?title ?label_cs ?label_en
+            // Simple query to retrieve title and labels from books
+            // wdt:P1476 - title
+            // rdfs:label - standard label - multiple languages, need to filter relevant
+            var query = @"SELECT ?book ?title ?label_cs ?label_en
                         WHERE {
-                            ?item wdt:P31 wd:Q571.
+                            ?book wdt:P31 wd:Q571.
                             OPTIONAL{
-                                ?item wdt:P1476 ?title.
+                                ?book wdt:P1476 ?title.
                             }
                             OPTIONAL{
-                                ?item rdfs:label ?label_cs.
+                                ?book rdfs:label ?label_cs.
                                     FILTER(LANG(?label_cs) = ""cs"")
                             }
                             OPTIONAL{
-                                ?item rdfs:label ?label_en.
+                                ?book rdfs:label ?label_en.
   	                                FILTER(LANG(?label_en) = ""en"")
                             }
                         }";
             var result = Execute(query);
             foreach (var line in result)
             {
-                yield return (line["item"], line["title"], line["label_cs"], line["label_en"]);
+                yield return (line["book"], line["title"], line["label_cs"], line["label_en"]);
             }
             yield break;
         }
@@ -132,18 +140,21 @@ namespace BookRecommender.DataManipulation.WikiData
         //------------------------------------------------------------------------------------------------------------------------------------
         IEnumerable<(string uri, string langCode, string label)> GetBooksNamesByLangOfOrigin()
         {
-            var query = @"SELECT ?item ?lang_code ?label
+            // Get the original name by original language of work property
+            // wdt:P364 - original language of work
+            // wdt:P424 - Wikimedia language code
+            var query = @"SELECT ?book ?lang_code ?label
                         WHERE {
-                            ?item wdt:P31 wd:Q571.
-                            ?item wdt:P364 ?obj.
-                            ?obj wdt:P424 ?lang_code.
-                            ?item rdfs:label ?label.
+                            ?book wdt:P31 wd:Q571.
+                            ?book wdt:P364 ?origLangOfWork.
+                            ?origLangOfWork wdt:P424 ?lang_code.
+                            ?book rdfs:label ?label.
                                 FILTER(LANG(?label) = ?lang_code)
                         }";
             var result = Execute(query);
             foreach (var line in result)
             {
-                yield return (line["item"], line["lang_code"], line["label"]);
+                yield return (line["book"], line["lang_code"], line["label"]);
             }
             yield break;
         }
@@ -162,6 +173,12 @@ namespace BookRecommender.DataManipulation.WikiData
         //------------------------------------------------------------------------------------------------------------------------------------        
         IEnumerable<(string uri, string countryLangCode, string label)> GetBooksNamesByAuthorCountryLang()
         {
+            // Try to get original name trough nationality of its author
+            // Most endpoint heavy query
+            // wdt:P50 - author
+            // wdt:P27 - country of citizenship
+            // wdt:P37 - official language
+            // wdt:P424 - Wikimedia language code
             var query = @"SELECT ?item ?country_lang_code ?label
                             WHERE {
                                 ?item wdt:P31 wd:Q571.
@@ -195,6 +212,8 @@ namespace BookRecommender.DataManipulation.WikiData
         //------------------------------------------------------------------------------------------------------------------------------------
         IEnumerable<(string uri, string label)> GetBooksLabelsAll()
         {
+            // Query to fill out books with no name
+            // just use the first one, there are almost no books with no name at this point in mining
             var query = @"SELECT ?item ?label
                             WHERE {
                                 ?item wdt:P31 wd:Q571.
@@ -234,6 +253,12 @@ namespace BookRecommender.DataManipulation.WikiData
 
         IEnumerable<(string uri, string isbn10, string isbn13, string gndId, string openLibId, string freeBase)> GetBooksIdentifiers()
         {
+            // Query to obtain the identifiers
+            // wdt:P957 - ISBN-10
+            // wdt:P212 - ISBN-13
+            // wdt:P227 - GND ID
+            // wdt:P648 - Open Library ID
+            // wdt:P646 - Freebase ID
             var query = @"SELECT ?item ?ISBN10 ?ISBN13 ?GND_id ?open_lib_id ?free_base
                             WHERE {
                                 ?item wdt:P31 wd:Q571.
@@ -313,6 +338,7 @@ namespace BookRecommender.DataManipulation.WikiData
 
         IEnumerable<string> GetAuthorsUri()
         {
+            // Retrieve all authors of some book
             var query = @"SELECT DISTINCT ?author
                             WHERE {
                             ?item wdt:P31 wd:Q571.
@@ -339,6 +365,7 @@ namespace BookRecommender.DataManipulation.WikiData
         //------------------------------------------------------------------------------------------------------------------------------------
         IEnumerable<(string uri, string labelEn, string labelCs)> GetAuthorsData()
         {
+            // Mine labels
             var query = @"SELECT DISTINCT ?author ?author_label_en ?author_label_cs
                             WHERE {
                             ?item wdt:P31 wd:Q571.
@@ -378,6 +405,10 @@ namespace BookRecommender.DataManipulation.WikiData
         //------------------------------------------------------------------------------------------------------------------------------------
         IEnumerable<(string uri, string dateOfBirth, string dateOfDeath, string sex)> GetAuthorsData2()
         {
+            // wdt:P569 - date of birth
+            // wdt:P570 - date of death
+            // wdt:P21 - sex or gender
+            // sex is an uri - so just take english label
             var query = @"SELECT DISTINCT ?author ?date_of_birth ?date_of_death  ?sex
                             WHERE {
                             ?item wdt:P31 wd:Q571.

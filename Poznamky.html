@@ -52,3 +52,10 @@
     <li> Odstraneni balastu -> odstraneni cele ItemGroup obsahujici Compile, Zmena sdk na <code>Microsoft.NET.Sdk.Web</code></li>
     <li> Odstraneni Target scriptu</li>
 </ol>
+
+
+<h3>Entity framework many to many </h3>
+<p> Not supported at time of development by microsoft, need to manage my own trough traverse table. This was the biggest pain yet. I have written some tests to ease the dev proccess but there was no simple method on web. The showcase from Mrkvosoft does not
+    include expample how to retrieve data or how to add them in. I have made my own checks for that, only thing is checking for uniqueness and ref keys. The entity framework construct does not work, so the data inside book and other classes are there
+    only for the relations between tables. I have made my own extract and add relevant data trough traverse table.
+</p>
