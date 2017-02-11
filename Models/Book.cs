@@ -27,6 +27,22 @@ namespace BookRecommender.Models
         public string OpenLibId { get; set; }
         public string FreeBase { get; set; }
 
+        public string GetNameEn(){
+            if(NameEn != null){
+                return NameEn;
+            }
+            if(NameOrig != null){
+                return NameOrig;
+            }
+            if(Title != null){
+                return Title;
+            }
+            if(NameCs != null){
+                return NameCs;
+            }
+            return null;
+        }
+
 
         [Column("PublicationDate")]
         public string PublicationDateString { get; protected set; }

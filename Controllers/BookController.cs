@@ -11,11 +11,19 @@ namespace BookRecommender.Controllers
     public class BookController : Controller{
 
         // GET: /Book/Detail
-        public IActionResult Detail(){
-            // var Book = new Book(){
-            //     Name = "My book"
-            // };
-            return View();
+        public IActionResult Detail(int id){
+            var db = new BookRecommenderContext();
+            var book = db.Books.Where(b => b.BookId == id)?.FirstOrDefault();
+            var bookAuthors = book.GetAuthors(db);
+
+            if(book == null){
+                return View("Error");
+            }
+
+            return View(new BookDetail(){
+                Book = book,
+                Authors = bookAuthors
+            });
         }
 
 
@@ -31,8 +39,8 @@ namespace BookRecommender.Controllers
             ViewData["search"] = search.SearchPhrase;
             
             var db = new BookRecommenderContext();
-            var books = db.Books.Where(b => b.NameEn.Contains(search.SearchPhrase)).Select(b => b.NameEn).ToList();
-            var authors = db.Authors.Where(a => a.NameEn.Contains(search.SearchPhrase)).Select(a => a.NameEn).ToList();
+            var books = db.Books.Where(b => b.NameEn.Contains(search.SearchPhrase));
+            var authors = db.Authors.Where(a => a.NameEn.Contains(search.SearchPhrase));
             
             search.BooksFound = books;
             search.AuthorsFound = authors;

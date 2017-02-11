@@ -14,8 +14,8 @@ namespace BookRecommender.Models
         public int GenreId { get; set; }
         [Required]
         public string Uri { get; set; }
-        public string Name_en { get; set; }
-        public string Name_cs { get; set; }
+        public string NameEn { get; set; }
+        public string NameCs { get; set; }
 
         virtual public List<BookGenre> BooksGenres { get; set; } = new List<BookGenre>();
 

@@ -20,6 +20,19 @@ namespace BookRecommender.Models
         public string NameCs { get; set; }
         public SexType? Sex { get; set; }
 
+        public string GetNameEn(){
+            if(NameEn != null){
+                return NameEn;
+            }
+            if(Name != null){
+                return Name;
+            }
+            if(NameCs != null){
+                return NameCs;
+            }
+            return null;
+        }
+
 
         [Column("DateBirth")]
         public string DateBirthString { get; private set; }

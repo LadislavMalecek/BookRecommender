@@ -1,5 +1,20 @@
-@//model BookRecommender.Models.Book
+@model BookRecommender.Models.BookDetail
 
-<h1> This is my book page</h1>
-<h3>Name: @//Model.Name</h3>
-<h3>Id: @//Model.Id</h3>d
+<h1> @Model.Book.GetNameEn()</h1>
+
+<p><strong>Czech name:</strong> @Model.Book.NameCs</p>
+<p><strong>Uri:</strong> @Model.Book.Uri</p>
+
+@if (Model.Authors.Count() > 0){
+
+<h3> Authors: </h3>
+
+<table class="table table-striped">
+    <tbody>
+        @foreach (var author in Model.Authors){
+        <tr>
+            <td><a href="/Author/Detail/@author.AuthorId"> @author.GetNameEn() </a></td>
+        </tr>
+        }
+</table>
+}

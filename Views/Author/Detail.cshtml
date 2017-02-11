@@ -1,0 +1,20 @@
+@model BookRecommender.Models.AuthorDetail
+
+<h1> @Model.Author.GetNameEn()</h1>
+
+<p><strong>Czech name:</strong> @Model.Author.NameCs</p>
+<p><strong>Uri:</strong> @Model.Author.Uri</p>
+
+@if (Model.Books.Count() > 0){
+
+<h3> Books: </h3>
+
+<table class="table table-striped">
+    <tbody>
+        @foreach (var book in Model.Books){
+        <tr>
+            <td><a href="/Book/Detail/@book.BookId"> @book.GetNameEn() </a></td>
+        </tr>
+        }
+</table>
+}

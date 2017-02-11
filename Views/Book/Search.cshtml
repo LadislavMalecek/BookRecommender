@@ -11,7 +11,7 @@
 
 <h3> You have searched for '@ViewData["search"]'' </h3>
 
-@if (Model.BooksFound.Count > 0){
+@if (Model.BooksFound.Count() > 0){
 
 <h3> Books: </h3>
 
@@ -22,11 +22,11 @@
     <tbody>
         @foreach (var book in Model.BooksFound){
         <tr>
-            <td> @book </td>
+            <td><a href="/Book/Detail/@book.BookId"> @book.NameEn </a></td>
         </tr>
         }
 </table>
-} @if (Model.AuthorsFound.Count > 0){
+} @if (Model.AuthorsFound.Count() > 0){
 
 <h3> Authors: </h3>
 
@@ -37,7 +37,7 @@
     <tbody>
         @foreach (var author in Model.AuthorsFound){
         <tr>
-            <td> @author </td>
+            <td><a href="/Author/Detail/@author.AuthorId"> @author.NameEn </a></td>
         </tr>
         }
 </table>
