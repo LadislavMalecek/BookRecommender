@@ -18,3 +18,31 @@
         }
 </table>
 }
+
+@if (Model.Genres.Count() > 0){
+
+<h3> Genres: </h3>
+
+<table class="table table-striped">
+    <tbody>
+        @foreach (var genre in Model.Genres){
+        <tr>
+            <td>@genre.NameEn</td>
+        </tr>
+        }
+</table>
+}
+
+@if (Model.Characters.Count() > 0){
+
+<h3> Characters: </h3>
+
+<table class="table table-striped">
+    <tbody>
+        @foreach (var character in Model.Characters){
+        <tr>
+            <td>@character.NameEn</td>
+        </tr>
+        }
+</table>
+}

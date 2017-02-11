@@ -8,40 +8,50 @@ using BookRecommender.DataManipulation;
 
 namespace BookRecommender.Controllers
 {
-    public class BookController : Controller{
+    public class BookController : Controller
+    {
 
         // GET: /Book/Detail
-        public IActionResult Detail(int id){
+        public IActionResult Detail(int id)
+        {
             var db = new BookRecommenderContext();
             var book = db.Books.Where(b => b.BookId == id)?.FirstOrDefault();
             var bookAuthors = book.GetAuthors(db);
+            var bookGenres = book.GetGenres(db);
+            var bookCharacters = book.GetCharacters(db);
 
-            if(book == null){
+            if (book == null)
+            {
                 return View("Error");
             }
 
-            return View(new BookDetail(){
+            return View(new BookDetail()
+            {
                 Book = book,
-                Authors = bookAuthors
+                Authors = bookAuthors,
+                Genres = bookGenres,
+                Characters = bookCharacters
             });
         }
 
 
         // GET: /Book/Search  
-        [HttpGet]    
-        public IActionResult Search(){
+        [HttpGet]
+        public IActionResult Search()
+        {
             ViewData["method"] = Request.Method.ToString();
             return View();
         }
         [HttpPost]
-        public IActionResult Search(Search search){
+        public IActionResult Search(Search search)
+        {
             ViewData["method"] = Request.Method.ToString();
             ViewData["search"] = search.SearchPhrase;
-            
+
             var db = new BookRecommenderContext();
             var books = db.Books.Where(b => b.NameEn.Contains(search.SearchPhrase));
             var authors = db.Authors.Where(a => a.NameEn.Contains(search.SearchPhrase));
-            
+
             search.BooksFound = books;
             search.AuthorsFound = authors;
 
@@ -49,13 +59,15 @@ namespace BookRecommender.Controllers
         }
 
         // GET: /Book/Review
-        public IActionResult Review(){
+        public IActionResult Review()
+        {
             return View();
         }
 
 
         // GET: /Book/Similar
-        public IActionResult Similar(){
+        public IActionResult Similar()
+        {
             return View();
         }
     }
