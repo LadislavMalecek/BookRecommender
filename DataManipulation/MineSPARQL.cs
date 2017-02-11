@@ -57,6 +57,12 @@ namespace BookRecommender.DataManipulation
                     case "authors":
                         endpoint.UpdateAuthors(methodNumberList);
                         break;
+                    case "characters":
+                        endpoint.UpdateCharacters(methodNumberList);
+                        break;
+                    case "genres":
+                        endpoint.UpdateGenres(methodNumberList);
+                        break;
                     default:
                         System.Console.WriteLine("Param not supported");
                         break;

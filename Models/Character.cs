@@ -16,8 +16,6 @@ namespace BookRecommender.Models
         public string Uri { get; set; }
         public string NameEn { get; set; }
         public string NameCs { get; set; }
-        public string NameOrig { get; set; }
-        
         public virtual List<BookCharacter> BooksCharacters { get; protected set; } = new List<BookCharacter>();
 
         public IEnumerable<Book> GetBooks(BookRecommenderContext db)

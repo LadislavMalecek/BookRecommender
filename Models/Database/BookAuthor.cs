@@ -12,5 +12,12 @@ namespace BookRecommender.Models.Database
 
         public int AuthorId { get; set; }
         public Author Author { get; set; }
+
+        public BookAuthor(Book book, Author author)
+        {
+            this.Book = book;
+            this.Author = author;
+        }
+        public BookAuthor() { }
     }
 }

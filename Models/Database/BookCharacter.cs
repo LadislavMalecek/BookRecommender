@@ -13,9 +13,11 @@ namespace BookRecommender.Models.Database
         public int CharacterId { get; set; }
         public Character Character { get; set; }
 
-        public BookCharacter(Book book, Character character){
+        public BookCharacter(Book book, Character character)
+        {
             this.Book = book;
             this.Character = character;
         }
+        public BookCharacter() { }
     }
 }

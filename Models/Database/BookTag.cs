@@ -13,9 +13,11 @@ namespace BookRecommender.Models.Database
         public int TagId { get; set; }
         public Tag Tag { get; set; }
 
-        public BookTag(Book book, Tag tag){
+        public BookTag(Book book, Tag tag)
+        {
             this.Book = book;
             this.Tag = tag;
         }
+        public BookTag() { }
     }
 }

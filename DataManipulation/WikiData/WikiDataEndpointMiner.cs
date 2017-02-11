@@ -454,8 +454,216 @@ namespace BookRecommender.DataManipulation.WikiData
                 return;
             }
 
+            if (db.BooksAuthors.Where(x => x == new BookAuthor(book, author)) != null)
+            {
+                return;
+            }
+
             book.AddAuthor(author, db);
         }
         //------------------------------------------------------------------------------------------------------------------------------------
+        // Characters
+        //------------------------------------------------------------------------------------------------------------------------------------
+
+        public override void UpdateCharacters(List<int> methodsList)
+        {
+            if (methodsList == null || methodsList.Count == 0)
+            {
+                base.UpdateDatabase(GetCharacters(), SaveCharacters);
+                base.UpdateDatabase(GetCharacterBookRelations(), SaveCharacterBookRelations);
+
+            }
+            else
+            {
+                if (methodsList.Contains(0))
+                {
+                    base.UpdateDatabase(GetCharacters(), SaveCharacters);
+                }
+                if (methodsList.Contains(1))
+                {
+                    base.UpdateDatabase(GetCharacterBookRelations(), SaveCharacterBookRelations);
+                }
+            }
+        }
+        //------------------------------------------------------------------------------------------------------------------------------------
+        IEnumerable<(string uriCharacter, string nameCs, string nameEn)> GetCharacters()
+        {
+            var query = @"SELECT DISTINCT ?character ?label_cs ?label_en
+                            WHERE {
+                            ?book wdt:P31 wd:Q571.
+                            ?book wdt:P674 ?character.
+                            OPTIONAL {
+                                ?character rdfs:label ?label_en.
+                                    FILTER(LANG(?label_en) = ""en"")
+                            }
+                            OPTIONAL {
+                                ?character rdfs:label ?label_cs.
+                                    FILTER(LANG(?label_cs) = ""cs"")
+                            }
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["character"], line["label_cs"], line["label_en"]);
+            }
+            yield break;
+        }
+        void SaveCharacters((string uriCharacter, string nameCs, string nameEn) line, BookRecommenderContext db)
+        {
+            var character = db.Characters.Where(c => c.Uri == line.uriCharacter)?.FirstOrDefault();
+
+            if (character == null)
+            {
+                // We dont want to have genre without english name
+                if (string.IsNullOrEmpty(line.nameEn))
+                {
+                    return;
+                }
+                db.Characters.Add(new Character()
+                {
+                    Uri = line.uriCharacter,
+                    NameCs = line.nameCs,
+                    NameEn = line.nameEn
+                });
+            }
+            else
+            {
+                character.NameCs = line.nameCs;
+                character.NameEn = line.nameEn;
+                db.Characters.Update(character);
+            }
+        }
+        //------------------------------------------------------------------------------------------------------------------------------------
+        IEnumerable<(string uriBook, string uriCharacter)> GetCharacterBookRelations()
+        {
+            var query = @"SELECT DISTINCT ?book ?character
+                            WHERE {
+                            ?book wdt:P31 wd:Q571.
+                            ?book wdt:P674 ?character.
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["book"], line["character"]);
+            }
+            yield break;
+        }
+        void SaveCharacterBookRelations((string uriBook, string uriCharacter) line, BookRecommenderContext db)
+        {
+            var book = db.Books.Where(b => b.Uri == line.uriBook)?.FirstOrDefault();
+            var character = db.Characters.Where(c => c.Uri == line.uriCharacter)?.FirstOrDefault();
+            if (book == null || character == null)
+            {
+                return;
+            }
+            if (db.BooksCharacters.Where(x => x == new BookCharacter(book, character)) != null)
+            {
+                return;
+            }
+
+            book.AddCharacter(character, db);
+        }
+
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // Genres
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        public override void UpdateGenres(List<int> methodsList)
+        {
+            if (methodsList == null || methodsList.Count == 0)
+            {
+                base.UpdateDatabase(GetGenres(), SaveGenres);
+                base.UpdateDatabase(GetGenreBookRelations(), SaveGenreBookRelations);
+            }
+            else
+            {
+                if (methodsList.Contains(0))
+                {
+                    base.UpdateDatabase(GetGenres(), SaveGenres);
+                }
+                if (methodsList.Contains(1))
+                {
+                    base.UpdateDatabase(GetGenreBookRelations(), SaveGenreBookRelations);
+                }
+            }
+        }
+        //------------------------------------------------------------------------------------------------------------------------------------
+        IEnumerable<(string uriGenre, string nameCs, string nameEn)> GetGenres()
+        {
+            var query = @"SELECT DISTINCT ?genre ?label_cs ?label_en
+                            WHERE {
+                            ?book wdt:P31 wd:Q571.
+                            ?book wdt:P136 ?genre.
+                            OPTIONAL {
+                                ?genre rdfs:label ?label_en.
+                                    FILTER(LANG(?label_en) = ""en"")
+                            }
+                            OPTIONAL {
+                                ?genre rdfs:label ?label_cs.
+                                    FILTER(LANG(?label_cs) = ""cs"")
+                            }
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["genre"], line["label_cs"], line["label_en"]);
+            }
+            yield break;
+        }
+        void SaveGenres((string uriGenre, string nameCs, string nameEn) line, BookRecommenderContext db)
+        {
+            var genre = db.Genres.Where(g => g.Uri == line.uriGenre)?.FirstOrDefault();
+
+            if (genre == null)
+            {
+                // We dont want to have genre without english name
+                if (string.IsNullOrEmpty(line.nameEn))
+                {
+                    return;
+                }
+                db.Genres.Add(new Genre()
+                {
+                    Uri = line.uriGenre,
+                    NameCs = line.nameCs,
+                    NameEn = line.nameEn
+                });
+            }
+            else
+            {
+                genre.NameCs = line.nameCs;
+                genre.NameEn = line.nameEn;
+                db.Genres.Update(genre);
+            }
+        }
+        //------------------------------------------------------------------------------------------------------------------------------------
+        IEnumerable<(string uriBook, string uriGenre)> GetGenreBookRelations()
+        {
+            var query = @"SELECT DISTINCT ?book ?genre
+                            WHERE {
+                            ?book wdt:P31 wd:Q571.
+                            ?book wdt:P136 ?genre.
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["book"], line["genre"]);
+            }
+            yield break;
+        }
+        void SaveGenreBookRelations((string uriBook, string uriGenre) line, BookRecommenderContext db)
+        {
+            var book = db.Books.Where(b => b.Uri == line.uriBook)?.FirstOrDefault();
+            var genre = db.Genres.Where(c => c.Uri == line.uriGenre)?.FirstOrDefault();
+            if (book == null || genre == null)
+            {
+                return;
+            }
+
+            if (db.BooksGenres.Where(x => x == new BookGenre(book, genre)) != null)
+            {
+                return;
+            }
+
+            book.AddGenre(genre, db);
+        }
     }
 }

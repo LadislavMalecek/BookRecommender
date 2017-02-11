@@ -16,6 +16,7 @@ namespace BookRecommender.DataManipulation
             bool successfull = false;
             do
             {
+                var numberOfTries = 1;
                 try
                 {
                     //Execute query -- retrieve collection only once
@@ -41,13 +42,17 @@ namespace BookRecommender.DataManipulation
                 }
                 catch (Exception ex)
                 {
+                    numberOfTries++;
+
                     System.Console.WriteLine(ex.ToString());
-                    System.Console.WriteLine("Try again");
+                    System.Console.WriteLine("Try again, attempt number " + numberOfTries);
                 }
             } while (!successfull);
         }
         protected abstract List<Dictionary<string, string>> Execute(string query);
         public abstract void UpdateBooks(List<int> methodList);
         public abstract void UpdateAuthors(List<int> methodList);
+        public abstract void UpdateCharacters(List<int> methodList);
+        public abstract void UpdateGenres(List<int> methodList);
     }
 }
