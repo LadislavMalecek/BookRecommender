@@ -485,7 +485,7 @@ namespace BookRecommender.DataManipulation.WikiData
                 return;
             }
 
-            if (db.BooksAuthors.Where(x => x == new BookAuthor(book, author)) != null)
+            if (db.BooksAuthors.Where(x => x == new BookAuthor(book, author))?.FirstOrDefault() != null)
             {
                 return;
             }
@@ -587,7 +587,7 @@ namespace BookRecommender.DataManipulation.WikiData
             {
                 return;
             }
-            if (db.BooksCharacters.Where(x => x == new BookCharacter(book, character)) != null)
+            if (db.BooksCharacters.Where(x => x == new BookCharacter(book, character))?.FirstOrDefault() != null)
             {
                 return;
             }
@@ -689,7 +689,7 @@ namespace BookRecommender.DataManipulation.WikiData
                 return;
             }
 
-            if (db.BooksGenres.Where(x => x == new BookGenre(book, genre)) != null)
+            if (db.BooksGenres.Where(x => x == new BookGenre(book, genre))?.FirstOrDefault() != null)
             {
                 return;
             }
