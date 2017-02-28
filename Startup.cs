@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using BookRecommender.DataManipulation;
+using BookRecommender.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace BookRecommender
 {
@@ -35,17 +37,21 @@ namespace BookRecommender
             //services.AddDbContext<BookRecommenderContext>(options => options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=BookRecommender;Integrated Security=True;Connect Timeout=30;"));
             // services.AddDbContext<BookRecommenderContext>(options => options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=BookRecommender"));
             //Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False
-            
+
             //SQLite
             services.AddDbContext<BookRecommenderContext>();
-     
-     }
+
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<BookRecommenderContext>()
+                .AddDefaultTokenProviders();
+
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();            
+            loggerFactory.AddDebug();
 
             if (env.IsDevelopment())
             {
@@ -59,6 +65,9 @@ namespace BookRecommender
 
 
             app.UseStaticFiles();
+
+            app.UseIdentity();
+
 
             app.UseMvc(routes =>
             {

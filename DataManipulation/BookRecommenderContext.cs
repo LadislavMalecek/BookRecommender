@@ -3,10 +3,11 @@ using Microsoft.Extensions.Configuration;
 using BookRecommender.Models;
 using BookRecommender.Models.Database;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace BookRecommender.DataManipulation
 {
-    public class BookRecommenderContext : DbContext
+    public class BookRecommenderContext : IdentityDbContext<ApplicationUser>
     {
         //public BookRecommenderContext(DbContextOptions<BookRecommenderContext> options) : base(options)
         public BookRecommenderContext() : base()
@@ -23,7 +24,6 @@ namespace BookRecommender.DataManipulation
         public DbSet<BookGenre> BooksGenres { get; set; }
         public DbSet<BookTag> BooksTags { get; set; }
 
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder)
         {
             optionBuilder.UseSqlite("Filename=C://netcore//SQLite//BookRecommender.db");
@@ -31,6 +31,8 @@ namespace BookRecommender.DataManipulation
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Book>()
                 .HasAlternateKey(c => c.Uri)
                 .HasName("AlternateKey_Uri");
