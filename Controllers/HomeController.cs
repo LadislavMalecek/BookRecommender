@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using BookRecommender.Models;
+using BookRecommender.DataManipulation;
 
 namespace BookRecommender.Controllers
 {
@@ -10,8 +11,29 @@ namespace BookRecommender.Controllers
     {
         public IActionResult Index()
         {
-            ViewData["Logged"] = "yes";
             return View();
+        }
+
+        // GET: /Book/Search  
+        [HttpGet]
+        public IActionResult Search(string query, int? page)
+        {
+            if(string.IsNullOrEmpty(query)){
+                return View();
+            }
+
+            if (!page.HasValue)
+            {
+                page = 1;
+            }
+
+            var db = new BookRecommenderContext();
+            var books = db.Books.Where(b => b.NameEn.Contains(query));
+            var authors = db.Authors.Where(a => a.NameEn.Contains(query));
+
+            var searchModel = new Search(query, page.Value, books.ToList(), authors.ToList());
+
+            return View(searchModel);
         }
 
         public IActionResult About()

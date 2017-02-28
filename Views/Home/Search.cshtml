@@ -1,0 +1,74 @@
+@model BookRecommender.Models.Search
+<h3>Search:</h3>
+<form action="/Home/Search" method="GET" class="form-inline">
+    <input type="text" name="query" class="form-control" value="@Model?.SearchPhrase" />
+    <button type="submit" value="Submit" class="btn btn-default">Search</button>
+</form>
+
+@if (Model != null){
+
+<h5> @Model.TotalBooksFound books found</h5>
+<h5> @Model.TotalAuthorsFound authors found</h5>
+
+<div class="container-fluid">
+
+    <div class="col-sm-6">
+        <h3> Books: </h3>
+        <table class="table table-striped">
+            <tbody>
+                @foreach (var book in Model.GetBooksToShow()){
+                <tr>
+                    <td>
+                        <a href="/Book/Detail/@book.BookId">
+                            <div class="row match-my-cols">
+                                <div class="col-sm-10 col-xs-12">
+                                    <div class="container-fluid">
+                                        <div class="row">
+                                            <p>@book.NameEn </p>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-4">Genre</div>
+                                            <div class="col-sm-4">Author</div>
+                                            <div class="col-sm-4">Score</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2 hidden-xs">
+                                    <img class="img-thumbnail" src="https://upload.wikimedia.org/wikipedia/en/6/6b/Harry_Potter_and_the_Philosopher%27s_Stone_Book_Cover.jpg">
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                </tr>
+                }
+        </table>
+    </div>
+
+
+
+    <div class="col-sm-6">
+
+        <h3> Authors: </h3>
+        <table class="table table-striped">
+            <tbody>
+                @foreach (var author in Model.GetAuthorsToShow()){
+                <tr>
+                    <td><a href="/Author/Detail/@author.AuthorId"> @author.NameEn </a></td>
+                </tr>
+                }
+        </table>
+    </div>
+</div>
+
+@if(Model.HighestPage > 1){
+<ul class="pager">
+    @if(Model.ShowPrevious()){
+    <li class="previous"><a href="Search?query=@Model.SearchPhrase&page=@(Model.Page - 1)">Previous</a></li>
+    }
+
+    <li>Page @Model.Page/@Model.HighestPage </li>
+    @if(Model.ShowNext()){
+    <li class="next"><a href="Search?query=@Model.SearchPhrase&page=@(Model.Page + 1)">Next</a></li>
+    }
+</ul>
+} }

@@ -3,7 +3,7 @@
 <h1> @Model.Book.GetNameEn()</h1>
 
 <p><strong>Czech name:</strong> @Model.Book.NameCs</p>
-<p><strong>Uri:</strong> @Model.Book.Uri</p>
+<p><strong>Uri:</strong><a href="@Model.Book.Uri">@Model.Book.Uri</a></p>
 
 @if (Model.Authors.Count() > 0){
 

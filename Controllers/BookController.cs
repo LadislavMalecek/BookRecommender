@@ -35,28 +35,7 @@ namespace BookRecommender.Controllers
         }
 
 
-        // GET: /Book/Search  
-        [HttpGet]
-        public IActionResult Search()
-        {
-            ViewData["method"] = Request.Method.ToString();
-            return View();
-        }
-        [HttpPost]
-        public IActionResult Search(Search search)
-        {
-            ViewData["method"] = Request.Method.ToString();
-            ViewData["search"] = search.SearchPhrase;
-
-            var db = new BookRecommenderContext();
-            var books = db.Books.Where(b => b.NameEn.Contains(search.SearchPhrase));
-            var authors = db.Authors.Where(a => a.NameEn.Contains(search.SearchPhrase));
-
-            search.BooksFound = books;
-            search.AuthorsFound = authors;
-
-            return View(search);
-        }
+        
 
         // GET: /Book/Review
         public IActionResult Review()
