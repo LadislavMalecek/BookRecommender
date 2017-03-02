@@ -20,6 +20,9 @@ namespace BookRecommender.Models
         public string NameCs { get; set; }
         public SexType? Sex { get; set; }
 
+        public string OriginalImage { get; set; }
+        public string GoogleImageCache { get; set; }
+
         public string GetNameEn(){
             if(NameEn != null){
                 return NameEn;
@@ -72,6 +75,29 @@ namespace BookRecommender.Models
         {
             return db.BooksAuthors.Where(ba => ba.Author == this).Select(ba => ba.Book);
         }
-
+        public string TryToGetImgUrl()
+        {
+            var pictureUrl = OriginalImage;
+            if (pictureUrl == null)
+            {
+                // If no picture from Open Data, then try to load first picture on google search
+                // First check cache:
+                pictureUrl = GoogleImageCache;
+                if (string.IsNullOrEmpty(pictureUrl))
+                {
+                    // If nothing in cache, try to load from Google
+                    var imageMiner = new DataManipulation.GoogleImageMiner();
+                    pictureUrl = imageMiner.GetFirstImageUrl("author " + NameEn);
+                    // Save to cache
+                    if(pictureUrl != null){
+                        GoogleImageCache = pictureUrl;
+                        var db = new BookRecommenderContext();
+                        db.Authors.Update(this);
+                        db.SaveChanges();
+                    }
+                }
+            }
+            return pictureUrl;
+        }
     }
 }

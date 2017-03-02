@@ -1,48 +1,35 @@
 @model BookRecommender.Models.BookDetail
 
-<h1> @Model.Book.GetNameEn()</h1>
+<div class="container-fluid">
+    <div class="col-sm-8">
+        <div class="row">
+            <h2>@Model.Book.GetNameEn()</h2>
+        </div>
+        @if (Model.Authors.Count() > 0){
+        <p> <strong>Authors: </strong></p>
+        @foreach (var author in Model.Authors){
+        <p><a href="/Author/Detail/@author.AuthorId"> @author.GetNameEn() </a></p>
+        } }
+        @if (Model.Genres.Count() > 0){
+        <p> <strong>Genres:</strong> @string.Join(", ", Model.Genres.Select(g => g.NameEn).ToArray())</p>
+        }
+        @if (Model.Characters.Count() > 0){
+        <p> <strong>Characters:</strong> @string.Join(", ", Model.Characters.Select(c => c.NameEn).ToArray())</p>
+        }
+    </div>
+    <div class="col-sm-4">
+        <div class="row">
+            <h3>Score</h3>
+        </div>
+        <div class="row">
+            <img class="img-responsive" src="@Model.Book.TryToGetImgUrl()">
+        </div>
+    </div>
+</div>
+
+
+
+<hr>
 
 <p><strong>Czech name:</strong> @Model.Book.NameCs</p>
 <p><strong>Uri:</strong><a href="@Model.Book.Uri">@Model.Book.Uri</a></p>
-
-@if (Model.Authors.Count() > 0){
-
-<h3> Authors: </h3>
-
-<table class="table table-striped">
-    <tbody>
-        @foreach (var author in Model.Authors){
-        <tr>
-            <td><a href="/Author/Detail/@author.AuthorId"> @author.GetNameEn() </a></td>
-        </tr>
-        }
-</table>
-}
-
-@if (Model.Genres.Count() > 0){
-
-<h3> Genres: </h3>
-
-<table class="table table-striped">
-    <tbody>
-        @foreach (var genre in Model.Genres){
-        <tr>
-            <td>@genre.NameEn</td>
-        </tr>
-        }
-</table>
-}
-
-@if (Model.Characters.Count() > 0){
-
-<h3> Characters: </h3>
-
-<table class="table table-striped">
-    <tbody>
-        @foreach (var character in Model.Characters){
-        <tr>
-            <td>@character.NameEn</td>
-        </tr>
-        }
-</table>
-}

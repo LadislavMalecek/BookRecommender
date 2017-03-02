@@ -26,18 +26,25 @@ namespace BookRecommender.Models
         public string GndId { get; set; }
         public string OpenLibId { get; set; }
         public string FreeBase { get; set; }
+        public string OriginalImage { get; set; }
+        public string GoogleImageCache { get; set; }
 
-        public string GetNameEn(){
-            if(NameEn != null){
+        public string GetNameEn()
+        {
+            if (NameEn != null)
+            {
                 return NameEn;
             }
-            if(NameOrig != null){
+            if (NameOrig != null)
+            {
                 return NameOrig;
             }
-            if(Title != null){
+            if (Title != null)
+            {
                 return Title;
             }
-            if(NameCs != null){
+            if (NameCs != null)
+            {
                 return NameCs;
             }
             return null;
@@ -103,6 +110,30 @@ namespace BookRecommender.Models
         public void AddTag(Tag tag, BookRecommenderContext db)
         {
             db.BooksTags.Add(new BookTag(this, tag));
+        }
+        public string TryToGetImgUrl()
+        {
+            var pictureUrl = OriginalImage;
+            if (pictureUrl == null)
+            {
+                // If no picture from Open Data, then try to load first picture on google search
+                // First check cache:
+                pictureUrl = GoogleImageCache;
+                if (string.IsNullOrEmpty(pictureUrl))
+                {
+                    // If nothing in cache, try to load from Google
+                    var imageMiner = new DataManipulation.GoogleImageMiner();
+                    pictureUrl = imageMiner.GetFirstImageUrl("book " + NameEn);
+                    // Save to cache
+                    if(pictureUrl != null){
+                        GoogleImageCache = pictureUrl;
+                        var db = new BookRecommenderContext();
+                        db.Books.Update(this);
+                        db.SaveChanges();
+                    }
+                }
+            }
+            return pictureUrl;
         }
     }
 }

@@ -1,20 +1,21 @@
-@model BookRecommender.Models.AuthorDetail
+@model BookRecommender.Models.AuthorDetail 
+<h2>@Model.Author.GetNameEn()</h2>
+<div class="container-fluid">
+    <div class="col-sm-8">
+        @if (Model.Books.Count() > 0){
+        <p> <strong>Books: </strong></p>
+        @foreach (var book in Model.Books){
+        <p><a href="/Book/Detail/@book.BookId"> @book.GetNameEn() </a></p>
+        } }
+    </div>
+    <div class="col-sm-4">
+        <div class="row">
+            <img class="img-responsive" src="@Model.Author.TryToGetImgUrl()">
+        </div>
+    </div>
+</div>
 
-<h1> @Model.Author.GetNameEn()</h1>
+<hr>
 
 <p><strong>Czech name:</strong> @Model.Author.NameCs</p>
-<p><strong>Uri:</strong> <a href="@Model.Author.Uri">@Model.Author.Uri</a></p>
-
-@if (Model.Books.Count() > 0){
-
-<h3> Books: </h3>
-
-<table class="table table-striped">
-    <tbody>
-        @foreach (var book in Model.Books){
-        <tr>
-            <td><a href="/Book/Detail/@book.BookId"> @book.GetNameEn() </a></td>
-        </tr>
-        }
-</table>
-}
+<p><strong>Uri:</strong><a href="@Model.Author.Uri">@Model.Author.Uri</a></p>

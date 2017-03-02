@@ -1,17 +1,25 @@
 @model BookRecommender.Models.Search
-<h3>Search:</h3>
-<form action="/Home/Search" method="GET" class="form-inline">
-    <input type="text" name="query" class="form-control" value="@Model?.SearchPhrase" />
-    <button type="submit" value="Submit" class="btn btn-default">Search</button>
-</form>
+<div class="container-fluid">
+    <div class="col-sm-12">
+    <h3>Search:</h3>
+    <form action="/Home/Search" method="GET" class="form-inline">
+        <input type="text" name="query" class="form-control" value="@Model?.SearchPhrase" />
+        <button type="submit" value="Submit" class="btn btn-default">Search</button>
+    </form>
+    </div>
+</div>
 
 @if (Model != null){
 
-<h5> @Model.TotalBooksFound books found</h5>
-<h5> @Model.TotalAuthorsFound authors found</h5>
+<div class="container-fluid">
+        <div class="col-sm-12">
+
+    <h5> @Model.TotalBooksFound books found</h5>
+    <h5> @Model.TotalAuthorsFound authors found</h5>
+        </div>
+</div>
 
 <div class="container-fluid">
-
     <div class="col-sm-6">
         <h3> Books: </h3>
         <table class="table table-striped">
@@ -34,7 +42,7 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-2 hidden-xs">
-                                    <img class="img-thumbnail" src="https://upload.wikimedia.org/wikipedia/en/6/6b/Harry_Potter_and_the_Philosopher%27s_Stone_Book_Cover.jpg">
+                                    <img class="img-thumbnail" src="@book.TryToGetImgUrl()">
                                 </div>
                             </div>
                         </a>
@@ -49,6 +57,7 @@
     <div class="col-sm-6">
 
         <h3> Authors: </h3>
+
         <table class="table table-striped">
             <tbody>
                 @foreach (var author in Model.GetAuthorsToShow()){
@@ -59,6 +68,8 @@
         </table>
     </div>
 </div>
+
+
 
 @if(Model.HighestPage > 1){
 <ul class="pager">
