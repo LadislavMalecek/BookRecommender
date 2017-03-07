@@ -1,0 +1,60 @@
+@using System.Linq
+@model BookRecommender.DataManipulation.AdditionalSparqlData
+
+
+<div class="container">
+  <h3> Additional raw data </h3>
+  <div class="panel-group" id="accordion">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Labels</a>
+        </h4>
+      </div>
+      <div id="collapse1" class="panel-collapse collapse">
+        <div class="panel-body">
+            @foreach (var label in Model.Labels){
+            <p>Label(@label.Item2): <strong>@label.Item1</strong></p>
+            }   
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#collapse2">Descriptions</a>
+        </h4>
+      </div>
+      <div id="collapse2" class="panel-collapse collapse">
+        <div class="panel-body">
+            @foreach(var description in Model.Descriptions){
+            <p>Description(@description.Item2): <strong>@description.Item1</strong></p>
+            }
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#collapse3">Properties</a>
+        </h4>
+      </div>
+      <div id="collapse3" class="panel-collapse collapse">
+        <div class="panel-body">
+            @foreach(var property in Model.Properties){
+            var value = string.IsNullOrEmpty(property.Item4)?property.Item2:property.Item4;
+            @if(value.StartsWith("http")||value.StartsWith("www")){
+                var shortend = value.Substring(0,50) + "...";
+                <p>@property.Item3: <strong><a href ="@value">@shortend</a></strong></p>
+            } else {
+                <p>@property.Item3: <strong>@value</strong></p>
+            }
+            }
+            @if(!string.IsNullOrEmpty(Model.DateModified)){
+                <p>DateModified: <strong>@Model.DateModified</strong></p>
+            }
+        </div>
+      </div>
+    </div>
+  </div> 
+</div>

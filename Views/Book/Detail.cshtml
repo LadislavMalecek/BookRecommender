@@ -29,7 +29,11 @@
 
 
 
-<hr>
+<!--<hr>
 
 <p><strong>Czech name:</strong> @Model.Book.NameCs</p>
-<p><strong>Uri:</strong><a href="@Model.Book.Uri">@Model.Book.Uri</a></p>
+<p><strong>Uri:</strong><a href="@Model.Book.Uri">@Model.Book.Uri</a></p>-->
+
+<hr>
+
+@{ await Html.RenderPartialAsync("AdditionalSparqlData", @Model.AdditionalData); }

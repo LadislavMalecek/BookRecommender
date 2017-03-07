@@ -10,7 +10,6 @@ namespace BookRecommender.Controllers
 {
     public class BookController : Controller
     {
-
         // GET: /Book/Detail
         public IActionResult Detail(int id)
         {
@@ -19,6 +18,7 @@ namespace BookRecommender.Controllers
             var bookAuthors = book.GetAuthors(db);
             var bookGenres = book.GetGenres(db);
             var bookCharacters = book.GetCharacters(db);
+            var additionalData = MineSPARQL.GetAdditionalData(book.Uri);
 
             if (book == null)
             {
@@ -30,12 +30,10 @@ namespace BookRecommender.Controllers
                 Book = book,
                 Authors = bookAuthors,
                 Genres = bookGenres,
-                Characters = bookCharacters
+                Characters = bookCharacters,
+                AdditionalData = additionalData
             });
         }
-
-
-        
 
         // GET: /Book/Review
         public IActionResult Review()

@@ -5,6 +5,7 @@ using System.Text;
 using System;
 using System.Net;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace BookRecommender.DataManipulation.WikiData
 {
@@ -50,11 +51,26 @@ namespace BookRecommender.DataManipulation.WikiData
         }
         string Exec(WebRequest request)
         {
-            var httpResponse = (HttpWebResponse)request.GetResponseAsync().Result;
-
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            HttpWebResponse httpResponse;
+            try
             {
-                return streamReader.ReadToEnd();
+                var task = request.GetResponseAsync();
+                if (Task.WhenAny(task, Task.Delay(3000)).Result != task)
+                {
+                    // Timeout
+                    return null;
+                }
+
+                httpResponse = (HttpWebResponse)task.Result;
+
+                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    return streamReader.ReadToEnd();
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
         }
     }

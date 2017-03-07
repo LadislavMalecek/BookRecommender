@@ -50,10 +50,11 @@ namespace BookRecommender.DataManipulation
                     System.Console.WriteLine("Try again, attempt number " + numberOfTries);
                 }
 
-            // If something went wrong, wait 10 sec and then try again
-            if(!successfull){
-                System.Threading.Tasks.Task.Delay(10000).Wait();
-            }
+                // If something went wrong, wait 10 sec and then try again
+                if (!successfull)
+                {
+                    System.Threading.Tasks.Task.Delay(10000).Wait();
+                }
 
             } while (!successfull);
         }
@@ -67,5 +68,6 @@ namespace BookRecommender.DataManipulation
         public abstract void UpdateAuthors(List<int> methodList);
         public abstract void UpdateCharacters(List<int> methodList);
         public abstract void UpdateGenres(List<int> methodList);
+        public abstract AdditionalSparqlData GetAdditionalData(string entityUrl);
     }
 }

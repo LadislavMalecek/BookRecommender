@@ -37,14 +37,27 @@ namespace BookRecommender.DataManipulation
             httpClient.DefaultRequestHeaders.UserAgent.Clear();
             httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko");
 
-            var response = httpClient.GetAsync(queryUrl).Result;
-
-            return response.Content.ReadAsStringAsync().Result;
+            try
+            {
+                var task = httpClient.GetAsync(queryUrl);
+                if (Task.WhenAny(task, Task.Delay(3000)).Result != task)
+                {
+                    // Timeout
+                    return null;
+                }
+                var response = task.Result;
+                return response.Content.ReadAsStringAsync().Result;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
-        string Deescape(string s){
-            Regex  rx = new Regex( @"\\[uU]([0-9A-F]{4})" );
-            var result = rx.Replace( s, match => ((char) Int32.Parse(match.Value.Substring(2), NumberStyles.HexNumber)).ToString() );
+        string Deescape(string s)
+        {
+            Regex rx = new Regex(@"\\[uU]([0-9A-Fa-f]{4})");
+            var result = rx.Replace(s, match => ((char)Int32.Parse(match.Value.Substring(2), NumberStyles.HexNumber)).ToString());
             return result;
         }
         string GetFirstUrl(string html)

@@ -8,34 +8,42 @@ using BookRecommender.DataManipulation;
 
 namespace BookRecommender.Controllers
 {
-    public class AuthorController : Controller{
+    public class AuthorController : Controller
+    {
 
         // GET: /Author/Detail
-        public IActionResult Detail(int id){
+        public IActionResult Detail(int id)
+        {
             var db = new BookRecommenderContext();
             var author = db.Authors.Where(a => a.AuthorId == id)?.FirstOrDefault();
             var authorBooks = author.GetBooks(db);
+            var additionalData = MineSPARQL.GetAdditionalData(author.Uri);
 
-            if(author == null){
+            if (author == null)
+            {
                 return View("Error");
             }
 
-            return View(new AuthorDetail(){
+            return View(new AuthorDetail()
+            {
                 Author = author,
-                Books = authorBooks
+                Books = authorBooks,
+                AdditionalData = additionalData
             });
         }
 
 
-       
+
         // GET: /Author/Review
-        public IActionResult Review(){
+        public IActionResult Review()
+        {
             return View();
         }
 
 
         // GET: /Author/Similar
-        public IActionResult Similar(){
+        public IActionResult Similar()
+        {
             return View();
         }
     }

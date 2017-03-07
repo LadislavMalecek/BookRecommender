@@ -12,13 +12,14 @@ namespace BookRecommender.DataManipulation.WikiData
         {
             var list = new CsvParser(data).ParseToList();
 
+
+            var retList = new List<Dictionary<string, string>>();
+
             if(list.Count == 0){
-                return null;
+                return retList;
             }
 
             var variables = list[0];
-
-            var retList = new List<Dictionary<string, string>>();
 
             var somethingWrong = false;
             var errorSB = new StringBuilder();

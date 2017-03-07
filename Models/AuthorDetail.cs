@@ -1,10 +1,12 @@
-
+using BookRecommender.DataManipulation;
 using System.Collections.Generic;
 
-namespace BookRecommender.Models{
-    public class AuthorDetail{
+namespace BookRecommender.Models
+{
+    public class AuthorDetail
+    {
         public Author Author { get; set; }
         public IEnumerable<Book> Books { get; set; }
-
+        public AdditionalSparqlData AdditionalData { get; set; }
     }
 }

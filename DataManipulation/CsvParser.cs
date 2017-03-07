@@ -23,6 +23,9 @@ namespace BookRecommender.DataManipulation
         IEnumerable<List<string>> ParseData()
         {
             var valuesBuffer = new List<string>();
+            if(data == null){
+                yield break;
+            }
 
             for (int position = 0; position < data.Length; position++)
             {

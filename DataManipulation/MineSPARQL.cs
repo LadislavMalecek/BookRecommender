@@ -73,5 +73,11 @@ namespace BookRecommender.DataManipulation
         {
             new CsvParserTests().SingleMultiLine();
         }
+        public static AdditionalSparqlData GetAdditionalData(string entityUrl)
+        {
+            // Branching by the entityUrl
+            // I have only one service now, so gonna call WikidataMiner
+            return new WikiData.WikiDataEndpointMiner().GetAdditionalData(entityUrl);
+        }
     }
 }

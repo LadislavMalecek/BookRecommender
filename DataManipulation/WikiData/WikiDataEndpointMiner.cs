@@ -22,9 +22,13 @@ namespace BookRecommender.DataManipulation.WikiData
             return parser.Parse(rawData);
         }
 
-        //------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
         // Books
-        //------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
         public override void UpdateBooks(List<int> methodsList)
         {
             if (methodsList == null || methodsList.Count == 0)
@@ -35,6 +39,7 @@ namespace BookRecommender.DataManipulation.WikiData
                 base.UpdateDatabase(GetBooksNamesByAuthorCountryLang(), SaveBooksNamesByAuthorCountryLang);
                 base.UpdateDatabase(GetBooksLabelsAll(), SaveBookTitleWithNoOtherName);
                 base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers);
+                base.UpdateDatabase(GetBooksImages(), SaveBooksImages);
             }
             else
             {
@@ -61,6 +66,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 if (methodsList.Contains(5))
                 {
                     base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers);
+                }
+                if (methodsList.Contains(6))
+                {
+                    base.UpdateDatabase(GetBooksImages(), SaveBooksImages);
                 }
             }
         }
@@ -302,8 +311,44 @@ namespace BookRecommender.DataManipulation.WikiData
             db.Books.Update(book);
 
         }
+        //------------------------------------------------------------------------------------------------------------------------------------ 
+
+        IEnumerable<(string uri, string imageUri)> GetBooksImages()
+        {
+            // Query to obtain the identifiers
+            // wdt:P18 - image
+            var query = @"SELECT *
+                            WHERE {
+                                ?book wdt:P31 wd:Q571.
+                                ?book wdt:P18 ?image.
+                            }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["book"], line["image"]);
+            }
+            yield break;
+        }
+        void SaveBooksImages((string uri, string imageUri) line, BookRecommenderContext db)
+        {
+            var book = db.Books.Where(b => b.Uri == line.uri)?.FirstOrDefault();
+            if (book == null)
+            {
+                System.Console.WriteLine("book not in database: " + line.uri);
+                return;
+            }
+
+            book.OriginalImage = line.imageUri;
+            db.Books.Update(book);
+
+        }
+
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
         //------------------------------------------------------------------------------------------------------------------------------------
         // Authors
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
         //------------------------------------------------------------------------------------------------------------------------------------
 
         public override void UpdateAuthors(List<int> methodsList)
@@ -314,6 +359,7 @@ namespace BookRecommender.DataManipulation.WikiData
                 base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData);
                 base.UpdateDatabase(GetAuthorsData2(), SaveAuthorsData2);
                 base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
+                base.UpdateDatabase(GetAuthorsImages(), SaveAuthorsImages);
             }
             else
             {
@@ -332,6 +378,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 if (methodsList.Contains(3))
                 {
                     base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
+                }
+                if (methodsList.Contains(4))
+                {
+                    base.UpdateDatabase(GetAuthorsImages(), SaveAuthorsImages);
                 }
             }
         }
@@ -396,7 +446,6 @@ namespace BookRecommender.DataManipulation.WikiData
                 return;
             }
 
-            author.Uri = line.uri;
             author.NameEn = line.labelEn;
             author.NameCs = line.labelCs;
 
@@ -441,8 +490,6 @@ namespace BookRecommender.DataManipulation.WikiData
                 System.Console.WriteLine("author not in database: " + line.uri);
                 return;
             }
-
-            author.Uri = line.uri;
 
             author.DateBirth = HistoricalDateTime.FromWikiData(line.dateOfBirth);
             author.DateDeath = HistoricalDateTime.FromWikiData(line.dateOfDeath);
@@ -492,8 +539,43 @@ namespace BookRecommender.DataManipulation.WikiData
 
             book.AddAuthor(author, db);
         }
+
+        //------------------------------------------------------------------------------------------------------------------------------------
+
+        IEnumerable<(string uri, string imageUri)> GetAuthorsImages()
+        {
+            var query = @"SELECT DISTINCT ?author ?image
+                            WHERE {
+                            ?book wdt:P31 wd:Q571.
+                            ?book wdt:P50 ?author.
+                            ?author wdt:P18 ?image.
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["author"], line["image"]);
+            }
+            yield break;
+        }
+        void SaveAuthorsImages((string uri, string imageUri) line, BookRecommenderContext db)
+        {
+            var author = db.Authors.Where(a => a.Uri == line.uri)?.FirstOrDefault();
+            if (author == null)
+            {
+                System.Console.WriteLine("author not in database: " + line.uri);
+                return;
+            }
+
+            author.OriginalImage = line.imageUri;
+            db.Authors.Update(author);
+        }
+
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
         //------------------------------------------------------------------------------------------------------------------------------------
         // Characters
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
         //------------------------------------------------------------------------------------------------------------------------------------
 
         public override void UpdateCharacters(List<int> methodsList)
@@ -596,7 +678,11 @@ namespace BookRecommender.DataManipulation.WikiData
         }
 
         // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
         // Genres
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
         public override void UpdateGenres(List<int> methodsList)
         {
@@ -695,6 +781,81 @@ namespace BookRecommender.DataManipulation.WikiData
             }
 
             book.AddGenre(genre, db);
+        }
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // Dynamic
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        public override AdditionalSparqlData GetAdditionalData(string entityUrl){
+            return new AdditionalSparqlData(GetLabels(entityUrl).ToList(),
+                                            GetDescriptions(entityUrl).ToList(),
+                                            GetProperties(entityUrl).ToList(),
+                                            GetDateModified(entityUrl));
+        }
+        IEnumerable<(string text, string lang)> GetLabels(string entity)
+        {
+            var query = $@"SELECT ?label (LANG(?label) as ?labelLang)
+                            WHERE {{
+                            <{entity}> rdfs:label ?label.
+                        }}";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["label"], line["labelLang"]);
+            }
+            yield break;
+        }
+        IEnumerable<(string text, string lang)> GetDescriptions(string entity)
+        {
+            var query = $@"SELECT ?description (LANG(?description) as ?descriptionLang)
+                            WHERE {{
+                            <{entity}> schema:description ?description.
+                        }}";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["description"], line["descriptionLang"]);
+            }
+            yield break;
+        }
+        IEnumerable<(string propertyUrl, string propValue, string propLabel, string propValueLabel, string propDescription)> GetProperties(string entity)
+        {
+            var query = $@"SELECT *
+                            WHERE {{
+                            <{entity}> ?p ?value.
+  		                    ?prop wikibase:directClaim ?p.
+		                    ?prop rdfs:label ?label.
+        	                    FILTER(LANG(?label) = ""en"")
+                            OPTIONAL{{
+                                ?value rdfs:label ?valueLabel.
+                                    FILTER(LANG(?valueLabel) = ""en"")
+                            }}
+                            OPTIONAL{{
+                                ?prop schema:description ?description.
+                                    FILTER(LANG(?description) = ""en"")
+                            }}
+                        }}";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["prop"], line["value"], line["label"], line["valueLabel"], line["description"]);
+            }
+            yield break;
+        }
+        string GetDateModified(string entity)
+        {
+            var query = $@"SELECT ?dateModified
+                            WHERE {{
+                            <{entity}> schema:dateModified ?dateModified.
+                        }}";
+            var result = Execute(query);
+            if(result.Count == 0){
+                return null;
+            }
+            return result.First()["dateModified"];
         }
     }
 }
