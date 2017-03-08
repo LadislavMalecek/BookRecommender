@@ -13,14 +13,44 @@
     </div>
     <div class="col-sm-4">
         <div class="row">
-            <img class="img-responsive" src="@Model.Author.TryToGetImgUrl()">
+            <img class="img-responsive dynamic" data-uri="@Model.Author.Uri">
         </div>
     </div>
 </div>
 
-<hr>
-<!--
+<!--<hr>
 <p><strong>Czech name:</strong> @Model.Author.NameCs</p>
 <p><strong>Uri:</strong><a href="@Model.Author.Uri">@Model.Author.Uri</a></p>-->
 
-@{ await Html.RenderPartialAsync("AdditionalSparqlData", @Model.AdditionalData); }
+<hr>
+
+<div id="additionalData" data-uri="@Model.Author.Uri">
+</div>
+
+<script>
+$(function(){
+    $(window).on('load', function() {
+        $.ajax({
+            type: "GET",
+            url: "/Ajax/SparqlData?entityUri=" + $(this).data('uri'),
+            datatype: "html",
+            success: function (data) {
+                $('#additionalData').html(data);
+            }
+        })
+    });
+});
+
+
+$('img.dynamic').each(function(){
+    var item = this;
+    $.ajax({
+            type: "GET",
+            url: "/Ajax/DynamicImage?entityUri=" + $(this).data('uri'),
+            datatype: "html",
+            success: function (data) {
+                $(item).attr('src', data);
+            }
+        })
+});
+</script>

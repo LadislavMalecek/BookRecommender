@@ -9,7 +9,7 @@ using BookRecommender.Models.Database;
 namespace BookRecommender.Models
 {
     public enum SexType { Male, Female }
-    public class Author
+    public class Author : IGoogleImg
     {
         [Required]
         public int AuthorId { get; set; }

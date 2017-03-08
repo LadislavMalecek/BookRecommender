@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookRecommender.Models
 {
-    public class Book
+    public class Book : IGoogleImg
     {
         [Required]
         public int BookId { get; set; }

@@ -42,7 +42,7 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-2 hidden-xs">
-                                    <img class="img-thumbnail" src="@book.TryToGetImgUrl()">
+                                    <img class="img-thumbnail dynamic" data-uri="@book.Uri">
                                 </div>
                             </div>
                         </a>
@@ -82,4 +82,18 @@
     <li class="next"><a href="Search?query=@Model.SearchPhrase&page=@(Model.Page + 1)">Next</a></li>
     }
 </ul>
-} }
+}
+<script>
+$('img.dynamic').each(function(){
+    var item = this;
+    $.ajax({
+            type: "GET",
+            url: "/Ajax/DynamicImage?entityUri=" + $(this).data('uri'),
+            datatype: "html",
+            success: function (data) {
+                $(item).attr('src', data);
+            }
+        })
+});
+</script>
+}
