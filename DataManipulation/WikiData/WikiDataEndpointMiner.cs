@@ -41,6 +41,8 @@ namespace BookRecommender.DataManipulation.WikiData
                 base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers);
                 base.UpdateDatabase(GetBooksImages(), SaveBooksImages);
                 base.UpdateDatabase(GetBooksDescriptions(), SaveBooksDescriptions);
+                base.UpdateDatabase(GetBooksWikiPages(), SaveBooksWikipages);
+
             }
             else
             {
@@ -75,6 +77,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 if (methodsList.Contains(7))
                 {
                     base.UpdateDatabase(GetBooksDescriptions(), SaveBooksDescriptions);
+                }
+                if (methodsList.Contains(8))
+                {
+                    base.UpdateDatabase(GetBooksWikiPages(), SaveBooksWikipages);
                 }
             }
         }
@@ -381,6 +387,39 @@ namespace BookRecommender.DataManipulation.WikiData
 
         }
 
+        //------------------------------------------------------------------------------------------------------------------------------------ 
+
+        IEnumerable<(string uri, string wikiPageUrl)> GetBooksWikiPages()
+        {
+            // Query to obtain the identifiers
+            // wdt:P18 - image
+            var query = @"SELECT *
+                            WHERE {
+                                ?book wdt:P31 wd:Q571.
+                                ?article schema:about ?book.
+                                ?article schema:isPartOf <https://en.wikipedia.org/>.
+                            }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["book"], line["article"]);
+            }
+            yield break;
+        }
+        void SaveBooksWikipages((string uri, string wikiPageUrl) line, BookRecommenderContext db)
+        {
+            var book = db.Books.Where(b => b.Uri == line.uri)?.FirstOrDefault();
+            if (book == null)
+            {
+                System.Console.WriteLine("book not in database: " + line.uri);
+                return;
+            }
+
+            book.WikipediaPage = line.wikiPageUrl;
+            db.Books.Update(book);
+
+        }
+
 
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
@@ -400,6 +439,8 @@ namespace BookRecommender.DataManipulation.WikiData
                 base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
                 base.UpdateDatabase(GetAuthorsImages(), SaveAuthorsImages);
                 base.UpdateDatabase(GetAuthorsDescriptions(), SaveAuthorsDescriptions);
+                base.UpdateDatabase(GetAuthorsWikiPages(), SaveAuthorsWikiPages);
+
             }
             else
             {
@@ -426,6 +467,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 if (methodsList.Contains(5))
                 {
                     base.UpdateDatabase(GetAuthorsDescriptions(), SaveAuthorsDescriptions);
+                }
+                if (methodsList.Contains(6))
+                {
+                    base.UpdateDatabase(GetAuthorsWikiPages(), SaveAuthorsWikiPages);
                 }
             }
         }
@@ -644,6 +689,39 @@ namespace BookRecommender.DataManipulation.WikiData
             author.Description = line.description;
             db.Authors.Update(author);
         }
+
+        //------------------------------------------------------------------------------------------------------------------------------------
+
+        IEnumerable<(string uri, string wikiPageUrl)> GetAuthorsWikiPages()
+        {
+            var query = @"SELECT DISTINCT ?author ?article
+                            WHERE {
+                            ?book wdt:P31 wd:Q571.
+                            ?book wdt:P50 ?author.
+                            ?article schema:about ?author.
+                            ?article schema:isPartOf <https://en.wikipedia.org/>.
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["author"], line["article"]);
+            }
+            yield break;
+        }
+        void SaveAuthorsWikiPages((string uri, string wikiPageUrl) line, BookRecommenderContext db)
+        {
+            var author = db.Authors.Where(a => a.Uri == line.uri)?.FirstOrDefault();
+            if (author == null)
+            {
+                System.Console.WriteLine("author not in database: " + line.uri);
+                return;
+            }
+
+            author.WikipediaPage = line.wikiPageUrl;
+            db.Authors.Update(author);
+        }
+
+
 
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------

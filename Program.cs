@@ -16,8 +16,8 @@ namespace BookRecommender
                 System.Console.WriteLine("If you want to begin mining the data, use --mine");
                 System.Console.WriteLine("For specific mining task use books, authors, characters, genres");
                 System.Console.WriteLine("For even more granular usage you can specific which mining task to run");
-                System.Console.WriteLine("Books => 0 - 7");
-                System.Console.WriteLine("Authors => 0 - 5");
+                System.Console.WriteLine("Books => 0 - 8");
+                System.Console.WriteLine("Authors => 0 - 6");
                 System.Console.WriteLine("Characters => 0 - 1");
                 System.Console.WriteLine("Genres => 0 - 1");
                 
