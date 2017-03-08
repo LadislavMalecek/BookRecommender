@@ -17,7 +17,7 @@ namespace BookRecommender.DataManipulation
             try
             {
                 string html = GetHtmlCode(queryItems.Split(new char[] { ' ' }));
-                File.WriteAllText("html.txt", html);
+                //File.WriteAllText("html.txt", html);
                 return GetFirstUrl(html);
             }
             catch (Exception)
@@ -48,7 +48,7 @@ namespace BookRecommender.DataManipulation
                 var response = task.Result;
                 return response.Content.ReadAsStringAsync().Result;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

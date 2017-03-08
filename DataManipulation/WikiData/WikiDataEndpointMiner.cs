@@ -40,6 +40,7 @@ namespace BookRecommender.DataManipulation.WikiData
                 base.UpdateDatabase(GetBooksLabelsAll(), SaveBookTitleWithNoOtherName);
                 base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers);
                 base.UpdateDatabase(GetBooksImages(), SaveBooksImages);
+                base.UpdateDatabase(GetBooksDescriptions(), SaveBooksDescriptions);
             }
             else
             {
@@ -70,6 +71,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 if (methodsList.Contains(6))
                 {
                     base.UpdateDatabase(GetBooksImages(), SaveBooksImages);
+                }
+                if (methodsList.Contains(7))
+                {
+                    base.UpdateDatabase(GetBooksDescriptions(), SaveBooksDescriptions);
                 }
             }
         }
@@ -343,6 +348,40 @@ namespace BookRecommender.DataManipulation.WikiData
 
         }
 
+        //------------------------------------------------------------------------------------------------------------------------------------ 
+
+        IEnumerable<(string uri, string imageUri)> GetBooksDescriptions()
+        {
+            // Query to obtain the identifiers
+            // wdt:P18 - image
+            var query = @"SELECT *
+                            WHERE {
+                                ?book wdt:P31 wd:Q571.
+                                ?book schema:description ?description.
+                                    FILTER(LANG(?description) = ""en"")
+                            }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["book"], line["description"]);
+            }
+            yield break;
+        }
+        void SaveBooksDescriptions((string uri, string description) line, BookRecommenderContext db)
+        {
+            var book = db.Books.Where(b => b.Uri == line.uri)?.FirstOrDefault();
+            if (book == null)
+            {
+                System.Console.WriteLine("book not in database: " + line.uri);
+                return;
+            }
+
+            book.Description = line.description;
+            db.Books.Update(book);
+
+        }
+
+
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
         //------------------------------------------------------------------------------------------------------------------------------------
@@ -360,6 +399,7 @@ namespace BookRecommender.DataManipulation.WikiData
                 base.UpdateDatabase(GetAuthorsData2(), SaveAuthorsData2);
                 base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
                 base.UpdateDatabase(GetAuthorsImages(), SaveAuthorsImages);
+                base.UpdateDatabase(GetAuthorsDescriptions(), SaveAuthorsDescriptions);
             }
             else
             {
@@ -382,6 +422,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 if (methodsList.Contains(4))
                 {
                     base.UpdateDatabase(GetAuthorsImages(), SaveAuthorsImages);
+                }
+                if (methodsList.Contains(5))
+                {
+                    base.UpdateDatabase(GetAuthorsDescriptions(), SaveAuthorsDescriptions);
                 }
             }
         }
@@ -567,6 +611,37 @@ namespace BookRecommender.DataManipulation.WikiData
             }
 
             author.OriginalImage = line.imageUri;
+            db.Authors.Update(author);
+        }
+
+        //------------------------------------------------------------------------------------------------------------------------------------
+
+        IEnumerable<(string uri, string description)> GetAuthorsDescriptions()
+        {
+            var query = @"SELECT DISTINCT ?author ?description
+                            WHERE {
+                            ?book wdt:P31 wd:Q571.
+                            ?book wdt:P50 ?author.
+                            ?author schema:description ?description.
+                                FILTER(LANG(?description) = ""en"")
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["author"], line["description"]);
+            }
+            yield break;
+        }
+        void SaveAuthorsDescriptions((string uri, string description) line, BookRecommenderContext db)
+        {
+            var author = db.Authors.Where(a => a.Uri == line.uri)?.FirstOrDefault();
+            if (author == null)
+            {
+                System.Console.WriteLine("author not in database: " + line.uri);
+                return;
+            }
+
+            author.Description = line.description;
             db.Authors.Update(author);
         }
 
@@ -789,7 +864,8 @@ namespace BookRecommender.DataManipulation.WikiData
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
-        public override AdditionalSparqlData GetAdditionalData(string entityUrl){
+        public override AdditionalSparqlData GetAdditionalData(string entityUrl)
+        {
             return new AdditionalSparqlData(GetLabels(entityUrl).ToList(),
                                             GetDescriptions(entityUrl).ToList(),
                                             GetProperties(entityUrl).ToList(),
@@ -852,7 +928,8 @@ namespace BookRecommender.DataManipulation.WikiData
                             <{entity}> schema:dateModified ?dateModified.
                         }}";
             var result = Execute(query);
-            if(result.Count == 0){
+            if (result.Count == 0)
+            {
                 return null;
             }
             return result.First()["dateModified"];

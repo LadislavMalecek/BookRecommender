@@ -28,6 +28,8 @@ namespace BookRecommender.Models
         public string FreeBase { get; set; }
         public string OriginalImage { get; set; }
         public string GoogleImageCache { get; set; }
+        public string Description { get; set; }
+        public string WikipediaPage { get; set; }
 
         public string GetNameEn()
         {

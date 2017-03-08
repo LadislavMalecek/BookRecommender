@@ -3,7 +3,7 @@
 
 
 <div class="container">
-  <h3> Additional raw data </h3>
+  <h3> Additional data </h3>
   <div class="panel-group" id="accordion">
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -44,7 +44,7 @@
             @foreach(var property in Model.Properties){
             var value = string.IsNullOrEmpty(property.Item4)?property.Item2:property.Item4;
             @if(value.StartsWith("http")||value.StartsWith("www")){
-                var shortend = value.Substring(0,50) + "...";
+                var shortend = value.Substring(0,Math.Min(50,value.Length)) + "...";
                 <p>@property.Item3: <strong><a href ="@value">@shortend</a></strong></p>
             } else {
                 <p>@property.Item3: <strong>@value</strong></p>

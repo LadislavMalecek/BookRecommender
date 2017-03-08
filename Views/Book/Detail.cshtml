@@ -5,7 +5,10 @@
         <div class="row">
             <h2>@Model.Book.GetNameEn()</h2>
         </div>
-        @if (Model.Authors.Count() > 0){
+        @if(!string.IsNullOrEmpty(Model.Book.Description)){
+            <p>@Model.Book.Description</p>
+        }
+        @if(Model.Authors.Count() > 0){
         <p> <strong>Authors: </strong></p>
         @foreach (var author in Model.Authors){
         <p><a href="/Author/Detail/@author.AuthorId"> @author.GetNameEn() </a></p>

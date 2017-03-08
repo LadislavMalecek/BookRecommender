@@ -49,7 +49,7 @@ namespace BookRecommender.DataManipulation
                     methodNumberList.Add(result);
                 }
 
-                switch (args[1])
+                switch (args[1].ToLower())
                 {
                     case "books":
                         endpoint.UpdateBooks(methodNumberList);

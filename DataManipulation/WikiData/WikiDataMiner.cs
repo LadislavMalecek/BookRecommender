@@ -68,7 +68,7 @@ namespace BookRecommender.DataManipulation.WikiData
                     return streamReader.ReadToEnd();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

@@ -2,7 +2,10 @@
 <h2>@Model.Author.GetNameEn()</h2>
 <div class="container-fluid">
     <div class="col-sm-8">
-        @if (Model.Books.Count() > 0){
+        @if(!string.IsNullOrEmpty(Model.Author.Description)){
+            <p>@Model.Author.Description</p>
+        }
+        @if(Model.Books.Count() > 0){
         <p> <strong>Books: </strong></p>
         @foreach (var book in Model.Books){
         <p><a href="/Book/Detail/@book.BookId"> @book.GetNameEn() </a></p>
