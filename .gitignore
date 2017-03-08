@@ -3,6 +3,7 @@
 .vscode/
 wwwroot/
 Migrations/
+Properties/
 
 # User-specific files
 *.suo
