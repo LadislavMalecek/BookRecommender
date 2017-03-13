@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,9 +7,21 @@ namespace BookRecommender.DataManipulation
 {
     public class Stemmer
     {
+        static ConcurrentDictionary<string, string> wordCache = new ConcurrentDictionary<string, string>();
         public static string StemEnglishWord(string word)
         {
-            return new EnglishStemmer.EnglishWord(word).Stem;
+            string tryValue;
+            if (wordCache.TryGetValue(word, out tryValue))
+            {
+                return tryValue;
+            }
+            else
+            {
+                var stemmedWord = new EnglishStemmer.EnglishWord(word).Stem;
+                wordCache.TryAdd(word, stemmedWord);
+                return stemmedWord;
+            }
+
         }
     }
 }
