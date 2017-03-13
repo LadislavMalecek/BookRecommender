@@ -131,8 +131,8 @@ namespace BookRecommender.Tests
                 Assert.True(tt0.GetBooks(db2).Count() == 1);
                 Assert.True(tt1.GetBooks(db2).Count() == 1);
 
-                Assert.Contains(tt0, tb0.GetTags(db2));
-                Assert.Contains(tt1, tb0.GetTags(db2));
+                Assert.Contains(tt0, tb0.GetTags(db2).Select(t => t.Tag));
+                Assert.Contains(tt1, tb0.GetTags(db2).Select(t => t.Tag));
 
                 Assert.Contains(tb0, tt0.GetBooks(db2));
                 Assert.Contains(tb0, tt1.GetBooks(db2));
@@ -281,10 +281,7 @@ namespace BookRecommender.Tests
 
             for (int i = 0; i < 5; i++)
             {
-                db.Tags.Add(new Tag()
-                {
-                    Value = TestTag + i
-                });
+                db.Tags.Add(new Tag() { Language = Language.en, Value = TestTag + i });
             }
             db.SaveChanges();
         }

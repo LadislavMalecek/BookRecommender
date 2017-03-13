@@ -18,7 +18,10 @@ namespace BookRecommender.Models
         public string Value { get; set; }
         
         virtual public List<BookTag> BooksTags { get; set; } = new List<BookTag>();
-
+        public IEnumerable<(Book book, double? tagScore)> GetBooksAndScores(BookRecommenderContext db)
+        {
+            return db.BooksTags.Where(bt => bt.Tag == this).Select(bt => new ValueTuple<Book, double?>(bt.Book, bt.Score));
+        }
         public IEnumerable<Book> GetBooks(BookRecommenderContext db)
         {
             return db.BooksTags.Where(bt => bt.Tag == this).Select(bt => bt.Book);

@@ -13,10 +13,13 @@ namespace BookRecommender.Models.Database
         public int TagId { get; set; }
         public Tag Tag { get; set; }
 
-        public BookTag(Book book, Tag tag)
+        public double? Score { get; set; }
+
+        public BookTag(Book book, Tag tag, double? score = null)
         {
             this.Book = book;
             this.Tag = tag;
+            this.Score = score;
         }
         // EF needs simple constructor
         public BookTag() { }

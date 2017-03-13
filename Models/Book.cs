@@ -88,9 +88,9 @@ namespace BookRecommender.Models
         {
             return db.BooksCharacters.Where(bc => bc.Book == this).Select(bc => bc.Character);
         }
-        public IEnumerable<Tag> GetTags(BookRecommenderContext db)
+        public IEnumerable<(double? score, Tag Tag)> GetTags(BookRecommenderContext db)
         {
-            return db.BooksTags.Where(bt => bt.Book == this).Select(bt => bt.Tag);
+            return db.BooksTags.Where(bt => bt.Book == this).Select(bt => new ValueTuple<double?, Tag>(bt.Score, bt.Tag));
         }
 
         public void AddAuthor(Author author, BookRecommenderContext db)
@@ -109,9 +109,18 @@ namespace BookRecommender.Models
         {
             db.BooksCharacters.Add(new BookCharacter(this, character));
         }
-        public void AddTag(Tag tag, BookRecommenderContext db)
+        public void AddTag(Tag tag, BookRecommenderContext db, double? score = null)
         {
-            db.BooksTags.Add(new BookTag(this, tag));
+            // check if the tag already exists, it it does, add entry only in n to n table
+            var tagInDb = db.Tags.Where(t => t.Language == tag.Language && t.Value == tag.Value)?.FirstOrDefault();
+            if (tagInDb != null)
+            {
+                db.BooksTags.Add(new BookTag(this, tagInDb, score));
+            }
+            else
+            {
+                db.BooksTags.Add(new BookTag(this, tag, score));
+            }
         }
         public string TryToGetImgUrl()
         {
@@ -127,7 +136,8 @@ namespace BookRecommender.Models
                     var imageMiner = new DataManipulation.GoogleImageMiner();
                     pictureUrl = imageMiner.GetFirstImageUrl("book " + NameEn);
                     // Save to cache
-                    if(pictureUrl != null){
+                    if (pictureUrl != null)
+                    {
                         GoogleImageCache = pictureUrl;
                         var db = new BookRecommenderContext();
                         db.Books.Update(this);
