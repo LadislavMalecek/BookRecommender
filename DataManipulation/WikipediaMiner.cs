@@ -8,17 +8,27 @@ namespace BookRecommender.DataManipulation
 {
     class WikipediaMiner
     {
-        const string UrlAppendix = "?action=raw";
+        const string UrlAppendix = "?&action=raw";
         public async Task<string> Mine(string pageUrl)
         {
             var page = await Exec(pageUrl + UrlAppendix);
 
-            page = RemoveCurlyBraces(page);
-            page = RemoveSingleReferences(page);
-            page = RemoveReferences(page);
-            page = RemoveComments(page);
-            page = KeepOnlyText(page);
-            return page;
+            if (page == null)
+            {
+                return null;
+            }
+            try
+            {
+                page = RemoveComments(page);
+                page = RemoveCurlyBraces(page);
+                page = RemoveReferences(page);
+                page = KeepOnlyText(page);
+                return page;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(pageUrl, e);
+            }
         }
         async Task<string> Exec(string url)
         {
@@ -27,7 +37,7 @@ namespace BookRecommender.DataManipulation
             try
             {
                 var task = request.GetResponseAsync();
-                if (Task.WhenAny(task, Task.Delay(3000)).Result != task)
+                if (Task.WhenAny(task, Task.Delay(30000)).Result != task)
                 {
                     // Timeout
                     return null;
@@ -68,49 +78,46 @@ namespace BookRecommender.DataManipulation
             }
             return sb.ToString();
         }
-        string RemoveSingleReferences(string text)
-        {
-            var sBuilder = new StringBuilder();
-
-            bool inElement = false;
-            for (var i = 0; i < text.Length; i++)
-            {
-                if (text[i] == '<' && text[i + 1] == 'r' && text[i + 2] == 'e' && text[i + 3] == 'f' && text[i + 4] == ' ')
-                {
-                    inElement = true;
-                    i += 4;
-                    continue;
-                }
-                if (text[i] == '/' && text[i + 1] == '>')
-                {
-                    inElement = false;
-                    //skip next char
-                    i += 1;
-                    continue;
-                }
-                if (!inElement)
-                {
-                    sBuilder.Append(text[i]);
-                }
-            }
-            return sBuilder.ToString();
-        }
-
         string RemoveReferences(string text)
         {
             var sBuilder = new StringBuilder();
 
+            bool inElement = false;
             int levelsIn = 0;
             for (int i = 0; i < text.Length; i++)
             {
-                if (text[i] == '<' && text[i + 1] == 'r' && text[i + 2] == 'e' && text[i + 3] == 'f' && text[i + 4] == '>')
+                if (inElement)
                 {
-                    levelsIn++;
-                    //skip next char
-                    i += 4;
+                    if (text[i] == '/' && text[i + 1] == '>')
+                    {
+                        inElement = false;
+                        i++;
+                        continue;
+                    }
+                    if (text[i] == '>')
+                    {
+                        inElement = false;
+                        levelsIn++;
+                        continue;
+                    }
                     continue;
                 }
-                if (text[i] == '<' && text[i + 1] == '/' && text[i + 2] == 'r' && text[i + 3] == 'e' && text[i + 4] == 'f' && text[i + 5] == '>')
+                if (text[i] == '<' &&
+                    (text[i + 1] == 'r' || text[i + 1] == 'R') &&
+                    (text[i + 2] == 'e' || text[i + 2] == 'E') &&
+                    (text[i + 3] == 'f' || text[i + 3] == 'F'))
+                {
+                    inElement = true;
+                    //skip next char
+                    i += 3;
+                    continue;
+                }
+                if (text[i] == '<' &&
+                    text[i + 1] == '/' &&
+                    (text[i + 2] == 'r' || text[i + 2] == 'R') &&
+                    (text[i + 3] == 'e' || text[i + 3] == 'E') &&
+                    (text[i + 4] == 'f' || text[i + 4] == 'F') &&
+                    text[i + 5] == '>')
                 {
                     levelsIn--;
                     //skip next char
@@ -123,7 +130,11 @@ namespace BookRecommender.DataManipulation
                 }
                 if (levelsIn < 0)
                 {
-                    throw new NotSupportedException();
+                    var x = Math.Max(0, i - 50);
+                    var y = Math.Min(50, text.Length - i);
+                    var beforeExc = text.Substring(x, 50);
+                    var afterExc = text.Substring(i, y);
+                    throw new NotSupportedException("Level below zero TextBefore:" + beforeExc + "TextAfter:" + afterExc);
                 }
             }
             return sBuilder.ToString();
@@ -133,8 +144,12 @@ namespace BookRecommender.DataManipulation
             var sBuilder = new StringBuilder();
 
             int levelsIn = 0;
+            int charsAddedAfterLastRight = 0;
             for (int i = 0; i < text.Length; i++)
             {
+                var stringBuilder = sBuilder.ToString();
+                var curChar = text[i];
+                var cm = text.Substring(i);
                 if (text[i] == '<' && text[i + 1] == '!' && text[i + 2] == '-' && text[i + 3] == '-')
                 {
                     levelsIn++;
@@ -145,17 +160,28 @@ namespace BookRecommender.DataManipulation
                 if (text[i] == '-' && text[i + 1] == '-' && text[i + 2] == '>')
                 {
                     levelsIn--;
+                    if(levelsIn < 0){
+                        levelsIn = 0;
+                        sBuilder.Remove(sBuilder.Length - charsAddedAfterLastRight, charsAddedAfterLastRight);
+                    }
+
+                    charsAddedAfterLastRight = 0;
                     //skip next char
                     i += 2;
                     continue;
                 }
                 if (levelsIn == 0)
                 {
+                    charsAddedAfterLastRight++;
                     sBuilder.Append(text[i]);
                 }
                 if (levelsIn < 0)
                 {
-                    throw new NotSupportedException();
+                    var x = Math.Max(0, i - 50);
+                    var y = Math.Min(50, text.Length - i);
+                    var beforeExc = text.Substring(x, 50);
+                    var afterExc = text.Substring(i, y);
+                    throw new NotSupportedException("Level below zero TextBefore:" + beforeExc + "TextAfter:" + afterExc);
                 }
             }
             return sBuilder.ToString();
@@ -188,7 +214,9 @@ namespace BookRecommender.DataManipulation
                 }
                 if (levelsIn < 0)
                 {
-                    throw new NotSupportedException();
+                    var x = Math.Min(0, i - 50);
+                    var beforeExc = text.Substring(x, 50);
+                    throw new NotSupportedException("Level below zero TextBefore:" + beforeExc);
                 }
             }
             return sBuilder.ToString();
@@ -226,7 +254,7 @@ namespace BookRecommender.DataManipulation
         //         }
         //         if (levelsIn < 0)
         //         {
-        //             throw new NotSupportedException();
+        //             throw new NotSupportedException("Level below zero");
         //         }
         //     }
         //     return sBuilder.ToString();

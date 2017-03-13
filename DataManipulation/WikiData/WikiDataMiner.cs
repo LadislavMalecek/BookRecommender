@@ -55,7 +55,7 @@ namespace BookRecommender.DataManipulation.WikiData
             try
             {
                 var task = request.GetResponseAsync();
-                if (Task.WhenAny(task, Task.Delay(3000)).Result != task)
+                if (Task.WhenAny(task, Task.Delay(30000)).Result != task)
                 {
                     // Timeout
                     return null;
