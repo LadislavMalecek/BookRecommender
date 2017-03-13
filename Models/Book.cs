@@ -111,16 +111,7 @@ namespace BookRecommender.Models
         }
         public void AddTag(Tag tag, BookRecommenderContext db, double? score = null)
         {
-            // check if the tag already exists, it it does, add entry only in n to n table
-            var tagInDb = db.Tags.Where(t => t.Language == tag.Language && t.Value == tag.Value)?.FirstOrDefault();
-            if (tagInDb != null)
-            {
-                db.BooksTags.Add(new BookTag(this, tagInDb, score));
-            }
-            else
-            {
-                db.BooksTags.Add(new BookTag(this, tag, score));
-            }
+            db.BooksTags.Add(new BookTag(this, tag, score));
         }
         public string TryToGetImgUrl()
         {

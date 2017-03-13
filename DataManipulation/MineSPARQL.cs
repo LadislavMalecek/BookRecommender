@@ -24,6 +24,7 @@ namespace BookRecommender.DataManipulation
                 // no param to mine -> mine all
                 endpoint.UpdateBooks(null);
                 endpoint.UpdateAuthors(null);
+                TagMiner.Mine(null);
             }
             else
             {
@@ -63,6 +64,10 @@ namespace BookRecommender.DataManipulation
                     case "genres":
                         endpoint.UpdateGenres(methodNumberList);
                         break;
+                    case "wikitags":
+                        TagMiner.Mine(methodNumberList);
+                        break;
+                    
                     default:
                         System.Console.WriteLine("Param not supported");
                         break;
