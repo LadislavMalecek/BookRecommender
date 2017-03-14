@@ -18,8 +18,7 @@ namespace BookRecommender.Controllers
             var bookAuthors = book.GetAuthors(db);
             var bookGenres = book.GetGenres(db);
             var bookCharacters = book.GetCharacters(db);
-            var additionalData = MineSPARQL.GetAdditionalData(book.Uri);
-
+            var bookTags = book.GetTags(db);
             if (book == null)
             {
                 return View("Error");
@@ -31,7 +30,7 @@ namespace BookRecommender.Controllers
                 Authors = bookAuthors,
                 Genres = bookGenres,
                 Characters = bookCharacters,
-                AdditionalData = additionalData
+                Tags = bookTags
             });
         }
 

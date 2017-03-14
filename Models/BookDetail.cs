@@ -9,6 +9,6 @@ namespace BookRecommender.Models
         public IEnumerable<Author> Authors { get; set; }
         public IEnumerable<Genre> Genres { get; set; }
         public IEnumerable<Character> Characters { get; set; }
-        public AdditionalSparqlData AdditionalData { get; set; }
+        public IEnumerable<Tag> Tags { get; set; }
     }
 }

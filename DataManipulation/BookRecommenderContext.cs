@@ -102,11 +102,13 @@ namespace BookRecommender.DataManipulation
                 .OnDelete(DeleteBehavior.Cascade);
 
             //--------------------------------
+            // One to many relationships
+            //--------------------------------
 
             modelBuilder.Entity<Tag>()
-                .HasOne(bt => bt.Book)
+                .HasOne(t => t.Book)
                 .WithMany(t => t.Tags)
-                .HasForeignKey(bt => bt.BookId)
+                .HasForeignKey(t => t.BookId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

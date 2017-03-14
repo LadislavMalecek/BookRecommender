@@ -113,7 +113,7 @@ namespace BookRecommender.Models
         }
         public void AddTag(Tag tag, BookRecommenderContext db)
         {
-            db.Tags.Add(tag);
+            db.Tags.Add(new Tag(this, tag.Value, tag.Score));
         }
         public string TryToGetImgUrl()
         {

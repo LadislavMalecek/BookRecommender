@@ -947,6 +947,7 @@ namespace BookRecommender.DataManipulation.WikiData
             return new AdditionalSparqlData(GetLabels(entityUrl).ToList(),
                                             GetDescriptions(entityUrl).ToList(),
                                             GetProperties(entityUrl).ToList(),
+                                            GetWikiPages(entityUrl).ToList(),
                                             GetDateModified(entityUrl));
         }
         IEnumerable<(string text, string lang)> GetLabels(string entity)
@@ -959,6 +960,18 @@ namespace BookRecommender.DataManipulation.WikiData
             foreach (var line in result)
             {
                 yield return (line["label"], line["labelLang"]);
+            }
+            yield break;
+        }
+        IEnumerable<string> GetWikiPages(string entity){
+            var query = $@"SELECT *
+                            WHERE {{
+                                ?article schema:about <{entity}>.
+                            }}";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return line["article"];
             }
             yield break;
         }

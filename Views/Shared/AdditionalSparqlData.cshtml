@@ -5,6 +5,7 @@
 <div class="container">
   <h3> Additional data </h3>
   <div class="panel-group" id="accordion">
+
     <div class="panel panel-default">
       <div class="panel-heading">
         <h4 class="panel-title">
@@ -19,6 +20,7 @@
         </div>
       </div>
     </div>
+
     <div class="panel panel-default">
       <div class="panel-heading">
         <h4 class="panel-title">
@@ -33,13 +35,29 @@
         </div>
       </div>
     </div>
+
     <div class="panel panel-default">
       <div class="panel-heading">
         <h4 class="panel-title">
-          <a data-toggle="collapse" data-parent="#accordion" href="#collapse3">Properties</a>
+          <a data-toggle="collapse" data-parent="#accordion" href="#collapse3">Wikipedia pages</a>
         </h4>
       </div>
       <div id="collapse3" class="panel-collapse collapse">
+        <div class="panel-body">
+            @foreach (var wikipage in Model.WikiPages){
+            <p><a href="@wikipage">@wikipage</a></p>
+            }   
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#collapse4">Properties</a>
+        </h4>
+      </div>
+      <div id="collapse4" class="panel-collapse collapse">
         <div class="panel-body">
             @foreach(var property in Model.Properties){
             var value = string.IsNullOrEmpty(property.Item4)?property.Item2:property.Item4;

@@ -114,7 +114,11 @@ namespace BookRecommender.DataManipulation
 
                     if (book == null)
                     {
+                        if(book?.BookId != bookId){
+                            throw new DataMisalignedException(bookId.ToString());
+                        }
                         System.Console.WriteLine("Book with id not found: \"" + bookIdString + "\"");
+                        continue;
                     }
                     foreach (var tag in document.Value)
                     {
