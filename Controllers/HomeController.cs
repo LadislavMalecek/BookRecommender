@@ -9,6 +9,12 @@ namespace BookRecommender.Controllers
 {
     public class HomeController : Controller
     {
+        public IActionResult Users(){
+            var db = new BookRecommenderContext();
+            var users = db.Users.ToList();
+            ViewData["CurrentName"] = User.Identity.Name;
+            return View(users);
+        }
         public IActionResult Index()
         {
             return View();

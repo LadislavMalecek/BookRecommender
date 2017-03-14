@@ -1,0 +1,23 @@
+@using System.Collections.Generic
+@using BookRecommender.Models
+@model List<ApplicationUser>
+    <p>Current user: @ViewData["CurrentName"]</p>
+
+    <table class="table table-striped">
+        @foreach(var user in Model){
+        <tr>
+            <th>Id</th>
+            <th>Email</th>
+            <th>UserName</th>
+            <th>NormalizedUserName</th>
+            <th>PasswordHash</th>
+        </tr>
+        <tr>
+            <td>@user.Id</td>
+            <td>@user.Email</td>
+            <td>@user.UserName</td>
+            <td>@user.NormalizedUserName</td>
+            <td>@user.PasswordHash</td>
+        </tr>
+        }
+    </table>

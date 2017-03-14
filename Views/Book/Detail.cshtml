@@ -9,12 +9,20 @@
             <p>@Model.Book.Description</p>
         }
         @if(Model.Authors.Count() > 0){
+            @if(Model.Authors.Count() > 1){
         <p> <strong>Authors: </strong></p>
+            } else {
+        <p> <strong>Author: </strong></p>
+            }
         @foreach (var author in Model.Authors){
         <p><a href="/Author/Detail/@author.AuthorId"> @author.GetNameEn() </a></p>
         } }
         @if (Model.Genres.Count() > 0){
+            @if(Model.Genres.Count() > 1){
         <p> <strong>Genres:</strong> @string.Join(", ", Model.Genres.Select(g => g.NameEn).ToArray())</p>
+            } else {
+        <p> <strong>Genre:</strong> @Model.Genres.First().NameEn</p>
+            }
         }
         @if (Model.Characters.Count() > 0){
         <p> <strong>Characters:</strong> @string.Join(", ", Model.Characters.Select(c => c.NameEn).ToArray())</p>
