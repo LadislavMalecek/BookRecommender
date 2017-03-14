@@ -69,11 +69,13 @@ namespace BookRecommender.Models
             }
         }
 
-
+        // m : n relationships
         public virtual List<BookAuthor> BooksAuthors { get; protected set; } = new List<BookAuthor>();
         public virtual List<BookGenre> BooksGenres { get; protected set; } = new List<BookGenre>();
         public virtual List<BookCharacter> BooksCharacters { get; protected set; } = new List<BookCharacter>();
-        public virtual List<BookTag> BooksTags { get; protected set; } = new List<BookTag>();
+
+        // 1 : n relationships
+        public virtual List<Tag> Tags { get; protected set; } = new List<Tag>();
 
 
         public IEnumerable<Author> GetAuthors(BookRecommenderContext db)
@@ -88,9 +90,9 @@ namespace BookRecommender.Models
         {
             return db.BooksCharacters.Where(bc => bc.Book == this).Select(bc => bc.Character);
         }
-        public IEnumerable<(double? score, Tag Tag)> GetTags(BookRecommenderContext db)
+        public IEnumerable<Tag> GetTags(BookRecommenderContext db)
         {
-            return db.BooksTags.Where(bt => bt.Book == this).Select(bt => new ValueTuple<double?, Tag>(bt.Score, bt.Tag));
+            return db.Tags.Where(bt => bt.Book == this);
         }
 
         public void AddAuthor(Author author, BookRecommenderContext db)
@@ -109,9 +111,9 @@ namespace BookRecommender.Models
         {
             db.BooksCharacters.Add(new BookCharacter(this, character));
         }
-        public void AddTag(Tag tag, BookRecommenderContext db, double? score = null)
+        public void AddTag(Tag tag, BookRecommenderContext db)
         {
-            db.BooksTags.Add(new BookTag(this, tag, score));
+            db.Tags.Add(tag);
         }
         public string TryToGetImgUrl()
         {

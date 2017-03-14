@@ -13,18 +13,19 @@ namespace BookRecommender.Models
     {
         [Required]
         public int TagId { get; protected set; }
-        public Language Language { get; set; }
+        public int BookId { get; set; }
+        public Book Book { get; set; }
+        
         [Required]
         public string Value { get; set; }
+        public double? Score { get; set; }
         
-        virtual public List<BookTag> BooksTags { get; set; } = new List<BookTag>();
-        public IEnumerable<(Book book, double? tagScore)> GetBooksAndScores(BookRecommenderContext db)
+        public IEnumerable<(Book book, double? tagScore)> GetBooksAndScoresForSameTag(BookRecommenderContext db)
         {
-            return db.BooksTags.Where(bt => bt.Tag == this).Select(bt => new ValueTuple<Book, double?>(bt.Book, bt.Score));
+            return db.Tags.Where(bt => bt.Value == Value).Select(bt => new ValueTuple<Book, double?>(bt.Book, bt.Score));
         }
-        public IEnumerable<Book> GetBooks(BookRecommenderContext db)
-        {
-            return db.BooksTags.Where(bt => bt.Tag == this).Select(bt => bt.Book);
+        public IEnumerable<Book> GetBooks(BookRecommenderContext db){
+            return db.Tags.Where(bt => bt.Value == Value).Select(t => t.Book);
         }
     }
 }

@@ -118,15 +118,13 @@ namespace BookRecommender.DataManipulation
                     }
                     foreach (var tag in document.Value)
                     {
-                        var tagDb = db.Tags.Where(t => t.Value == tag.word)?.FirstOrDefault();
-                        if (tagDb == null)
+                        var newTag = new Tag()
                         {
-                            tagDb = new Tag() { Language = Language.en, Value = tag.Item1 };
-                            db.Tags.Add(tagDb);
-                        }
-                        book.AddTag(tagDb, db, tag.Item2);
+                            Value = tag.word,
+                            Score = tag.score
+                        };
+                        book.AddTag(newTag, db);
                     }
-                    db.SaveChanges();
                     counter.Update();
                 }
             }
