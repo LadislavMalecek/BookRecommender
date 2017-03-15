@@ -76,6 +76,7 @@ namespace BookRecommender.Models
 
         // 1 : n relationships
         public virtual List<Tag> Tags { get; protected set; } = new List<Tag>();
+        public virtual List<BookRating> Ratings { get; protected set; } = new List<BookRating>();
 
 
         public IEnumerable<Author> GetAuthors(BookRecommenderContext db)
@@ -93,6 +94,10 @@ namespace BookRecommender.Models
         public IEnumerable<Tag> GetTags(BookRecommenderContext db)
         {
             return db.Tags.Where(bt => bt.Book == this);
+        }
+        public IEnumerable<BookRating> GetRatings(BookRecommenderContext db)
+        {
+            return db.Ratings.Where(br => br.Book == this);
         }
 
         public void AddAuthor(Author author, BookRecommenderContext db)
@@ -114,6 +119,14 @@ namespace BookRecommender.Models
         public void AddTag(Tag tag, BookRecommenderContext db)
         {
             db.Tags.Add(new Tag(this, tag.Value, tag.Score));
+        }
+        public void AddRating(BookRating rating, ApplicationUser user, BookRecommenderContext db)
+        {
+            db.Ratings.Add(new BookRating(user, this, rating.Rating, rating.TextRating));
+        }
+        public void AddRating(string textRating, int rating, ApplicationUser user, BookRecommenderContext db)
+        {
+            db.Ratings.Add(new BookRating(user, this, rating, textRating));
         }
         public string TryToGetImgUrl()
         {

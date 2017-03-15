@@ -5,33 +5,83 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using BookRecommender.Models;
 using BookRecommender.DataManipulation;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BookRecommender.Controllers
 {
     public class BookController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly ILogger _logger;
+
+        public BookController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            ILoggerFactory loggerFactory)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = loggerFactory.CreateLogger<AccountController>();
+        }
+
         // GET: /Book/Detail
         public IActionResult Detail(int id)
         {
+            var userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+            var bookDetail = new BookDetail(id,userId);
+            if (bookDetail.Book == null)
+            {
+                return View("Error");
+            }
+            return View(bookDetail);
+        }
+        [HttpGet]
+        public IActionResult AddRating(int id)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return View("Error");
+            }
             var db = new BookRecommenderContext();
             var book = db.Books.Where(b => b.BookId == id)?.FirstOrDefault();
-            var bookAuthors = book.GetAuthors(db);
-            var bookGenres = book.GetGenres(db);
-            var bookCharacters = book.GetCharacters(db);
-            var bookTags = book.GetTags(db);
+            if (book == null)
+            {
+                return View("Error");
+            }
+            return View(book);
+        }
+        [HttpPost]
+        public IActionResult AddRating(string bookId, string textRating, string scoreRating)
+        {
+            int bookIdParsed;
+            int scoreRatingParsed;
+            if(!int.TryParse(bookId, out bookIdParsed) || !int .TryParse(scoreRating, out scoreRatingParsed)){
+                return View("Error");
+            }
+
+            if (!User.Identity.IsAuthenticated)
+            {
+                return View("Error");
+            }
+            var db = new BookRecommenderContext();
+            var userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+            var user = db.Users.Where(u => u.Id == userId)?.FirstOrDefault();
+            if (user == null)
+            {
+                return View("Error");
+            }
+            var book = db.Books.Where(b => b.BookId == bookIdParsed)?.FirstOrDefault();
             if (book == null)
             {
                 return View("Error");
             }
 
-            return View(new BookDetail()
-            {
-                Book = book,
-                Authors = bookAuthors,
-                Genres = bookGenres,
-                Characters = bookCharacters,
-                Tags = bookTags
-            });
+            book.AddRating(textRating, scoreRatingParsed, user, db);
+            db.SaveChanges();
+            return RedirectToAction("Detail","Book", new { id = bookIdParsed});
         }
 
         // GET: /Book/Review

@@ -21,5 +21,9 @@ namespace BookRecommender.DataManipulation
         public List<(string propertyUrl, string propValue, string propLabel, string propValueLabel, string propDescription)> Properties { get; private set; }
         public List<string> WikiPages { get; private set; }
         public string DateModified { get; private set; }
+        public bool HasData()
+        {
+            return (Labels.Count > 0 || Descriptions.Count > 0 || Properties.Count > 0 || WikiPages.Count > 0);
+        }
     }
 }

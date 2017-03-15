@@ -1,0 +1,19 @@
+@model BookRecommender.Models.Book
+<div class="container-fluid">
+    <div class="col-sm-12">
+    <h3>Add new rating</h3>
+    <h4> @Model.Description </h4>
+    <form action="/Book/AddRating" method="POST" class="form-inline">
+        <select name="scoreRating" class="form-control">
+            <option value="1">1 - Awful</option>
+            <option value="2">2 - Poor</option>
+            <option value="3">3 - Ok</option>
+            <option value="4">4 - Good</option>
+            <option value="5">5 - Excelent</option>
+        </select>
+        <input type="textarea" name="textRating" class="form-control" />
+        <input type="hidden"name="bookId" value="@Model.BookId" />
+        <button type="submit" value="Submit" class="btn btn-default">Add rating</button>
+    </form>
+    </div>
+</div>

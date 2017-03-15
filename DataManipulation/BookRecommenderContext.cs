@@ -18,6 +18,7 @@ namespace BookRecommender.DataManipulation
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Character> Characters { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<BookRating> Ratings { get; set; }
 
         public DbSet<BookAuthor> BooksAuthors { get; set; }
         public DbSet<BookCharacter> BooksCharacters { get; set; }
@@ -85,7 +86,7 @@ namespace BookRecommender.DataManipulation
                 .OnDelete(DeleteBehavior.Cascade);
 
             //--------------------------------
-                
+
             modelBuilder.Entity<BookGenre>()
                 .HasKey(t => new { t.BookId, t.GenreId });
 
@@ -109,6 +110,18 @@ namespace BookRecommender.DataManipulation
                 .HasOne(t => t.Book)
                 .WithMany(t => t.Tags)
                 .HasForeignKey(t => t.BookId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BookRating>()
+                .HasOne(r => r.Book)
+                .WithMany(b => b.Ratings)
+                .HasForeignKey(r => r.BookId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BookRating>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Ratings)
+                .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

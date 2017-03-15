@@ -33,12 +33,23 @@
         }
     </div>
     <div class="col-sm-4">
-        <div class="row">
+        <div class="text-center">
             <h3>Score</h3>
         </div>
-        <div class="row">
+        <div class="text-center">
             <img class="img-responsive dynamic" data-uri="@Model.Book.Uri">
         </div>
+        @if(Model.SignedIn){
+            <div class="text-center">
+            @if(Model.BookRating == null){
+                <a href="/Book/AddRating/@Model.Book.BookId" class="btn btn-default">Rate this book</a>
+            } else {
+                var lStars = Model.BookRating.Rating;
+                var rating = new String('★', lStars) + new String('☆', 5 - lStars);
+                <h4>My rating: @rating</h4>
+            }
+            </div>
+        }
     </div>
 </div>
 
