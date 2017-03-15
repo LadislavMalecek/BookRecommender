@@ -17,11 +17,14 @@ namespace BookRecommender.Models
                 Characters = Book.GetCharacters(db);
                 Tags = Book.GetTags(db);
 
-                var user = db.Users.Where(u => u.Id == userId)?.FirstOrDefault();
-                if (user != null)
+                if (userId != null)
                 {
-                    SignedIn = true;
-                    BookRating = db.Ratings.Where(r => r.BookId == Book.BookId && r.UserId == userId)?.FirstOrDefault();
+                    var user = db.Users.Where(u => u.Id == userId)?.FirstOrDefault();
+                    if (user != null)
+                    {
+                        SignedIn = true;
+                        BookRating = db.Ratings.Where(r => r.BookId == Book.BookId && r.UserId == userId)?.FirstOrDefault();
+                    }
                 }
             }
         }

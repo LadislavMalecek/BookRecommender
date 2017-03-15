@@ -30,7 +30,10 @@ namespace BookRecommender.Controllers
         // GET: /Book/Detail
         public IActionResult Detail(int id)
         {
-            var userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+            string userId = null;
+            if(User.Identity.IsAuthenticated){
+                userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+            }
             var bookDetail = new BookDetail(id,userId);
             if (bookDetail.Book == null)
             {

@@ -36,5 +36,9 @@ namespace BookRecommender.Models
         }
         // EF needs simple constructor
         public BookRating() { }
+
+        public Book GetBook(BookRecommenderContext db){
+            return db.Books.Where(b => b.BookId == BookId)?.FirstOrDefault();
+        }
     }
 }
