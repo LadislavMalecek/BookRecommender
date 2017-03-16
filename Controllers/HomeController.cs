@@ -34,8 +34,8 @@ namespace BookRecommender.Controllers
             }
 
             var db = new BookRecommenderContext();
-            var books = db.Books.Where(b => b.NameEn.Contains(query));
-            var authors = db.Authors.Where(a => a.NameEn.Contains(query));
+            var books = SearchEngine.SearchBook(db,query);
+            var authors = SearchEngine.SearchAuthor(db, query);
 
             var searchModel = new Search(query, page.Value, books.ToList(), authors.ToList());
 
