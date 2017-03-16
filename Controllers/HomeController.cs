@@ -37,7 +37,7 @@ namespace BookRecommender.Controllers
             var books = SearchEngine.SearchBook(db,query);
             var authors = SearchEngine.SearchAuthor(db, query);
 
-            var searchModel = new Search(query, page.Value, books.ToList(), authors.ToList());
+            var searchModel = new Search(query, page.Value, books.ToList(), authors.ToList(), db);
 
             return View(searchModel);
         }

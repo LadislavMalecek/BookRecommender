@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BookRecommender.DataManipulation;
 
 namespace BookRecommender.Models
 {
     public class Search
     {
-        public Search(string searchPhrase, int page, List<Book> books, List<Author> authors){
+        public Search(string searchPhrase, int page, List<Book> books, List<Author> authors, BookRecommenderContext db)
+        {
             this.SearchPhrase = searchPhrase;
             this.Page = page;
             this.Books = books;
             this.Authors = authors;
+            this.db = db;
         }
+        BookRecommenderContext db;
         readonly int PageSize = 20;
         public string SearchPhrase { get; private set; }
         List<Book> Books;
@@ -26,15 +30,17 @@ namespace BookRecommender.Models
             }
         }
 
-        public IEnumerable<Book> GetBooksToShow()
+        public IEnumerable<BookHelpClass> GetBooksToShow()
         {
             if (Page < 0 || Page > HighestPage)
             {
-                return Enumerable.Empty<Book>();
+                return Enumerable.Empty<BookHelpClass>();
             }
 
             int howManySkip = (Page - 1) * PageSize;
-            return Books?.Skip(howManySkip)?.Take(PageSize);
+            return Books?.Skip(howManySkip)
+                        ?.Take(PageSize)
+                        ?.Select(b => new BookHelpClass(b, db));
         }
         public IEnumerable<Author> GetAuthorsToShow()
         {
@@ -77,6 +83,18 @@ namespace BookRecommender.Models
             {
                 return Authors.Count;
             }
+        }
+        public class BookHelpClass
+        {
+            public BookHelpClass(Book book, BookRecommenderContext db)
+            {
+                Book = book;
+                BookAuthors = book.GetAuthors(db);
+                BookGenres = book.GetGenres(db);
+            }
+            public Book Book { get; private set; }
+            public IEnumerable<Author> BookAuthors { get; private set; }
+            public IEnumerable<Genre> BookGenres { get; private set; }
         }
     }
 }

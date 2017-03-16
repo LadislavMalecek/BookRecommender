@@ -24,28 +24,26 @@
         <h3> Books: </h3>
         <table class="table table-striped">
             <tbody>
-                @foreach (var book in Model.GetBooksToShow()){
+                @foreach (var bookSearchView in Model.GetBooksToShow()){
                 <tr>
                     <td>
-                        <a href="/Book/Detail/@book.BookId">
-                            <div class="row match-my-cols">
-                                <div class="col-sm-10 col-xs-12">
-                                    <div class="container-fluid">
-                                        <div class="row">
-                                            <p>@book.NameEn </p>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-sm-4">Genre</div>
-                                            <div class="col-sm-4">Author</div>
-                                            <div class="col-sm-4">Score</div>
-                                        </div>
+                        <div class="row match-my-cols">
+                            <div class="col-sm-10 col-xs-12">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <a href="/Book/Detail/@bookSearchView.Book.BookId">@bookSearchView.Book.NameEn </a>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-4"><p class="text-center">@string.Join(", ", bookSearchView.BookGenres.Select(g => g.NameEn).ToArray())</p></div>
+                                        <div class="col-sm-4"><p class="text-center">@string.Join(", ", bookSearchView.BookAuthors.Select(a => a.NameEn).ToArray())</p></div>
+                                        <div class="col-sm-4"><p class="text-center">Score</p></div>
                                     </div>
                                 </div>
-                                <div class="col-sm-2 hidden-xs">
-                                    <img class="img-thumbnail dynamic" data-uri="@book.Uri">
-                                </div>
                             </div>
-                        </a>
+                            <div class="col-sm-2 hidden-xs">
+                                <img class="img-thumbnail dynamic" data-uri="@bookSearchView.Book.Uri">
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 }
