@@ -33,9 +33,9 @@ namespace BookRecommender.DataManipulation
             var httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri(queryUrl);
             httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.ParseAdd("text/html, application/xhtml+xml, */*");
+            httpClient.DefaultRequestHeaders.Accept.ParseAdd("text/html; charset=UTF-8");
             httpClient.DefaultRequestHeaders.UserAgent.Clear();
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko");
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36");
 
             try
             {
@@ -46,7 +46,11 @@ namespace BookRecommender.DataManipulation
                     return null;
                 }
                 var response = task.Result;
-                return response.Content.ReadAsStringAsync().Result;
+                var content=  response.Content.ReadAsStringAsync().Result;
+
+                File.WriteAllText("C:\\netcore\\stranka.html", content);
+                
+                return content;
             }
             catch (Exception)
             {
@@ -93,7 +97,4 @@ namespace BookRecommender.DataManipulation
             return urls;
         }
     }
-
-
-
 }
