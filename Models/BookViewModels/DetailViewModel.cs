@@ -23,9 +23,10 @@ namespace BookRecommender.Models
                     if (user != null)
                     {
                         SignedIn = true;
-                        BookRating = db.Ratings.Where(r => r.BookId == Book.BookId && r.UserId == userId)?.FirstOrDefault();
+                        UsersBookRating = db.Ratings.Where(r => r.BookId == Book.BookId && r.UserId == userId)?.FirstOrDefault();
                     }
                 }
+                BookRating = Book.GetPreciseRating(db);
             }
         }
         public Book Book { get; set; }
@@ -33,8 +34,8 @@ namespace BookRecommender.Models
         public IEnumerable<Genre> Genres { get; set; }
         public IEnumerable<Character> Characters { get; set; }
         public IEnumerable<Tag> Tags { get; set; }
-
         public bool SignedIn { get; set; }
-        public BookRating BookRating { get; set; }
+        public int? BookRating { get; set; }
+        public BookRating UsersBookRating { get; set; }
     }
 }
