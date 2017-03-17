@@ -34,7 +34,11 @@
     </div>
     <div class="col-sm-4">
         <div class="text-center">
-            <h3>Score</h3>
+            @if(Model.BookRating.HasValue){
+            <h3>@Model.BookRating%</h3>
+            } else {
+                <h3>No rating availible</h3>
+            }
         </div>
         <div class="text-center">
             <img class="img-responsive center-block dynamic" data-uri="@Model.Book.Uri">
@@ -44,7 +48,7 @@
             @if(Model.BookRating == null){
                 <a href="/Book/AddRating/@Model.Book.BookId" class="btn btn-default">Rate this book</a>
             } else {
-                var lStars = Model.BookRating.Rating;
+                var lStars = Model.UsersBookRating.Rating;
                 var rating = new String('★', lStars) + new String('☆', 5 - lStars);
                 <h4>My rating: @rating</h4>
             }
