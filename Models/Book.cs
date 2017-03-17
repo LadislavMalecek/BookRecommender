@@ -99,6 +99,16 @@ namespace BookRecommender.Models
         {
             return db.Ratings.Where(br => br.Book == this);
         }
+        public int? GetRating(BookRecommenderContext db)
+        {
+            var ratings = GetRatings(db);
+            var count = 0;
+            var sum = ratings.Select(r => r.Rating).Sum(r => { count++; return r; });
+            if(count == 0){
+                return null;
+            }
+            return (int)(sum/count);
+        }
 
         public void AddAuthor(Author author, BookRecommenderContext db)
         {

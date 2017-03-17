@@ -34,9 +34,21 @@
                                         <a href="/Book/Detail/@bookSearchView.Book.BookId">@bookSearchView.Book.NameEn </a>
                                     </div>
                                     <div class="row">
-                                        <div class="col-sm-4"><p class="text-center">@string.Join(", ", bookSearchView.BookGenres.Select(g => g.NameEn).ToArray())</p></div>
-                                        <div class="col-sm-4"><p class="text-center">@string.Join(", ", bookSearchView.BookAuthors.Select(a => a.NameEn).ToArray())</p></div>
-                                        <div class="col-sm-4"><p class="text-center">Score</p></div>
+                                        @{
+                                        var genres = string.Join(", ", bookSearchView.BookGenres.Select(g => g.NameEn).ToArray());
+                                        genres = string.IsNullOrEmpty(genres)?"---": genres;
+                                        var authors = string.Join(", ", bookSearchView.BookAuthors.Select(a => a.NameEn).ToArray());
+                                        authors = string.IsNullOrEmpty(authors)?"---": authors;
+                                        string score;
+                                        if(!bookSearchView.BookRating.HasValue){
+                                            score = "---";
+                                        } else{
+                                            var lStars = bookSearchView.BookRating.Value;
+                                            score = new String('★', lStars) + new String('☆', 5 - lStars);
+                                        }}
+                                        <div class="col-sm-4"><span>Genres:</span><p class="text-center">@genres</p></div>
+                                        <div class="col-sm-4"><span>Authors:</span><p class="text-center">@authors</p></div>
+                                        <div class="col-sm-4"><span>Score:</span><p class="text-center">@score</p></div>
                                     </div>
                                 </div>
                             </div>

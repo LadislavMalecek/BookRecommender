@@ -91,10 +91,13 @@ namespace BookRecommender.Models
                 Book = book;
                 BookAuthors = book.GetAuthors(db);
                 BookGenres = book.GetGenres(db);
+                BookRating = book.GetRating(db);
             }
             public Book Book { get; private set; }
             public IEnumerable<Author> BookAuthors { get; private set; }
             public IEnumerable<Genre> BookGenres { get; private set; }
+            public int? BookRating { get; private set; }
+
         }
     }
 }
