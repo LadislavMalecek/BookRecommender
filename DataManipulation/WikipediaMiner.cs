@@ -9,9 +9,9 @@ namespace BookRecommender.DataManipulation
     class WikipediaMiner
     {
         const string UrlAppendix = "?&action=raw";
-        public async Task<string> Mine(string pageUrl)
+        public async Task<string> MineAndParse(string pageUrl)
         {
-            var page = await Exec(pageUrl + UrlAppendix);
+            var page = await DownloadFromWeb(pageUrl + UrlAppendix);
 
             if (page == null)
             {
@@ -30,7 +30,7 @@ namespace BookRecommender.DataManipulation
                 throw new Exception(pageUrl, e);
             }
         }
-        async Task<string> Exec(string url)
+        async Task<string> DownloadFromWeb(string url)
         {
             var request = HttpWebRequest.Create(url);
             request.Method = "GET";

@@ -6,11 +6,13 @@ using System.IO;
 using System.Threading;
 using System;
 using System.Collections.Generic;
+using BookRecommender.DataManipulation.Stemmers;
 
 namespace BookRecommender.DataManipulation
 {
     class TagMiner
     {
+        IStemmer EnglishStemmer;
         public static void Mine(List<int> methodNumber)
         {
             if (methodNumber.Count == 0)
@@ -29,32 +31,27 @@ namespace BookRecommender.DataManipulation
             var booksWithWikiPage = db.Books.Where(b => b.WikipediaPage != null)
                                             .Select(b => ValueTuple.Create<int, string>(b.BookId, b.WikipediaPage));
             System.Console.WriteLine("Mining from wiki.");
-            MineFromWiki(booksWithWikiPage, dir);
-            System.Console.WriteLine();
-            System.Console.WriteLine("Computing ratings");
-            var tdidfs = GetTagsFromFiles(dir);
-            System.Console.WriteLine();
-            System.Console.WriteLine("Saving tags to database");
-            SaveBookTagsToDb(tdidfs);
-        }
-        public static Dictionary<string, List<(string word, double score)>> GetTagsFromFiles(string dictionaryPath)
-        {
-            System.Console.WriteLine();
+            RetrieveAndParseWikiPages(booksWithWikiPage, dir);
+
             System.Console.WriteLine("Stemming documents...");
-            var stemmedDocumentsDictionary = StemDocuments(dictionaryPath);
-            System.Console.WriteLine();
+            var stemmedDocumentsDictionary = StemDocuments(dir);
             System.Console.WriteLine("Counting Idf...");
             var idfDic = GetIdf(stemmedDocumentsDictionary);
-            System.Console.WriteLine();
             System.Console.WriteLine("computing TdIdf...");
             var tdIdf = ComputeTdIdf(stemmedDocumentsDictionary, idfDic);
-            return tdIdf;
+            System.Console.WriteLine("Saving tags to database");
+            SaveBookTagsToDb(tdIdf);
         }
-        public static void MineFromWiki(IEnumerable<(int id, string wikiPageUrl)> dataList, string dirWhereToSave)
+        static void RetrieveAndParseWikiPages(IEnumerable<(int id, string wikiPageUrl)> dataList, string dirWhereToSave)
         {
+            if (!dirWhereToSave.EndsWith("\\"))
+            {
+                dirWhereToSave += "\\";
+            }
             var wikiMiner = new WikipediaMiner();
             var total = dataList.Count();
             System.Console.WriteLine("Running:");
+            
             using (var counter = new Counter(total))
             {
                 var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
@@ -64,16 +61,13 @@ namespace BookRecommender.DataManipulation
                 var parLoop = Parallel.ForEach<(int id, string wikiPageUrl)>(dataList, options, wikiEntry =>
                 {
                     var wikiUrl = wikiEntry.wikiPageUrl;
-                    if (!dirWhereToSave.EndsWith("\\"))
-                    {
-                        dirWhereToSave += "\\";
-                    }
+
                     var path = dirWhereToSave + wikiEntry.id;
                     try
                     {
                         if (!File.Exists(path))
                         {
-                            var data = wikiMiner.Mine(wikiUrl).Result;
+                            var data = wikiMiner.MineAndParse(wikiUrl).Result;
                             if (data == null)
                             {
                                 System.Console.WriteLine("Timeout: " + wikiUrl);
@@ -95,7 +89,7 @@ namespace BookRecommender.DataManipulation
             }
         }
 
-        public static void SaveBookTagsToDb(Dictionary<string, List<(string word, double score)>> Tags)
+        static void SaveBookTagsToDb(Dictionary<string, List<(string word, double score)>> Tags)
         {
             var db = new BookRecommenderContext();
             using (var counter = new Counter(Tags.Count))
@@ -114,7 +108,8 @@ namespace BookRecommender.DataManipulation
 
                     if (book == null)
                     {
-                        if(book?.BookId != bookId){
+                        if (book?.BookId != bookId)
+                        {
                             throw new DataMisalignedException(bookId.ToString());
                         }
                         System.Console.WriteLine("Book with id not found: \"" + bookIdString + "\"");
@@ -134,10 +129,11 @@ namespace BookRecommender.DataManipulation
             }
             db.SaveChanges();
         }
-        public static Dictionary<string, List<string>> StemDocuments(string dictionaryPath)
+        static Dictionary<string, List<string>> StemDocuments(string dictionaryPath)
         {
             var files = Directory.GetFiles(dictionaryPath);
             var stemmedDocumentsDictionary = new Dictionary<string, List<string>>();
+            IStemmer stemmer = new EnglishStemmer();
             object dictionaryLock = new Object();
 
             using (var counter = new Counter(files.Length))
@@ -148,7 +144,7 @@ namespace BookRecommender.DataManipulation
                     var fileName = Path.GetFileName(file);
                     var text = File.ReadAllText(file);
                     var stemmedWords = text.Split(new char[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
-                                           .Select(w => Stemmer.StemEnglishWord(w)).ToList();
+                                           .Select(w => stemmer.StemWord(w)).ToList();
                     lock (dictionaryLock)
                     {
                         stemmedDocumentsDictionary.Add(fileName, stemmedWords);
@@ -222,6 +218,14 @@ namespace BookRecommender.DataManipulation
                 retDictionary[word.Key] = idf;
             }
             return retDictionary;
+        }
+        IStemmer GetStemmer(string lang)
+        {
+            if (EnglishStemmer == null)
+            {
+                EnglishStemmer = new EnglishStemmer();
+            }
+            return EnglishStemmer;
         }
     }
 }

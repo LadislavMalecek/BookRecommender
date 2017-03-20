@@ -3,12 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BookRecommender.DataManipulation
+namespace BookRecommender.DataManipulation.Stemmers
 {
-    public class Stemmer
+    public class EnglishStemmer : IStemmer
     {
-        static ConcurrentDictionary<string, string> wordCache = new ConcurrentDictionary<string, string>();
-        public static string StemEnglishWord(string word)
+        ConcurrentDictionary<string, string> wordCache = new ConcurrentDictionary<string, string>();
+        public string StemWord(string word)
         {
             string tryValue;
             if (wordCache.TryGetValue(word, out tryValue))
@@ -17,18 +17,14 @@ namespace BookRecommender.DataManipulation
             }
             else
             {
-                var stemmedWord = new EnglishStemmer.EnglishWord(word).Stem;
+                var stemmedWord = new EnglishWord(word).Stem;
                 wordCache.TryAdd(word, stemmedWord);
                 return stemmedWord;
             }
-
         }
     }
-}
 
-namespace EnglishStemmer
-{
-    public class EnglishWord
+    class EnglishWord
     {
         internal static EnglishWord CreateWithR1R2(string text)
         {
@@ -980,6 +976,5 @@ namespace EnglishStemmer
             else
                 _text = String.Empty;
         }
-
     }
 }
