@@ -3,8 +3,9 @@
     <div class="col-sm-12">
     <h3>Search:</h3>
     <form action="/Home/Search" method="GET" class="form-inline">
-        <input type="text" name="query" class="form-control" value="@Model?.SearchPhrase" />
+        <input type="text" name="query" class="form-control" value="@Model?.SearchPhrase" id="searchBar" list="options"/ autocomplete="off">
         <button type="submit" value="Submit" class="btn btn-default">Search</button>
+        <datalist id="options"/>
     </form>
     </div>
 </div>
@@ -107,3 +108,23 @@ $('img.dynamic').each(function(){
 });
 </script>
 }
+<script>
+var lastValue = '';
+$("#searchBar").on('change keyup paste mouseup', function() {
+    if ($(this).val() != lastValue) {
+        lastValue = $(this).val();
+        var item = this;
+        $.ajax({
+            type: "GET",
+            url: "/Ajax/QueryAutoComplete?query=" + $(this).val(),
+            dataType: "json",
+            success: function(data) {
+                $('#options').empty();
+                for(var i = 0; i < data.length; i++){
+                    $('#options').append("<a href='/Home/Index'> + "<option value='" + data[i] + "'></a>");
+                }
+            }
+        })
+    }
+});
+</script>

@@ -9,6 +9,19 @@ namespace BookRecommender.DataManipulation
 {
     class SearchEngine
     {
+        public static List<string> Autocomplete(BookRecommenderContext db, string query, int howManyTop){
+            var booksStartingWith = db.Books.Select(b => b.NameEn).Where(b => b.ToLower().StartsWith(query.ToLower())).Take(howManyTop).ToList();
+            var authorsStartingWith = db.Authors.Select(a => a.NameEn).Where(a => a.ToLower().StartsWith(query.ToLower())).Take(howManyTop).ToList();
+            var startsWith = booksStartingWith.Concat(authorsStartingWith);
+            
+            var booksContaining = db.Books.Select(b => b.NameEn).Where(b => b.ToLower().Contains(query.ToLower())).Take(howManyTop).ToList();
+            var authorsContaining = db.Authors.Select(a => a.NameEn).Where(a => a.ToLower().Contains(query.ToLower())).Take(howManyTop).ToList();
+            var contains = booksContaining.Concat(authorsContaining);
+
+            var final = startsWith.Concat(contains).Distinct().Take(howManyTop);
+
+            return final.ToList();
+        }
         public static IEnumerable<Book> SearchBook(BookRecommenderContext db, string query)
         {
             // First try to find the exact query within books

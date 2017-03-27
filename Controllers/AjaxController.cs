@@ -24,5 +24,9 @@ namespace BookRecommender.Controllers
             }
             return dbObj.TryToGetImgUrl();
         }
+        public string[] QueryAutoComplete(string query){
+            // return "ahoj jak se vede".Split(' ');
+            return SearchEngine.Autocomplete(new BookRecommenderContext(), query, 10).ToArray();
+        }
     }
 }
