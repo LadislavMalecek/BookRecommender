@@ -20,12 +20,13 @@ namespace BookRecommender
                 System.Console.WriteLine("Authors => 0 - 6");
                 System.Console.WriteLine("Characters => 0 - 1");
                 System.Console.WriteLine("Genres => 0 - 1");
+                System.Console.WriteLine("WikiTags => 0 - 1");
                 
             }
 
             if(args.Length > 0 && args[0].ToLower() == "--mine"){
                 System.Console.WriteLine("Mining mode active, server will not start");
-                MineSPARQL.Mine(args);
+                DataMiner.Mine(args);
                 return;
             }
             if(args.Length > 1 && args[0].ToLower() == "--googleimg"){

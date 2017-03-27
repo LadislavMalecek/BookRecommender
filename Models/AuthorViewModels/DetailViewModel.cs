@@ -7,6 +7,5 @@ namespace BookRecommender.Models
     {
         public Author Author { get; set; }
         public IEnumerable<Book> Books { get; set; }
-        public AdditionalSparqlData AdditionalData { get; set; }
     }
 }

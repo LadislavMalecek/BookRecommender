@@ -11,7 +11,7 @@ namespace BookRecommender.DataManipulation.WikiData
 
     class WikiDataEndpointMiner : SparqlEndPointMiner
     {
-        IMiner miner = new WikiDataMiner();
+        IDownloader miner = new WikiDataDownloader();
         IParser parser = new WikiDataCsvParser();
 
         protected override List<Dictionary<string, string>> Execute(string query)
@@ -20,6 +20,18 @@ namespace BookRecommender.DataManipulation.WikiData
             var rawData = miner.MineData(query);
             // Proccess data
             return parser.Parse(rawData);
+        }
+        public override string GetIdFromUri(string uri)
+        {
+            var lastSlash = uri.LastIndexOf('/');
+            var trimmedUrl = "WD_" + uri.Substring(lastSlash + 1);
+            return trimmedUrl;
+        }
+        public override string GetUriFromId(string id){
+            if(id == null || id.Length < 5 || id.Substring(0,4) != "WD_Q"){
+                throw new ArgumentException("id param not valid");
+            }
+            else return "http://www.wikidata.org/entity/" + id.Substring(3);
         }
 
         // ------------------------------------------------------------------------------------------------------------------------------------
@@ -389,7 +401,7 @@ namespace BookRecommender.DataManipulation.WikiData
 
         //------------------------------------------------------------------------------------------------------------------------------------ 
 
-        IEnumerable<(string uri, string wikiPageUrl)> GetBooksWikiPages()
+        IEnumerable<(string uri, string wikiPageUrl)> GetBooksEnWikiPages()
         {
             // Query to obtain the identifiers
             // wdt:P18 - image
@@ -963,7 +975,8 @@ namespace BookRecommender.DataManipulation.WikiData
             }
             yield break;
         }
-        IEnumerable<string> GetWikiPages(string entity){
+        IEnumerable<string> GetWikiPages(string entity)
+        {
             var query = $@"SELECT *
                             WHERE {{
                                 ?article schema:about <{entity}>.
@@ -1024,6 +1037,36 @@ namespace BookRecommender.DataManipulation.WikiData
                 return null;
             }
             return result.First()["dateModified"];
+        }
+
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // Tag mining
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------------------------------------------
+
+        public override IEnumerable<(string bookId, string wikiPageUrl)> GetBooksWikiPages()
+        {
+            // Query to obtain the identifiers
+            // wdt:P18 - image
+            var query = @"SELECT *
+                            WHERE {
+                                ?book wdt:P31 wd:Q571.
+                                ?article schema:about ?book.
+                            }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+
+                // there are also wikiquote, wikisource and many more
+                if (line["article"].Contains("wikipedia.org"))
+                {
+                    yield return (GetIdFromUri(line["book"]), line["article"]);
+                }
+            }
+            yield break;
         }
     }
 }

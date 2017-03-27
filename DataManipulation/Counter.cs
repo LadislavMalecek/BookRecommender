@@ -10,10 +10,12 @@ namespace BookRecommender.DataManipulation
     {
         int count = 0;
         int max;
+        int cwInterval;
         Stopwatch sW = new Stopwatch();
-        public Counter(int max)
+        public Counter(int max, int cwInterval = 100)
         {
             this.max = max;
+            this.cwInterval = cwInterval;
             System.Console.Write(this);
             sW.Start();
         }
@@ -27,7 +29,7 @@ namespace BookRecommender.DataManipulation
             }
             else
             {
-                if (count % 100 == 0)
+                if (count % cwInterval == 0)
                 {
                     System.Console.Write(this);
                 }
@@ -50,8 +52,11 @@ namespace BookRecommender.DataManipulation
         {
             if (count != 0)
             {
-                var eta = (int)(((double)sW.ElapsedMilliseconds) / count * (max - count));
-                return String.Format("\r{0}/{1}   ETA: {2}s", count, max, eta / 1000);
+                var eta = (int)(((double)sW.ElapsedMilliseconds) / count * (max - count))/1000;
+                var hours = eta / 3600;
+                var minutes = (eta - 3600 * hours) / 60;
+                var seconds = (eta - 3600 * hours) - 60 * minutes;
+                return String.Format($"\r{count}/{max}   ETA: {hours}h{minutes}m{seconds}s");
             }
             else
             {

@@ -138,7 +138,7 @@ namespace BookRecommender.Models
         }
         public void AddTag(Tag tag, BookRecommenderContext db)
         {
-            db.Tags.Add(new Tag(this, tag.Value, tag.Score));
+            db.Tags.Add(new Tag(this, tag.Value, tag.Lang, tag.Score));
         }
         public void AddRating(BookRating rating, ApplicationUser user, BookRecommenderContext db)
         {

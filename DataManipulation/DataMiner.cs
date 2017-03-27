@@ -10,11 +10,12 @@ using BookRecommender.Models.Database;
 using System.Diagnostics;
 using BookRecommender.DataManipulation.WikiData;
 using BookRecommender.Tests;
+using BookRecommender.DataManipulation.WikiPedia;
 
 namespace BookRecommender.DataManipulation
 {
 
-    public class MineSPARQL
+    public class DataMiner
     {
         public static void Mine(string[] args)
         {
@@ -24,7 +25,8 @@ namespace BookRecommender.DataManipulation
                 // no param to mine -> mine all
                 endpoint.UpdateBooks(null);
                 endpoint.UpdateAuthors(null);
-                TagMiner.Mine(null);
+                endpoint.UpdateCharacters(null);
+                endpoint.UpdateGenres(null);
             }
             else
             {
@@ -65,9 +67,9 @@ namespace BookRecommender.DataManipulation
                         endpoint.UpdateGenres(methodNumberList);
                         break;
                     case "wikitags":
-                        TagMiner.Mine(methodNumberList);
+                        new WikiPageTagMiner().UpdateRatings(methodNumberList);
                         break;
-                    
+
                     default:
                         System.Console.WriteLine("Param not supported");
                         break;
@@ -76,7 +78,30 @@ namespace BookRecommender.DataManipulation
         }
         static void Test()
         {
-            new CsvParserTests().SingleMultiLine();
+            // var db = new BookRecommenderContext();
+            // var wPages = db.Books.Select(b => b.WikipediaPage).Where(b => b != null);
+            // foreach (var page in wPages)
+            // {
+            //     if(page ==null)
+            //     {
+            //         System.Console.WriteLine("wtf");
+            //         return;
+            //     }
+            //     var file = BookRecommender.DataManipulation.WikiPedia.WikiPageStorage.GetFileNameFromUrl(page);
+            //     if (file == null)
+            //     {
+            //         System.Console.WriteLine("'null: '" + page);
+            //     }
+            //     else
+            //     {
+            //         System.Console.WriteLine(file);
+            //     }
+            //     System.Console.ReadKey();
+            // }
+            // System.Console.WriteLine("Executing sparql query");
+            // var sparqlData = new WikiDataEndpointMiner().GetBooksWikiPages().ToList();
+            // System.Console.WriteLine("Downloading from wiki");
+            // new WikiPageTagMiner().DownloadAndTrimPages(sparqlData);
         }
         public static AdditionalSparqlData GetAdditionalData(string entityUrl)
         {

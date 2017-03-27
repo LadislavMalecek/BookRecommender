@@ -58,6 +58,11 @@ namespace BookRecommender.DataManipulation
 
             } while (!successfull);
         }
+
+        // Generates id from uri according to unique 2letters and underscore
+        // Example for wikidata: http://www.wikidata.org/entity/Q442 => WD_Q422
+        public abstract string GetIdFromUri(string uri);
+        public abstract string GetUriFromId(string id);
         protected abstract List<Dictionary<string, string>> Execute(string query);
 
         // User can chose between updating all or only some
@@ -69,5 +74,6 @@ namespace BookRecommender.DataManipulation
         public abstract void UpdateCharacters(List<int> methodList);
         public abstract void UpdateGenres(List<int> methodList);
         public abstract AdditionalSparqlData GetAdditionalData(string entityUrl);
+        public abstract IEnumerable<(string bookId, string wikiPageUrl)> GetBooksWikiPages();
     }
 }

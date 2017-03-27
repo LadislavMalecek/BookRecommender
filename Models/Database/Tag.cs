@@ -19,12 +19,15 @@ namespace BookRecommender.Models
         [Required]
         public string Value { get; set; }
         public double? Score { get; set; }
+        [Required]
+        public string Lang { get; set; }
 
-        public Tag(Book book, string value, double? score = null)
+        public Tag(Book book, string value, string lang, double? score = null)
         {
             Book = book;
             Value = value;
             Score = score;
+            Lang = lang;
         }
         // EF needs simple constructor
         public Tag() { }

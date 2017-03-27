@@ -10,7 +10,7 @@ namespace BookRecommender.Controllers
     public class AjaxController : Controller
     {
         public IActionResult SparqlData(string entityUri){
-            var additionalData = MineSPARQL.GetAdditionalData(entityUri);
+            var additionalData = DataMiner.GetAdditionalData(entityUri);
             return PartialView("AdditionalSparqlData", additionalData);
         }
         public string DynamicImage(string entityUri){

@@ -1,61 +1,18 @@
 using System;
-using System.IO;
-using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace BookRecommender.DataManipulation
+namespace BookRecommender.DataManipulation.WikiPedia
 {
-    class WikipediaMiner
+    class WikiPageTrimmer
     {
-        const string UrlAppendix = "?&action=raw";
-        public async Task<string> MineAndParse(string pageUrl)
+        public string Trim(string wikiPage)
         {
-            var page = await DownloadFromWeb(pageUrl + UrlAppendix);
-
-            if (page == null)
-            {
-                return null;
-            }
-            try
-            {
-                page = RemoveComments(page);
+                var page = RemoveComments(wikiPage);
                 page = RemoveCurlyBraces(page);
                 page = RemoveReferences(page);
                 page = KeepOnlyText(page);
                 return page;
-            }
-            catch (Exception e)
-            {
-                throw new Exception(pageUrl, e);
-            }
         }
-        async Task<string> DownloadFromWeb(string url)
-        {
-            var request = HttpWebRequest.Create(url);
-            request.Method = "GET";
-            try
-            {
-                var task = request.GetResponseAsync();
-                if (Task.WhenAny(task, Task.Delay(30000)).Result != task)
-                {
-                    // Timeout
-                    return null;
-                }
-
-                var httpResponse = (HttpWebResponse)await task;
-
-                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                {
-                    return streamReader.ReadToEnd();
-                }
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
         string KeepOnlyText(string text)
         {
             var sb = new StringBuilder();
@@ -160,7 +117,8 @@ namespace BookRecommender.DataManipulation
                 if (text[i] == '-' && text[i + 1] == '-' && text[i + 2] == '>')
                 {
                     levelsIn--;
-                    if(levelsIn < 0){
+                    if (levelsIn < 0)
+                    {
                         levelsIn = 0;
                         sBuilder.Remove(sBuilder.Length - charsAddedAfterLastRight, charsAddedAfterLastRight);
                     }
@@ -221,70 +179,5 @@ namespace BookRecommender.DataManipulation
             }
             return sBuilder.ToString();
         }
-
-        //-------------------------- SLOW  - deprecated ---------------------------------
-        //-------------------------------------------------------------------------------
-        // static string RemoveNested(string text, string left, string right)
-        // {
-        //     var sBuilder = new StringBuilder();
-
-        //     int levelsIn = 0;
-        //     for (var i = 0; i < text.Length; i++)
-        //     {
-        //         var start = Math.Max(0, sBuilder.Length - 50);
-        //         var s = sBuilder.ToString().Substring(start);
-
-        //         if (i <= text.Length - left.Length && text.Substring(i, left.Length) == left)
-        //         {
-        //             levelsIn++;
-        //             //skip next char
-        //             i += left.Length - 1;
-        //             continue;
-        //         }
-        //         if (i <= text.Length - right.Length && text.Substring(i, right.Length) == right)
-        //         {
-        //             levelsIn--;
-        //             //skip next char
-        //             i += right.Length - 1;
-        //             continue;
-        //         }
-        //         if (levelsIn == 0)
-        //         {
-        //             sBuilder.Append(text[i]);
-        //         }
-        //         if (levelsIn < 0)
-        //         {
-        //             throw new NotSupportedException("Level below zero");
-        //         }
-        //     }
-        //     return sBuilder.ToString();
-        // }
-        // static string RemoveSingle(string text, string left, string right)
-        // {
-        //     var sBuilder = new StringBuilder();
-
-        //     bool inElement = false;
-        //     for (var i = 0; i < text.Length; i++)
-        //     {
-        //         if (i <= text.Length - left.Length && text.Substring(i, left.Length) == left)
-        //         {
-        //             inElement = true;
-        //             i += left.Length - 1;
-        //             continue;
-        //         }
-        //         if (i <= text.Length - right.Length && text.Substring(i, right.Length) == right)
-        //         {
-        //             inElement = false;
-        //             //skip next char
-        //             i += right.Length - 1;
-        //             continue;
-        //         }
-        //         if (!inElement)
-        //         {
-        //             sBuilder.Append(text[i]);
-        //         }
-        //     }
-        //     return sBuilder.ToString();
-        // }
     }
 }

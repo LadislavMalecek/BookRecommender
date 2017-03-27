@@ -17,7 +17,6 @@ namespace BookRecommender.Controllers
             var db = new BookRecommenderContext();
             var author = db.Authors.Where(a => a.AuthorId == id)?.FirstOrDefault();
             var authorBooks = author.GetBooks(db);
-            var additionalData = MineSPARQL.GetAdditionalData(author.Uri);
 
             if (author == null)
             {
@@ -28,7 +27,6 @@ namespace BookRecommender.Controllers
             {
                 Author = author,
                 Books = authorBooks,
-                AdditionalData = additionalData
             });
         }
 

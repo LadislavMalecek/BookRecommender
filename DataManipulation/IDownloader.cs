@@ -1,7 +1,7 @@
 
 
 namespace BookRecommender.DataManipulation{
-    interface IMiner
+    interface IDownloader
     {
         string MineData(string query);
 

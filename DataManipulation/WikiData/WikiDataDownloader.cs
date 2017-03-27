@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace BookRecommender.DataManipulation.WikiData
 {
-    class WikiDataMiner : IMiner
+    class WikiDataDownloader : IDownloader
     {
         public enum FormatType
         {
             Json, Csv
         }
         FormatType formatType;
-        public WikiDataMiner(FormatType formatType = FormatType.Csv)
+        public WikiDataDownloader(FormatType formatType = FormatType.Csv)
         {
             this.formatType = formatType;
         }
