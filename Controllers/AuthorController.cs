@@ -5,11 +5,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using BookRecommender.Models;
 using BookRecommender.DataManipulation;
+using Microsoft.AspNetCore.Identity;
+using static BookRecommender.Models.UserActivity;
 
 namespace BookRecommender.Controllers
 {
     public class AuthorController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+        public AuthorController(UserManager<ApplicationUser> userManager)
+        {
+            _userManager = userManager;
+        }
 
         // GET: /Author/Detail
         public IActionResult Detail(int id)
@@ -21,6 +28,19 @@ namespace BookRecommender.Controllers
             if (author == null)
             {
                 return View("Error");
+            }
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+                var user = db.Users.Where(u => u.Id == userId)?.FirstOrDefault();
+                if (user == null)
+                {
+                    return View("Error");
+                }
+                var ua = new UserActivity(user, ActivityType.BookDetailViewed, id.ToString());
+                db.UsersActivities.Add(ua);
+                db.SaveChangesAsync();
             }
 
             return View(new AuthorDetail()

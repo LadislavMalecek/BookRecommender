@@ -40,16 +40,20 @@
                                         genres = string.IsNullOrEmpty(genres)?"---": genres;
                                         var authors = string.Join(", ", bookSearchView.BookAuthors.Select(a => a.NameEn).ToArray());
                                         authors = string.IsNullOrEmpty(authors)?"---": authors;
+                                        }
+                                        <div class="col-sm-4"><p class="text-center">@genres</p></div>
+                                        <div class="col-sm-4"><p class="text-center">@authors</p></div>
+
+                                        @{
                                         string score;
                                         if(!bookSearchView.BookRating.HasValue){
                                             score = "---";
+                                            <div class="col-sm-4"><p class="text-center">@score</p></div>
                                         } else{
                                             var lStars = bookSearchView.BookRating.Value;
                                             score = new String('★', lStars) + new String('☆', 5 - lStars);
+                                            <div class="col-sm-4"><p class="text-center"><span class="stars">@score</span></p></div>
                                         }}
-                                        <div class="col-sm-4"><span>Genres:</span><p class="text-center">@genres</p></div>
-                                        <div class="col-sm-4"><span>Authors:</span><p class="text-center">@authors</p></div>
-                                        <div class="col-sm-4"><span>Score:</span><p class="text-center">@score</p></div>
                                     </div>
                                 </div>
                             </div>

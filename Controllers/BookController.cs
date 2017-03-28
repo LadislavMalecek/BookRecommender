@@ -8,6 +8,7 @@ using BookRecommender.DataManipulation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static BookRecommender.Models.UserActivity;
 
 namespace BookRecommender.Controllers
 {
@@ -39,6 +40,20 @@ namespace BookRecommender.Controllers
             {
                 return View("Error");
             }
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var db = new BookRecommenderContext();
+                var user = db.Users.Where(u => u.Id == userId)?.FirstOrDefault();
+                if (user == null)
+                {
+                    return View("Error");
+                }
+                var ua = new UserActivity(user,ActivityType.BookDetailViewed,id.ToString());
+                db.UsersActivities.Add(ua);
+                db.SaveChangesAsync();
+            }
+
             return View(bookDetail);
         }
         [HttpGet]

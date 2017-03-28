@@ -4,12 +4,20 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using BookRecommender.Models;
 using BookRecommender.DataManipulation;
+using Microsoft.AspNetCore.Identity;
+using static BookRecommender.Models.UserActivity;
 
 namespace BookRecommender.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Users(){
+        private readonly UserManager<ApplicationUser> _userManager;
+        public HomeController(UserManager<ApplicationUser> userManager)
+        {
+            _userManager = userManager;
+        }
+        public IActionResult Users()
+        {
             var db = new BookRecommenderContext();
             var users = db.Users.ToList();
             ViewData["CurrentName"] = User.Identity.Name;
@@ -24,7 +32,8 @@ namespace BookRecommender.Controllers
         [HttpGet]
         public IActionResult Search(string query, int? page)
         {
-            if(string.IsNullOrEmpty(query)){
+            if (string.IsNullOrEmpty(query))
+            {
                 return View();
             }
 
@@ -34,11 +43,23 @@ namespace BookRecommender.Controllers
             }
 
             var db = new BookRecommenderContext();
-            var books = SearchEngine.SearchBook(db,query);
+            var books = SearchEngine.SearchBook(db, query);
             var authors = SearchEngine.SearchAuthor(db, query);
 
             var searchModel = new Search(query, page.Value, books.ToList(), authors.ToList(), db);
 
+            if (User.Identity.IsAuthenticated)
+            {
+                string userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+                var user = db.Users.Where(u => u.Id == userId)?.FirstOrDefault();
+                if (user == null)
+                {
+                    return View("Error");
+                }
+                var ua = new UserActivity(user,ActivityType.KeywordSearched,query);
+                db.UsersActivities.Add(ua);
+                db.SaveChangesAsync();
+            }
             return View(searchModel);
         }
 

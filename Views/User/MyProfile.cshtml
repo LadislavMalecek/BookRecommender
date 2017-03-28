@@ -17,14 +17,20 @@
                                     <a href="/Book/Detail/@rating.Item2.BookId"> @rating.Item2.NameEn </a>
                                 </div>
                                 <div class="col-sm-2">
-                                    <p class="text-right">@stars</p>
+                                    <p class="text-right stars">@stars</p>
                                 </div>
                             </div>
-                                @if(!string.IsNullOrEmpty(rating.Item1.TextRating)){
-                                <div class="col-sm-12">
+
+                            @if(!string.IsNullOrEmpty(rating.Item1.TextRating)){
+                            <div class="row">
+                                <div class="col-sm-10">
                                     <p>@rating.Item1.TextRating</p>
                                 </div>
-                                }
+                                <div class="col-sm-2">
+                                    <p class="text-right">@rating.Item1.CreatedTime.ToString("dd. MM. yyyy")</p>
+                                </div>
+                            </div>
+                            }
                         </div>
                     </td>
                 </tr>
