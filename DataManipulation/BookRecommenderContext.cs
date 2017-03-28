@@ -23,6 +23,7 @@ namespace BookRecommender.DataManipulation
         public DbSet<BookAuthor> BooksAuthors { get; set; }
         public DbSet<BookCharacter> BooksCharacters { get; set; }
         public DbSet<BookGenre> BooksGenres { get; set; }
+        public DbSet<UserActivity> UsersActivities { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder)
         {
@@ -122,6 +123,12 @@ namespace BookRecommender.DataManipulation
                 .HasOne(r => r.User)
                 .WithMany(u => u.Ratings)
                 .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserActivity>()
+                .HasOne(a => a.User)
+                .WithMany(u => u.Activities)
+                .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
