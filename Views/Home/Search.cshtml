@@ -121,7 +121,7 @@ $("#searchBar").on('change keyup paste mouseup', function() {
             success: function(data) {
                 $('#options').empty();
                 for(var i = 0; i < data.length; i++){
-                    $('#options').append("<a href='/Home/Index'> + "<option value='" + data[i] + "'></a>");
+                    $('#options').append("<option value='" + data[i] + "'>");
                 }
             }
         })
