@@ -4,7 +4,7 @@
     <h3>Search:</h3>
     <form action="/Home/Search" method="GET" class="form-inline">
         <input type="text" name="query" class="form-control" value="@Model?.SearchPhrase" id="searchBar" list="options"/ autocomplete="off">
-        <button type="submit" value="Submit" class="btn btn-default">Search</button>
+        <button type="submit" value="Submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span> Search</button>
         <datalist id="options"/>
     </form>
     </div>

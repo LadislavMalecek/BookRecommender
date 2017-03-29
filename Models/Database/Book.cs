@@ -91,8 +91,12 @@ namespace BookRecommender.Models
         {
             return db.BooksCharacters.Where(bc => bc.Book == this).Select(bc => bc.Character);
         }
-        public IEnumerable<Tag> GetTags(BookRecommenderContext db)
+        public IEnumerable<Tag> GetTags(BookRecommenderContext db, string lang = null)
         {
+            if (lang != null)
+            {
+                return db.Tags.Where(bt => bt.Book == this).Where(t => t.Lang == "en");
+            }
             return db.Tags.Where(bt => bt.Book == this);
         }
         public IEnumerable<BookRating> GetRatings(BookRecommenderContext db)
@@ -104,20 +108,22 @@ namespace BookRecommender.Models
             var ratings = GetRatings(db);
             var count = 0;
             var sum = ratings.Select(r => r.Rating).Sum(r => { count++; return r; });
-            if(count == 0){
+            if (count == 0)
+            {
                 return null;
             }
-            return (int)(sum/count);
+            return (int)(sum / count);
         }
         public int? GetPreciseRating(BookRecommenderContext db)
         {
             var ratings = GetRatings(db);
             var count = 0;
             var sum = ratings.Select(r => r.Rating).Sum(r => { count++; return r; });
-            if(count == 0){
+            if (count == 0)
+            {
                 return null;
             }
-            return (int)(sum*20/count);
+            return (int)(sum * 20 / count);
         }
 
         public void AddAuthor(Author author, BookRecommenderContext db)

@@ -2,87 +2,83 @@
 @model BookRecommender.DataManipulation.AdditionalSparqlData
 
 @if(Model.HasData()){
-<div class="container">
-  <h3> Additional data </h3>
-  <div class="panel-group" id="accordion">
-
-    @if(Model.Labels != null && Model.Labels.Count > 0){
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Labels</a>
-        </h4>
-      </div>
-      <div id="collapse1" class="panel-collapse collapse">
-        <div class="panel-body">
-            @foreach (var label in Model.Labels){
-            <p>Label(@label.Item2): <strong>@label.Item1</strong></p>
-            }   
-        </div>
+<div class="panel-group" id="accordion">
+  @if(Model.Labels != null && Model.Labels.Count > 0){
+  <div class="panel panel-default ">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Labels</a>
+      </h4>
+    </div>
+    <div id="collapse1" class="panel-collapse collapse">
+      <div class="panel-body">
+          @foreach (var label in Model.Labels){
+          <p>Label(@label.Item2): <strong>@label.Item1</strong></p>
+          }   
       </div>
     </div>
-    }
+  </div>
+  }
 
-    @if(Model.Descriptions != null && Model.Descriptions.Count > 0){
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" data-parent="#accordion" href="#collapse2">Descriptions</a>
-        </h4>
-      </div>
-      <div id="collapse2" class="panel-collapse collapse">
-        <div class="panel-body">
-            @foreach(var description in Model.Descriptions){
-            <p>Description(@description.Item2): <strong>@description.Item1</strong></p>
-            }
-        </div>
+  @if(Model.Descriptions != null && Model.Descriptions.Count > 0){
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse2">Descriptions</a>
+      </h4>
+    </div>
+    <div id="collapse2" class="panel-collapse collapse">
+      <div class="panel-body">
+          @foreach(var description in Model.Descriptions){
+          <p>Description(@description.Item2): <strong>@description.Item1</strong></p>
+          }
       </div>
     </div>
-    }
+  </div>
+  }
 
 
-    @if(Model.WikiPages != null && Model.WikiPages.Count > 0){
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" data-parent="#accordion" href="#collapse3">Wikipedia pages</a>
-        </h4>
-      </div>
-      <div id="collapse3" class="panel-collapse collapse">
-        <div class="panel-body">
-            @foreach (var wikipage in Model.WikiPages.Select(p => Uri.UnescapeDataString(p))){
-            <p><a href="@wikipage">@wikipage</a></p>
-            }   
-        </div>
+  @if(Model.WikiPages != null && Model.WikiPages.Count > 0){
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse3">Wikipedia pages</a>
+      </h4>
+    </div>
+    <div id="collapse3" class="panel-collapse collapse">
+      <div class="panel-body">
+          @foreach (var wikipage in Model.WikiPages.Select(p => Uri.UnescapeDataString(p))){
+          <p><a href="@wikipage">@wikipage</a></p>
+          }   
       </div>
     </div>
-    }
+  </div>
+  }
 
-    @if(Model.Properties != null && Model.Properties.Count > 0){
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" data-parent="#accordion" href="#collapse4">Properties</a>
-        </h4>
-      </div>
-      <div id="collapse4" class="panel-collapse collapse">
-        <div class="panel-body">
-            @foreach(var property in Model.Properties){
-            var value = string.IsNullOrEmpty(property.Item4)?property.Item2:property.Item4;
-            @if(value.StartsWith("http")||value.StartsWith("www")){
-                var shortend = value.Substring(0,Math.Min(50,value.Length)) + "...";
-                <p>@property.Item3: <strong><a href ="@value">@shortend</a></strong></p>
-            } else {
-                <p>@property.Item3: <strong>@value</strong></p>
-            }
-            }
-            @if(!string.IsNullOrEmpty(Model.DateModified)){
-                <p>DateModified: <strong>@Model.DateModified</strong></p>
-            }
-        </div>
+  @if(Model.Properties != null && Model.Properties.Count > 0){
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse4">Properties</a>
+      </h4>
+    </div>
+    <div id="collapse4" class="panel-collapse collapse">
+      <div class="panel-body">
+          @foreach(var property in Model.Properties){
+          var value = string.IsNullOrEmpty(property.Item4)?property.Item2:property.Item4;
+          @if(value.StartsWith("http")||value.StartsWith("www")){
+              var shortend = value.Substring(0,Math.Min(50,value.Length)) + "...";
+              <p>@property.Item3: <strong><a href ="@value">@shortend</a></strong></p>
+          } else {
+              <p>@property.Item3: <strong>@value</strong></p>
+          }
+          }
+          @if(!string.IsNullOrEmpty(Model.DateModified)){
+              <p>DateModified: <strong>@Model.DateModified</strong></p>
+          }
       </div>
     </div>
-    }
-  </div> 
-</div>
+  </div>
+  }
+</div> 
 }

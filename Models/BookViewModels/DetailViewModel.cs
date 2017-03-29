@@ -15,7 +15,8 @@ namespace BookRecommender.Models
                 Authors = Book.GetAuthors(db);
                 Genres = Book.GetGenres(db);
                 Characters = Book.GetCharacters(db);
-                Tags = Book.GetTags(db);
+                Tags = Book.GetTags(db, "en");
+                
 
                 if (userId != null)
                 {
@@ -23,10 +24,13 @@ namespace BookRecommender.Models
                     if (user != null)
                     {
                         SignedIn = true;
-                        UsersBookRating = db.Ratings.Where(r => r.BookId == Book.BookId && r.UserId == userId)?.FirstOrDefault();
+                        UserBookRating = db.Ratings.Where(r => r.BookId == Book.BookId && r.UserId == userId)?.FirstOrDefault();
                     }
                 }
                 BookRating = Book.GetPreciseRating(db);
+                Ratings = db.Ratings.Where(r => r.BookId == Book.BookId && r.TextRating != null).OrderByDescending(r => r.CreatedTime);
+                
+
             }
         }
         public Book Book { get; set; }
@@ -36,6 +40,8 @@ namespace BookRecommender.Models
         public IEnumerable<Tag> Tags { get; set; }
         public bool SignedIn { get; set; }
         public int? BookRating { get; set; }
-        public BookRating UsersBookRating { get; set; }
+        public BookRating UserBookRating { get; set; }
+        public IEnumerable<BookRating> Ratings { get; set; }
+        public IEnumerable<Book> RecommendedBooks { get; set; }
     }
 }

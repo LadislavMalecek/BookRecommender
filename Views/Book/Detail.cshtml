@@ -1,7 +1,7 @@
 @model BookRecommender.Models.BookDetail
 
 <div class="container-fluid">
-    <div class="col-sm-8">
+    <div class="col-sm-9">
         <div class="row">
             <h2>@Model.Book.GetNameEn()</h2>
         </div>
@@ -32,7 +32,7 @@
         <p> <strong>Tags:</strong> @string.Join(", ", Model.Tags.Select(t => t.Value).ToArray())</p>
         }
     </div>
-    <div class="col-sm-4">
+    <div class="col-sm-3">
         <div class="text-center">
             @if(Model.BookRating.HasValue){
             <h3>@Model.BookRating%</h3>
@@ -41,14 +41,16 @@
             }
         </div>
         <div class="text-center">
-            <img class="img-responsive center-block dynamic" data-uri="@Model.Book.Uri">
+            <img class="img-responsive center-block dynamic increased-padding" data-uri="@Model.Book.Uri">
         </div>
         @if(Model.SignedIn){
             <div class="text-center">
-            @if(Model.BookRating == null){
-                <a href="/Book/AddRating/@Model.Book.BookId" class="btn btn-default">Rate this book</a>
+            @if(Model.UserBookRating == null){
+                <div id="rateButton">
+                    <button class="btn btn-default">Rate this book</button>
+                </div>
             } else {
-                var lStars = Model.UsersBookRating.Rating;
+                var lStars = Model.UserBookRating.Rating;
                 var rating = new String('★', lStars) + new String('☆', 5 - lStars);
                 <h4>My rating: @rating</h4>
             }
@@ -57,18 +59,78 @@
     </div>
 </div>
 
+<div class="container-fluid" id="rateForm" style="display: none;">
+    <form action="/Book/AddRating" method="POST" class="form-inline">
+        <div class="col-sm-2">
+            <select name="scoreRating" class="form-control" style="min-width: 100%">
+                <option value="1">1 - Awful</option>
+                <option value="2">2 - Poor</option>
+                <option value="3">3 - Ok</option>
+                <option value="4">4 - Good</option>
+                <option value="5">5 - Excelent</option>
+            </select>
+        </div>
+        <div class="col-sm-8">
+            <input type="textarea" name="textRating" class="form-control" style="min-width: 100%"/>
+        </div>
+            <input type="hidden" name="bookId" value="@Model.Book.BookId" />
+        <div class="col-sm-2">
+            <button type="submit" value="Submit" class="btn btn-default" style="min-width: 100%">Add rating</button>
+        </div>
+    </form>
+</div>
 
+<div class="container-fluid" style="margin-top: 10px">
+    <ul class="nav nav-tabs nav-justified" style="margin-bottom: 10px;">
+    <li class="active"><a data-toggle="tab" href="#home">Recommendations</a></li>
+    <li><a data-toggle="tab" href="#reviews">Reviews</a></li>
+    <li><a data-toggle="tab" href="#additionalData">Dynamic data</a></li>
+    </ul>
 
-<!--<hr>
-<p><strong>Czech name:</strong> @Model.Book.NameCs</p>
-<p><strong>Uri:</strong><a href="@Model.Book.Uri">@Model.Book.Uri</a></p>-->
+    <div class="tab-content">
+        <div id="home" class="tab-pane fade in active">
+            
+        </div>
 
-<hr>
+        <div id="reviews" class="tab-pane fade">
+            <ul class="list-group">
+                @foreach(var rating in Model.Ratings){
+                    <li class="list-group-item">
+                    @{
+                        var lStars = rating.Rating;
+                        var ratingstars = new String('★', lStars) + new String('☆', 5 - lStars);
+                    }
+                    <div class="container-fluid">
+                        <div class="col-sm-2 text-left">
+                            @ratingstars
+                        </div>
+                        <div class="col-sm-8 text-center">
+                            @rating.TextRating
+                        </div>
+                        <div class="col-sm-2 text-right">
+                            @rating.CreatedTime.ToString("dd. MM. yyyy")
+                        </div>
 
-<div id="additionalData" data-uri="@Model.Book.Uri">
+                    </div>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        <div id="additionalData" class="tab-pane fade" data-uri="@Model.Book.Uri"/>
+    </div>
 </div>
 
 <script>
+$(function(){
+    $('#rateButton button').click(function()
+        {
+            $('#rateButton').hide();
+            $('#rateForm').fadeIn("slow");
+        }
+    );
+});
+
 $(function(){
     $(window).on('load', function() {
         $.ajax({
@@ -77,6 +139,7 @@ $(function(){
             datatype: "html",
             success: function (data) {
                 $('#additionalData').html(data);
+                <!--$('#additionalData').slideDown("slow");-->
             }
         })
     });
