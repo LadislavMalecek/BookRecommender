@@ -29,13 +29,14 @@ namespace BookRecommender.Controllers
         }
 
         // GET: /Book/Detail
-        public IActionResult Detail(int id)
+        async public Task<IActionResult> Detail(int id)
         {
             string userId = null;
-            if(User.Identity.IsAuthenticated){
-                userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+            if (User.Identity.IsAuthenticated)
+            {
+                userId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
             }
-            var bookDetail = new BookDetail(id,userId);
+            var bookDetail = new BookDetail(id, userId);
             if (bookDetail.Book == null)
             {
                 return View("Error");
@@ -49,34 +50,20 @@ namespace BookRecommender.Controllers
                 {
                     return View("Error");
                 }
-                var ua = new UserActivity(user,ActivityType.BookDetailViewed,id.ToString());
-                db.UsersActivities.Add(ua);
-                db.SaveChangesAsync();
+                var ua = new UserActivity(user, ActivityType.BookDetailViewed, id.ToString());
+                await db.UsersActivities.AddAsync(ua);
+                await db.SaveChangesAsync();
             }
 
             return View(bookDetail);
         }
-        [HttpGet]
-        public IActionResult AddRating(int id)
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return View("Error");
-            }
-            var db = new BookRecommenderContext();
-            var book = db.Books.Where(b => b.BookId == id)?.FirstOrDefault();
-            if (book == null)
-            {
-                return View("Error");
-            }
-            return View(book);
-        }
         [HttpPost]
-        public IActionResult AddRating(string bookId, string textRating, string scoreRating)
+        async public Task<IActionResult> AddRating(string bookId, string textRating, string scoreRating)
         {
             int bookIdParsed;
             int scoreRatingParsed;
-            if(!int.TryParse(bookId, out bookIdParsed) || !int .TryParse(scoreRating, out scoreRatingParsed)){
+            if (!int.TryParse(bookId, out bookIdParsed) || !int.TryParse(scoreRating, out scoreRatingParsed))
+            {
                 return View("Error");
             }
 
@@ -85,7 +72,7 @@ namespace BookRecommender.Controllers
                 return View("Error");
             }
             var db = new BookRecommenderContext();
-            var userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+            var userId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
             var user = db.Users.Where(u => u.Id == userId)?.FirstOrDefault();
             if (user == null)
             {
@@ -96,10 +83,15 @@ namespace BookRecommender.Controllers
             {
                 return View("Error");
             }
+            var rating = db.Ratings.Where(r => r.BookId == book.BookId && r.UserId == user.Id).FirstOrDefault();
 
-            book.AddRating(textRating, scoreRatingParsed, user, db);
-            db.SaveChanges();
-            return RedirectToAction("Detail","Book", new { id = bookIdParsed});
+            if (rating == null)
+            {
+                await book.AddRatingAsync(textRating, scoreRatingParsed, user, db);
+                await db.SaveChangesAsync();
+            }
+            return RedirectToAction("Detail", "Book", new { id = bookIdParsed });
+
         }
 
         // GET: /Book/Review

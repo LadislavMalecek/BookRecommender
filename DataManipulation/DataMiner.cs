@@ -11,6 +11,7 @@ using System.Diagnostics;
 using BookRecommender.DataManipulation.WikiData;
 using BookRecommender.Tests;
 using BookRecommender.DataManipulation.WikiPedia;
+using System.Threading.Tasks;
 
 namespace BookRecommender.DataManipulation
 {
@@ -103,11 +104,12 @@ namespace BookRecommender.DataManipulation
             // System.Console.WriteLine("Downloading from wiki");
             // new WikiPageTagMiner().DownloadAndTrimPages(sparqlData);
         }
-        public static AdditionalSparqlData GetAdditionalData(string entityUrl)
+        public async static Task<AdditionalSparqlData> GetAdditionalDataAsync(string entityUrl)
         {
             // Branching by the entityUrl
             // I have only one service now, so gonna call WikidataMiner
-            return new WikiData.WikiDataEndpointMiner().GetAdditionalData(entityUrl);
+            var task = new TaskFactory<AdditionalSparqlData>().StartNew(() => new WikiData.WikiDataEndpointMiner().GetAdditionalData(entityUrl));
+            return await task;
         }
     }
 }

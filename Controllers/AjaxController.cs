@@ -4,16 +4,17 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using BookRecommender.Models;
 using BookRecommender.DataManipulation;
+using System.Threading.Tasks;
 
 namespace BookRecommender.Controllers
 {
     public class AjaxController : Controller
     {
-        public IActionResult SparqlData(string entityUri){
-            var additionalData = DataMiner.GetAdditionalData(entityUri);
+        public async Task<IActionResult> SparqlData(string entityUri){
+            var additionalData = await DataMiner.GetAdditionalDataAsync(entityUri);
             return PartialView("AdditionalSparqlData", additionalData);
         }
-        public string DynamicImage(string entityUri){
+        public async Task<string> DynamicImage(string entityUri){
             var db = new BookRecommenderContext();
             IGoogleImg dbObj = db.Books.Where(b => b.Uri  == entityUri)?.FirstOrDefault();
             if(dbObj == null){
@@ -22,7 +23,7 @@ namespace BookRecommender.Controllers
             if(dbObj == null){
                 return "";
             }
-            return dbObj.TryToGetImgUrl();
+            return await dbObj.TryToGetImgUrlAsync();
         }
         public string[] QueryAutoComplete(string query){
             // return "ahoj jak se vede".Split(' ');

@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
+
 namespace BookRecommender.Models
 {
     interface IGoogleImg
     {
-        string TryToGetImgUrl();
+        Task<string> TryToGetImgUrlAsync();
     }
 }

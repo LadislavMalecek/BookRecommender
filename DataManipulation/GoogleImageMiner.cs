@@ -12,11 +12,11 @@ namespace BookRecommender.DataManipulation
     class GoogleImageMiner
     {
         //This method tries to get URI to the first google image search item of corresponding query
-        public string GetFirstImageUrl(string queryItems)
+        public async Task<string> GetFirstImageUrlAsync(string queryItems)
         {
             try
             {
-                string html = GetHtmlCode(queryItems.Split(new char[] { ' ' }));
+                string html = await GetHtmlCodeAsync(queryItems.Split(new char[] { ' ' }));
                 //File.WriteAllText("html.txt", html);
                 return GetFirstUrl(html);
             }
@@ -26,7 +26,7 @@ namespace BookRecommender.DataManipulation
             }
 
         }
-        string GetHtmlCode(string[] queryItems)
+        async Task<string> GetHtmlCodeAsync(string[] queryItems)
         {
             var queryUrl = "https://www.google.cz/search?q=" + string.Join("+", queryItems) + "&tbm=isch";
 
@@ -40,15 +40,16 @@ namespace BookRecommender.DataManipulation
             try
             {
                 var task = httpClient.GetAsync(queryUrl);
-                if (Task.WhenAny(task, Task.Delay(3000)).Result != task)
+                var result = await Task.WhenAny(task, Task.Delay(3000));
+                if (result != task)
                 {
                     // Timeout
                     return null;
                 }
                 var response = task.Result;
-                var content=  response.Content.ReadAsStringAsync().Result;
+                var content=  await response.Content.ReadAsStringAsync();
 
-                File.WriteAllText("C:\\netcore\\stranka.html", content);
+                //File.WriteAllText("C:\\netcore\\stranka.html", content);
                 
                 return content;
             }

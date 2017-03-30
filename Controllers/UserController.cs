@@ -6,6 +6,7 @@ using BookRecommender.Models;
 using BookRecommender.DataManipulation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace BookRecommender.Controllers
 {
@@ -19,13 +20,13 @@ namespace BookRecommender.Controllers
 
 
         [HttpGet]
-        public IActionResult MyProfile()
+        public async Task<IActionResult> MyProfile()
         {
             if (!User.Identity.IsAuthenticated)
             {
                 return View("Error");
             }
-            string userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+            string userId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
             var db = new BookRecommenderContext();
             var ratings = db.Ratings.Where(r => r.UserId == userId);
             return View(new MyProfileViewModel(ratings, db));

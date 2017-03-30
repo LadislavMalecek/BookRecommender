@@ -31,7 +31,7 @@ namespace BookRecommender
             }
             if(args.Length > 1 && args[0].ToLower() == "--googleimg"){
                 var query = string.Join(" ", args.Skip(1));
-                var address = new GoogleImageMiner().GetFirstImageUrl(query);
+                var address = new GoogleImageMiner().GetFirstImageUrlAsync(query).Result;
                 System.Console.WriteLine(address);
                 return;
             }

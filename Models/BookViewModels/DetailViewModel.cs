@@ -16,6 +16,7 @@ namespace BookRecommender.Models
                 Genres = Book.GetGenres(db);
                 Characters = Book.GetCharacters(db);
                 Tags = Book.GetTags(db, "en");
+                RecommendedBooks = db.Books.Take(5);
                 
 
                 if (userId != null)

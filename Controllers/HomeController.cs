@@ -6,6 +6,7 @@ using BookRecommender.Models;
 using BookRecommender.DataManipulation;
 using Microsoft.AspNetCore.Identity;
 using static BookRecommender.Models.UserActivity;
+using System.Threading.Tasks;
 
 namespace BookRecommender.Controllers
 {
@@ -30,7 +31,7 @@ namespace BookRecommender.Controllers
 
         // GET: /Book/Search  
         [HttpGet]
-        public IActionResult Search(string query, int? page)
+        async public Task<IActionResult> Search(string query, int? page)
         {
             if (string.IsNullOrEmpty(query))
             {
@@ -57,8 +58,8 @@ namespace BookRecommender.Controllers
                     return View("Error");
                 }
                 var ua = new UserActivity(user,ActivityType.KeywordSearched,query);
-                db.UsersActivities.Add(ua);
-                db.SaveChangesAsync();
+                await db.UsersActivities.AddAsync(ua);
+                await db.SaveChangesAsync();
             }
             return View(searchModel);
         }

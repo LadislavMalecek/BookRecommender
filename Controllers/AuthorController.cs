@@ -19,7 +19,7 @@ namespace BookRecommender.Controllers
         }
 
         // GET: /Author/Detail
-        public IActionResult Detail(int id)
+       async public Task<IActionResult> Detail(int id)
         {
             var db = new BookRecommenderContext();
             var author = db.Authors.Where(a => a.AuthorId == id)?.FirstOrDefault();
@@ -39,8 +39,8 @@ namespace BookRecommender.Controllers
                     return View("Error");
                 }
                 var ua = new UserActivity(user, ActivityType.BookDetailViewed, id.ToString());
-                db.UsersActivities.Add(ua);
-                db.SaveChangesAsync();
+                await db.UsersActivities.AddAsync(ua);
+                await db.SaveChangesAsync();
             }
 
             return View(new AuthorDetail()

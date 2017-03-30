@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Threading.Tasks;
 using BookRecommender.DataManipulation;
 using BookRecommender.Models.Database;
 
@@ -77,7 +78,7 @@ namespace BookRecommender.Models
         {
             return db.BooksAuthors.Where(ba => ba.Author == this).Select(ba => ba.Book);
         }
-        public string TryToGetImgUrl()
+        public async Task<string> TryToGetImgUrlAsync()
         {
             var pictureUrl = OriginalImage;
             if (pictureUrl == null)
@@ -89,13 +90,13 @@ namespace BookRecommender.Models
                 {
                     // If nothing in cache, try to load from Google
                     var imageMiner = new DataManipulation.GoogleImageMiner();
-                    pictureUrl = imageMiner.GetFirstImageUrl("author " + NameEn);
+                    pictureUrl = await imageMiner.GetFirstImageUrlAsync("author " + NameEn);
                     // Save to cache
                     if(pictureUrl != null){
                         GoogleImageCache = pictureUrl;
                         var db = new BookRecommenderContext();
                         db.Authors.Update(this);
-                        db.SaveChanges();
+                        await db.SaveChangesAsync();
                     }
                 }
             }
