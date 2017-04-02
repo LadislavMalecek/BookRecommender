@@ -11,10 +11,8 @@
         <p><a href="/Book/Detail/@book.BookId"> @book.GetNameEn() </a></p>
         } }
     </div>
-    <div class="col-sm-4">
-        <div class="row">
-            <img class="img-responsive center-block dynamic increased-padding" data-uri="@Model.Author.Uri">
-        </div>
+    <div class="col-sm-4 modal-img" data-toggle="modal" data-target="#myModal">
+        <img class="img-responsive center-block dynamic increased-padding" data-uri="@Model.Author.Uri">
     </div>
 </div>
 
@@ -25,6 +23,19 @@
 <hr>
 
 <div id="additionalData" data-uri="@Model.Author.Uri">
+</div>
+
+<div id="myModal" class="modal fade" role="dialog"  tabindex='-1'>
+    <span class="close" data-dismiss="modal">&times;</span>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div>
+                    <img class="img-responsive dynamic center-block" data-uri="@Model.Author.Uri">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>

@@ -40,7 +40,7 @@
                 <h3>No rating availible</h3>
             }
         </div>
-        <div class="text-center">
+        <div class="text-center modal-img" data-toggle="modal" data-target="#myModal">
             <img class="img-responsive center-block dynamic increased-padding" data-uri="@Model.Book.Uri">
         </div>
         @if(Model.SignedIn){
@@ -72,8 +72,8 @@
         </div>
         <div class="col-sm-8">
             <input type="textarea" name="textRating" class="form-control" style="min-width: 100%"/>
-        </div>
             <input type="hidden" name="bookId" value="@Model.Book.BookId" />
+        </div>
         <div class="col-sm-2">
             <button type="submit" value="Submit" class="btn btn-default" style="min-width: 100%">Add rating</button>
         </div>
@@ -119,6 +119,19 @@
         </div>
 
         <div id="additionalData" class="tab-pane fade" data-uri="@Model.Book.Uri">
+        </div>
+    </div>
+</div>
+
+<div id="myModal" class="modal fade" role="dialog"  tabindex='-1'>
+    <span class="close" data-dismiss="modal">&times;</span>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div>
+                    <img class="img-responsive dynamic center-block" data-uri="@Model.Book.Uri">
+                </div>
+            </div>
         </div>
     </div>
 </div>
