@@ -12,7 +12,7 @@
         } }
     </div>
     <div class="col-sm-4 modal-img" data-toggle="modal" data-target="#myModal">
-        <img class="img-responsive center-block dynamic increased-padding" data-uri="@Model.Author.Uri">
+        <img class="img-responsive center-block dynamic increased-padding" src="/images/loading.svg" data-uri="@Model.Author.Uri">
     </div>
 </div>
 
@@ -23,6 +23,7 @@
 <hr>
 
 <div id="additionalData" data-uri="@Model.Author.Uri">
+    <img class="center-block" style="width: 150px" src="/images/loading.svg">
 </div>
 
 <div id="myModal" class="modal fade" role="dialog"  tabindex='-1'>

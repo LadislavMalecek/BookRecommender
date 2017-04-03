@@ -41,7 +41,7 @@
             }
         </div>
         <div class="text-center modal-img" data-toggle="modal" data-target="#myModal">
-            <img class="img-responsive center-block dynamic increased-padding" data-uri="@Model.Book.Uri">
+            <img class="img-responsive center-block dynamic increased-padding" src="/images/loading.svg" data-uri="@Model.Book.Uri">
         </div>
         @if(Model.SignedIn){
             <div class="text-center">
@@ -88,15 +88,14 @@
     </ul>
 
     <div class="tab-content">
-
-        <div id="recommendations" class="tab-pane fade in active">
-                    <h3 class="text-center"> Not implemented yet - there is going to be a list of recommended books </h3>
+        <div id="recommendations" class="tab-pane fade in active recommendation">
+            <img class="center-block" style="width: 150px" src="/images/loading.svg">
         </div>
 
         <div id="reviews" class="tab-pane fade">
             <ul class="list-group">
                 @foreach(var rating in Model.Ratings){
-                    <li class="list-group-item">
+                    <li class="list-group-item" style="background-color:#f5f5f5;">
                     @{
                         var lStars = rating.Rating;
                         var ratingstars = new String('★', lStars) + new String('☆', 5 - lStars);
@@ -119,6 +118,7 @@
         </div>
 
         <div id="additionalData" class="tab-pane fade" data-uri="@Model.Book.Uri">
+            <img class="center-block" style="width: 150px" src="/images/loading.svg">
         </div>
     </div>
 </div>
@@ -169,6 +169,18 @@ $('img.dynamic').each(function(){
             datatype: "html",
             success: function (data) {
                 $(item).attr('src', data);
+            }
+        })
+});
+
+$('.recommendation').each(function(){
+    var item = this;
+    $.ajax({
+            type: "GET",
+            url: "/Ajax/Recommendation",
+            datatype: "html",
+            success: function (data) {
+                $(item).html(data);
             }
         })
 });

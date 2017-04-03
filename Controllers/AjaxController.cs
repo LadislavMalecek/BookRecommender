@@ -29,5 +29,16 @@ namespace BookRecommender.Controllers
             // return "ahoj jak se vede".Split(' ');
             return SearchEngine.Autocomplete(new BookRecommenderContext(), query, 10).ToArray();
         }
+        public async Task<IActionResult> Recommendation(){
+            var data = new List<Recommendation>(){
+                new Recommendation(57679),
+                new Recommendation(57927),
+                new Recommendation(57953),
+                new Recommendation(57954),
+                new Recommendation(57955),
+                new Recommendation(57966)
+            };
+            return PartialView("Recommendation", data);
+        }
     }
 }

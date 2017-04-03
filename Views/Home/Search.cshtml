@@ -57,8 +57,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-2 hidden-xs">
-                                <img class="img-thumbnail dynamic" data-uri="@bookSearchView.Book.Uri">
+                            <div class="col-sm-2 hidden-xs" style="padding:0">
+                                <div class="img-dynamic">
+                                    <img class="img-thumbnail loading-element" src="/images/loading.svg" style="width:50px">
+                                    <img class="img-thumbnail img-element" data-uri="@bookSearchView.Book.Uri" style="display: none;">
+                                </div>
                             </div>
                         </div>
                     </td>
@@ -99,14 +102,18 @@
 </ul>
 }
 <script>
-$('img.dynamic').each(function(){
+
+$('.img-dynamic').each(function(){
     var item = this;
     $.ajax({
             type: "GET",
-            url: "/Ajax/DynamicImage?entityUri=" + $(this).data('uri'),
+            url: "/Ajax/DynamicImage?entityUri=" + $(item).children('.img-element').first().data('uri'),
             datatype: "html",
             success: function (data) {
-                $(item).attr('src', data);
+                var img = $(item).children('.img-element').first();
+                $(img).attr('src', data);
+                $(item).children('.loading-element').first().hide();
+                $(img).show();
             }
         })
 });

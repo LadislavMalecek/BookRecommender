@@ -9,4 +9,25 @@
 </div>
 </a>
 
+<h2 class="text-center"> Books you might like </h2>
+<div class "container-fluid">
+    <div id="recommendations" class="tab-pane fade in active recommendation">
+        <img class="center-block" style="width: 150px" src="/images/loading.svg">
+    </div>
+</div>
+
+<script>
+$('.recommendation').each(function(){
+    var item = this;
+    $.ajax({
+            type: "GET",
+            url: "/Ajax/Recommendation",
+            datatype: "html",
+            success: function (data) {
+                $(item).html(data);
+            }
+        })
+});
+</script>
+
 
