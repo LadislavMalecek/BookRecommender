@@ -25,6 +25,9 @@ namespace BookRecommender
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+            
+            // init config singleton
+            AppSettingsSingleton.Initialize(Configuration);
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -34,6 +37,7 @@ namespace BookRecommender
         {
             // Add framework services.
             services.AddMvc();
+            
             //services.AddDbContext<BookRecommenderContext>(options => options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=BookRecommender;Integrated Security=True;Connect Timeout=30;"));
             // services.AddDbContext<BookRecommenderContext>(options => options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=BookRecommender"));
             //Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False

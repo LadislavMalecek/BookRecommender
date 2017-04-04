@@ -27,7 +27,7 @@ namespace BookRecommender.DataManipulation
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder)
         {
-            optionBuilder.UseSqlite("Filename=C://netcore//SQLite//BookRecommender.db");
+            optionBuilder.UseSqlite(AppSettingsSingleton.DataBaseConnectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

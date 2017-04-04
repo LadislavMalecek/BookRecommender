@@ -7,16 +7,17 @@ namespace BookRecommender.DataManipulation.WikiPedia
 {
     class WikiPageStorage
     {
-        const string defaultDir = "C:\\netcore\\booksWikiPages\\";
-
         readonly string rootDir;
-        public WikiPageStorage(string storageRootDir = defaultDir)
+
+        public WikiPageStorage()
         {
-            if (!Directory.Exists(storageRootDir))
-            {
-                throw new DirectoryNotFoundException("Directory: " + storageRootDir);
+            var dir = AppSettingsSingleton.Mining.WikiPagesStorage;
+            try{
+                Path.GetFullPath(dir);
+            } catch (Exception e){
+                throw new DirectoryNotFoundException("Directory: " + dir, e);
             }
-            rootDir = storageRootDir;
+            rootDir = dir;
             if (rootDir.Last() != Path.DirectorySeparatorChar)
             {
                 rootDir += Path.DirectorySeparatorChar;
