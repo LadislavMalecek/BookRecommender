@@ -25,7 +25,10 @@ namespace BookRecommender.DataManipulation
         public static IEnumerable<Book> SearchBook(BookRecommenderContext db, string query)
         {
             // First try to find the exact query within books
-            var wholeQueryFound = db.Books.Where(b => b.NameEn.ToLower().Contains(query.ToLower()));
+            var startsWithFound = db.Books.Where(b => b.NameEn.ToLower().StartsWith(query.ToLower()));
+            var containsFound = db.Books.Where(b => b.NameEn.ToLower().Contains(query.ToLower()));
+            var wholeQueryFound = startsWithFound.Concat(containsFound);
+
 
             var splitQuery = query.ToLower().Split(new char[] { ' ' });
 
@@ -56,7 +59,9 @@ namespace BookRecommender.DataManipulation
         public static IEnumerable<Author> SearchAuthor(BookRecommenderContext db, string query)
         {
             // First try to find the exact query within books
-            var wholeQueryFound = db.Authors.Where(a => a.NameEn.ToLower().Contains(query.ToLower()));
+            var startsWithFound = db.Authors.Where(a => a.NameEn.ToLower().StartsWith(query.ToLower()));
+            var containsFound = db.Authors.Where(a => a.NameEn.ToLower().Contains(query.ToLower()));
+            var wholeQueryFound = startsWithFound.Concat(containsFound);
 
             var splitQuery = query.ToLower().Split(new char[] { ' ' });
 

@@ -11,17 +11,40 @@
 
 <h2 class="text-center"> Books you might like </h2>
 <div class "container-fluid">
-    <div id="recommendations" class="tab-pane fade in active recommendation">
+    <div id="recommendations" class="tab-pane fade in active recommendation" data-type="test" data-data="0">
+        <img class="center-block" style="width: 150px" src="/images/loading.svg">
+    </div>
+</div>
+<h2 class="text-center"> Trending books </h2>
+<div class "container-fluid">
+    <div id="recommendations" class="tab-pane fade in active recommendation" data-type="test" data-data="0">
         <img class="center-block" style="width: 150px" src="/images/loading.svg">
     </div>
 </div>
 
 <script>
-$('.recommendation').each(function(){
+$('img.dynamic').each(function(){
     var item = this;
     $.ajax({
             type: "GET",
-            url: "/Ajax/Recommendation",
+            url: "/Ajax/DynamicImage?entityUri=" + $(this).data('uri'),
+            datatype: "html",
+            success: function (data) {
+                $(item).attr('src', data);
+            }
+        })
+});
+
+
+$('.recommendation').each(function(){
+    var item = this;
+    var type = $(this).data('type');
+    var data = $(this).data('data');
+    var ajaxUrl = "/Ajax/Recommendation?type=" + type + "&data=" + data;
+
+    $.ajax({
+            type: "GET",
+            url: ajaxUrl,
             datatype: "html",
             success: function (data) {
                 $(item).html(data);

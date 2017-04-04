@@ -88,7 +88,7 @@
     </ul>
 
     <div class="tab-content">
-        <div id="recommendations" class="tab-pane fade in active recommendation">
+        <div id="recommendations" class="tab-pane fade in active recommendation" data-type="bookPage" data-data="@Model.Book.BookId">
             <img class="center-block" style="width: 150px" src="/images/loading.svg">
         </div>
 
@@ -175,9 +175,13 @@ $('img.dynamic').each(function(){
 
 $('.recommendation').each(function(){
     var item = this;
+    var type = $(this).data('type');
+    var data = $(this).data('data');
+    var ajaxUrl = "/Ajax/Recommendation?type=" + type + "&data=" + data;
+
     $.ajax({
             type: "GET",
-            url: "/Ajax/Recommendation",
+            url: ajaxUrl,
             datatype: "html",
             success: function (data) {
                 $(item).html(data);
