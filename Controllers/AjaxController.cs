@@ -36,26 +36,27 @@ namespace BookRecommender.Controllers
         }
         public IActionResult Recommendation(string type, int data)
         {
-            List<int> recList;
+            IEnumerable<int> recList;
 
             switch (type)
             {
                 case "bookPage":
-                case "test":
                     recList = new RecommenderEngine().RecommendBookSimilar(data);
+                    break;
+                case "bookPageByTags":
+                    recList = new RecommenderEngine().RecommendBookSimilarByTags(data);
                     break;
                 default:
                     return View("Error");
             }
-            if(recList.Count != 6)
-            {
-                return View("Error");
-            }
-            var recommendations = new List<Recommendation>();
 
-            foreach(var bookId in recList){
-                recommendations.Add(new Recommendation(bookId));
+            if(recList == null){
+                return null;
             }
+
+            var recommendations = new List<Recommendation>();
+            recommendations = recList.Take(6).Select(r => new Recommendation(r)).ToList();
+
             return PartialView("Recommendation", recommendations);
 
             // var db = new BookRecommenderContext();
