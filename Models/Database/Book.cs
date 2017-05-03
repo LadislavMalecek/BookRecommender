@@ -34,23 +34,36 @@ namespace BookRecommender.Models
 
         public string GetNameEn()
         {
-            if (NameEn != null)
+            if (!string.IsNullOrEmpty(NameEn))
             {
                 return NameEn;
             }
-            if (NameOrig != null)
+            if (!string.IsNullOrEmpty(NameOrig))
             {
                 return NameOrig;
             }
-            if (Title != null)
+            if (!string.IsNullOrEmpty(Title))
             {
                 return Title;
             }
-            if (NameCs != null)
+            if (!string.IsNullOrEmpty(NameCs))
             {
                 return NameCs;
             }
             return null;
+        }
+
+        public string GetNameEnShort(int numberOfChars, string afterChars = "...")
+        {
+            var name = GetNameEn();
+            if (name.Length <= numberOfChars)
+            {
+                return name;
+            }
+            else
+            {
+                return name.Substring(0,numberOfChars) + afterChars;
+            }
         }
 
 
@@ -204,7 +217,7 @@ namespace BookRecommender.Models
                 {
                     // If nothing in cache, try to load from Google
                     var imageMiner = new DataManipulation.GoogleImageMiner();
-                    pictureUrl = await imageMiner.GetFirstImageUrlAsync("book " + NameEn);
+                    pictureUrl = await imageMiner.GetFirstImageUrlAsync("book " + GetNameEn());
                     // Save to cache
                     if (pictureUrl != null)
                     {

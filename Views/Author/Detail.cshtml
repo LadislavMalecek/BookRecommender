@@ -13,7 +13,7 @@
         @if(Model.Books.Count() > 0){
         <p> <strong>Books: </strong></p>
         @foreach (var book in Model.Books){
-        <p><a href="/Book/Detail/@book.BookId"> @book.GetNameEn() </a></p>
+        <p><a href="/Book/Detail/@book.BookId"> @book.GetNameEn()</a></p>
         } }
     </div>
     <div class="col-sm-4 modal-img" data-toggle="modal" data-target="#myModal">

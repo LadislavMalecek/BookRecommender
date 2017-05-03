@@ -26,14 +26,18 @@ namespace BookRecommender.Models
         public string Description { get; set; }
         public string WikipediaPage { get; set; }
 
-        public string GetNameEn(){
-            if(NameEn != null){
+        public string GetNameEn()
+        {
+            if (!string.IsNullOrEmpty(NameEn))
+            {
                 return NameEn;
             }
-            if(Name != null){
+            if (!string.IsNullOrEmpty(Name))
+            {
                 return Name;
             }
-            if(NameCs != null){
+            if (!string.IsNullOrEmpty(NameCs))
+            {
                 return NameCs;
             }
             return null;
@@ -94,7 +98,7 @@ namespace BookRecommender.Models
                 {
                     // If nothing in cache, try to load from Google
                     var imageMiner = new DataManipulation.GoogleImageMiner();
-                    pictureUrl = await imageMiner.GetFirstImageUrlAsync("author " + NameEn);
+                    pictureUrl = await imageMiner.GetFirstImageUrlAsync("author " + GetNameEn());
                     // Save to cache
                     if(pictureUrl != null){
                         GoogleImageCache = pictureUrl;

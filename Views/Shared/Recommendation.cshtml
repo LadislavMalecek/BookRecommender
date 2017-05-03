@@ -45,7 +45,7 @@
         <div class="col-md-4 col-sm-6 col-xs-12" style="padding-left:0; padding-right:0;">
             <div class="container-fluid rec-container" style="height: 200px">
                 <a href="/Book/Detail/@recommendation.Book.BookId">
-                    <h3 style="margin:5px">@recommendation.Book.NameEn</h3>
+                    <h3 style="margin:5px">@recommendation.Book.GetNameEnShort(40)</h3>
                 </a>
 
                 <div class="col-xs-4 text-center" style="padding:0">
@@ -59,14 +59,21 @@
                         } else {
                     <p> <strong>Author: </strong></p>
                         }
-                    @foreach (var author in recommendation.Authors){
+                    @foreach (var author in recommendation.Authors.Take(3)){
                     <p><a href="/Author/Detail/@author.AuthorId"> @author.GetNameEn() </a></p>
                     } }
+                    @if(recommendation.Authors.Count() > 3){
+                        <p>...</p>
+                    }
                     @if (recommendation.Genres.Count() > 0){
                         @if(recommendation.Genres.Count() > 1){
-                    <p> <strong>Genres:</strong> @string.Join(", ", recommendation.Genres.Select(g => g.NameEn).ToArray())</p>
+                            @if(recommendation.Genres.Count() > 3){
+                                <p> <strong>Genres:</strong> @(string.Join(", ", recommendation.Genres.Take(3).Select(g => g.NameEn).ToArray()) + ", ...")</p>
+                            }else{
+                            <p> <strong>Genres:</strong> @string.Join(", ", recommendation.Genres.Select(g => g.NameEn).ToArray())</p>
+                            }
                         } else {
-                    <p> <strong>Genre:</strong> @recommendation.Genres.First().NameEn</p>
+                        <p> <strong>Genre:</strong> @recommendation.Genres.First().NameEn</p>
                         }
                     }
                     @if(recommendation.RecommendationReason != null){
