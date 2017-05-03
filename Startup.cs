@@ -27,7 +27,7 @@ namespace BookRecommender
             Configuration = builder.Build();
             
             // init config singleton
-            AppSettingsSingleton.Initialize(Configuration);
+            //AppSettingsSingleton.Initialize(Configuration);
         }
 
         public IConfigurationRoot Configuration { get; }
