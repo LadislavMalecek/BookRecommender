@@ -1,4 +1,9 @@
 @model BookRecommender.Models.AuthorDetail 
+
+@{
+    ViewData["Title"] = "Author detail";
+}
+
 <h2>@Model.Author.GetNameEn()</h2>
 <div class="container-fluid">
     <div class="col-sm-8">
