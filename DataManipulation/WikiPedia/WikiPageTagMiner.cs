@@ -96,6 +96,16 @@ namespace BookRecommender.DataManipulation.WikiPedia
                 var pages = storage.GetPagesInLang(lang);
                 System.Console.Write("Loading pages from disk finished");
 
+                var pagesCount = storage.PagesInLangCount(lang);
+
+                // Update count table
+                if(db.TagsCount.Where(t => t.Lang == lang).Count() == 0){
+                    
+                    db.TagsCount.Add(new TagCount(lang, pagesCount));
+                }else{
+                    db.TagsCount.Update(new TagCount(lang, pagesCount));
+                }
+
                 var documents = new List<(string docId, string[] words)>();
                 foreach (var page in pages)
                 {
@@ -176,8 +186,11 @@ namespace BookRecommender.DataManipulation.WikiPedia
             {
                 foreach (var document in parsedDocuments)
                 {
-                    var docLenght = document.words.Length;
+                    // for each document, use term frequency * inverse document freq
 
+                    var docLength = document.words.Length;
+
+                    // count how many times words appear in document
                     var wordsWithCount = from w in document.words
                                          group w by w into g
                                          select new { word = g.Key, count = g.Count() };
@@ -186,7 +199,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
                     var tdidf = wordsWithCount.Select(w =>
                                                   new ValueTuple<string, double>(
                                                       w.word,
-                                                      ((double)w.count / docLenght) * idfDictionary[w.word]))
+                                                      ((double)w.count / docLength) * idfDictionary[w.word]))
                                               .OrderByDescending(w => w.Item2);
 
                     var tdidfTop = tdidf.Take(howManyTop).ToList();

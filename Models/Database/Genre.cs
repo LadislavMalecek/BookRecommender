@@ -23,5 +23,9 @@ namespace BookRecommender.Models
         {
             return db.BooksGenres.Where(bg => bg.Genre == this).Select(bg => bg.Book);
         }
+        public IEnumerable<int> GetBooksIds(BookRecommenderContext db)
+        {
+            return db.BooksGenres.Where(bg => bg.Genre == this).Select(bg => bg.BookId);
+        }
     }
 }

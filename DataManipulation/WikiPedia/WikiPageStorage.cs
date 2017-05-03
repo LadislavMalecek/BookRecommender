@@ -80,6 +80,14 @@ namespace BookRecommender.DataManipulation.WikiPedia
                 yield return (id, File.ReadAllText(file));
             }
         }
+        public int PagesInLangCount(string lang){
+            var dirpath = rootDir + lang + Path.DirectorySeparatorChar;
+            if (!Directory.Exists(dirpath))
+            {
+                return 0;
+            }
+            return Directory.GetFiles(dirpath).Length;
+        }
         public IEnumerable<string> GetLangs()
         {
             return Directory.GetDirectories(rootDir).Select(d => new DirectoryInfo(d).Name);

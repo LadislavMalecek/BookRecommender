@@ -78,6 +78,10 @@ namespace BookRecommender.Models
         {
             return db.BooksAuthors.Where(ba => ba.Author == this).Select(ba => ba.Book);
         }
+        public IEnumerable<int> GetBooksIds(BookRecommenderContext db)
+        {
+            return db.BooksAuthors.Where(ba => ba.Author == this).Select(ba => ba.BookId);
+        }
         public async Task<string> TryToGetImgUrlAsync()
         {
             var pictureUrl = OriginalImage;

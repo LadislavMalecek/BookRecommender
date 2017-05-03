@@ -18,6 +18,7 @@ namespace BookRecommender.DataManipulation
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Character> Characters { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<TagCount> TagsCount { get; set; }
         public DbSet<BookRating> Ratings { get; set; }
 
         public DbSet<BookAuthor> BooksAuthors { get; set; }
@@ -33,6 +34,22 @@ namespace BookRecommender.DataManipulation
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+
+            //--------------------------------
+            // Indexes
+            //--------------------------------
+            modelBuilder.Entity<Tag>()
+                .HasIndex(c => c.Value);
+
+            modelBuilder.Entity<TagCount>()
+                .HasIndex(c => c.Lang)
+                .IsUnique(true);
+
+
+            //--------------------------------
+            // Alternative keys
+            //--------------------------------
 
             modelBuilder.Entity<Book>()
                 .HasAlternateKey(c => c.Uri)

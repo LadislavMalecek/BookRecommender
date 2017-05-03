@@ -22,5 +22,9 @@ namespace BookRecommender.Models
         {
             return db.BooksCharacters.Where(bc => bc.Character == this).Select(bc => bc.Book);
         }
+        public IEnumerable<int> GetBooksIds(BookRecommenderContext db)
+        {
+            return db.BooksCharacters.Where(bc => bc.Character == this).Select(bc => bc.BookId);
+        }
     }
 }
