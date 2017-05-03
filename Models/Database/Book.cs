@@ -191,7 +191,7 @@ namespace BookRecommender.Models
         }
         public async Task AddRatingAsync(BookRating rating, ApplicationUser user, BookRecommenderContext db)
         {
-            await db.Ratings.AddAsync(new BookRating(user, this, rating.Rating, rating.TextRating));
+            await db.Ratings.AddAsync(new BookRating(user, this, rating.Rating, rating.Review));
         }
 
 

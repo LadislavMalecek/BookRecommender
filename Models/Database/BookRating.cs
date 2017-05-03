@@ -21,7 +21,7 @@ namespace BookRecommender.Models
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
 
-        public string TextRating { get; set; }
+        public string Review { get; set; }
 
         [Required]
         public int Rating { get; set; }
@@ -29,12 +29,12 @@ namespace BookRecommender.Models
         [Required]
         public DateTime CreatedTime { get; private set; }
 
-        public BookRating(ApplicationUser user, Book book, int rating, string textRating = null)
+        public BookRating(ApplicationUser user, Book book, int rating, string review = null)
         {
             User = user;
             Book = book;
             Rating = rating;
-            TextRating = textRating;
+            Review = review;
             CreatedTime = DateTime.UtcNow;
 
         }

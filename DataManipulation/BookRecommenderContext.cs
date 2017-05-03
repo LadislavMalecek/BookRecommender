@@ -46,6 +46,12 @@ namespace BookRecommender.DataManipulation
                 .HasIndex(c => c.Lang)
                 .IsUnique(true);
 
+            modelBuilder.Entity<BookRating>()
+                .HasIndex(c => c.BookId);
+
+            modelBuilder.Entity<BookRating>()
+                .HasIndex(c => c.UserId);
+
 
             //--------------------------------
             // Alternative keys

@@ -29,7 +29,7 @@ namespace BookRecommender.Models
                     }
                 }
                 BookRating = Book.GetPreciseRating(db);
-                Ratings = db.Ratings.Where(r => r.BookId == Book.BookId && r.TextRating != null).OrderByDescending(r => r.CreatedTime);
+                Ratings = db.Ratings.Where(r => r.BookId == Book.BookId && r.Review != null).OrderByDescending(r => r.CreatedTime);
                 
 
             }
