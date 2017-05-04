@@ -31,6 +31,9 @@ namespace BookRecommender.Models
 
         public BookRating(ApplicationUser user, Book book, int rating, string review = null)
         {
+            if(rating < 0 || rating > 5){
+                throw new ArgumentOutOfRangeException("Rating should be between zero and five, it was: " + rating);
+            }
             User = user;
             Book = book;
             Rating = rating;

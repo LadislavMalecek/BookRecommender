@@ -21,10 +21,10 @@
                                 </div>
                             </div>
 
-                            @if(!string.IsNullOrEmpty(rating.Item1.TextRating)){
+                            @if(!string.IsNullOrEmpty(rating.Item1.Review)){
                             <div class="row">
                                 <div class="col-sm-10">
-                                    <p>@rating.Item1.TextRating</p>
+                                    <p>@rating.Item1.Review</p>
                                 </div>
                                 <div class="col-sm-2">
                                     <p class="text-right">@rating.Item1.CreatedTime.ToString("dd. MM. yyyy")</p>

@@ -5,11 +5,17 @@ using Microsoft.AspNetCore.Mvc;
 using BookRecommender.Models;
 using BookRecommender.DataManipulation;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace BookRecommender.Controllers
 {
     public class AjaxController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+        public AjaxController(UserManager<ApplicationUser> userManager)
+        {
+            _userManager = userManager;
+        }
         public async Task<IActionResult> SparqlData(string entityUri)
         {
             var additionalData = await DataMiner.GetAdditionalDataAsync(entityUri);
@@ -46,11 +52,38 @@ namespace BookRecommender.Controllers
                 case "bookPageByTags":
                     recList = new RecommenderEngine().RecommendBookSimilarByTags(data);
                     break;
+                case "userBased":
+
+                    if (User.Identity.IsAuthenticated)
+                    {
+                        var userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+                        recList = new RecommenderEngine().RecommendForUserUBased(userId);
+                    }
+                    else
+                    {
+                        recList = null;
+                    }
+
+                    break;
+                case "contentBased":
+
+                    if (User.Identity.IsAuthenticated)
+                    {
+                        var userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+                        recList = new RecommenderEngine().RecommendForUserCBased(userId);
+                    }
+                    else
+                    {
+                        recList = null;
+                    }
+
+                    break;
                 default:
                     return View("Error");
             }
 
-            if(recList == null){
+            if (recList == null)
+            {
                 return null;
             }
 

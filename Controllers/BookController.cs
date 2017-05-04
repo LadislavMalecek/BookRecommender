@@ -58,7 +58,7 @@ namespace BookRecommender.Controllers
             return View(bookDetail);
         }
         [HttpPost]
-        async public Task<IActionResult> AddRating(string bookId, string textRating, string scoreRating)
+        async public Task<IActionResult> AddRating(string bookId, string review, string scoreRating)
         {
             int bookIdParsed;
             int scoreRatingParsed;
@@ -87,7 +87,7 @@ namespace BookRecommender.Controllers
 
             if (rating == null)
             {
-                await book.AddRatingAsync(textRating, scoreRatingParsed, user, db);
+                await book.AddRatingAsync(review, scoreRatingParsed, user, db);
                 await db.SaveChangesAsync();
             }
             return RedirectToAction("Detail", "Book", new { id = bookIdParsed });

@@ -16,6 +16,7 @@ namespace BookRecommender.DataManipulation
             timer.Start();
 
             var db = new BookRecommenderContext();
+            db.ChangeTracker.QueryTrackingBehavior = Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking;
 
             var myBook = db.Books.Find(bookId);
             if (myBook == null)
@@ -77,6 +78,7 @@ namespace BookRecommender.DataManipulation
         public List<int> RecommendBookSimilarByTags(int bookId, int howMany = 6)
         {
             var db = new BookRecommenderContext();
+            db.ChangeTracker.QueryTrackingBehavior = Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking;
 
             var myBook = db.Books.Find(bookId);
             if (myBook == null)
@@ -85,7 +87,7 @@ namespace BookRecommender.DataManipulation
             }
             var tags = myBook.GetTags(db).Where(t => t.Score != null);
 
-            
+
             var tagsLanguages = TopLang(tags.Select(t => t.Lang).Distinct());
             // var tagsLanguages = new string[] {"en"};
 
@@ -97,11 +99,12 @@ namespace BookRecommender.DataManipulation
             {
                 var tagsInLang = tags.Where(t => t.Lang == lang);
 
-                List<Tuple<int,double>> simTagsQuery = new List<Tuple<int, double>>();
+                var simTagsQuery = new List<(int bookId, double score)>();
 
                 foreach (var tag in tagsInLang)
                 {
-                    var simTags = db.Tags.Where(t => (t.Value == tag.Value && t.Lang == lang && t.Score != null)).Select(t => new Tuple<int, double>(
+                    var simTags = db.Tags.Where(t => (t.Value == tag.Value && t.Lang == lang && t.Score != null)).Select(t =>
+                    new ValueTuple<int, double>(
                         t.BookId,
                         t.Score.Value * tag.Score.Value
                     ));
@@ -146,19 +149,170 @@ namespace BookRecommender.DataManipulation
             //TODO: IMPLEMENT LANGUAGE PENALIZATION
             return score;
         }
-        private string[] TopLang(IEnumerable<string> langs){
+        private string[] TopLang(IEnumerable<string> langs)
+        {
             var db = new BookRecommenderContext();
 
             var langCounts = db.TagsCount.ToArray();
 
-            return langs.Select(t => new {
-                            Count = langCounts.Where(c => c.Lang == t).FirstOrDefault().Count,
-                            Lang = t
-                        })
+            return langs.Select(t => new
+            {
+                Count = langCounts.Where(c => c.Lang == t).FirstOrDefault().Count,
+                Lang = t
+            })
                         .OrderByDescending(r => r.Count)
                         .Take(5)
                         .Select(q => q.Lang)
                         .ToArray();
+        }
+
+        // due to a bug in value tuple, created as a hotfix for method below
+        struct HelpStruct
+        {
+            public int bookId;
+            public string userId;
+            public int rating;
+        }
+
+        public List<int> RecommendForUserUBased(string userId, int howMany = 6)
+        {
+            var db = new BookRecommenderContext();
+            db.ChangeTracker.QueryTrackingBehavior = Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking;
+            var user = db.Users.Where(u => u.Id == userId).FirstOrDefault();
+            if (user == null)
+            {
+                return null;
+            }
+
+            // get all positive ratings
+            var userRatings = db.Ratings.Where(r => r.UserId == userId && r.Rating >= 3).Select(r => new
+            {
+                Rating = r.Rating,
+                Book = r.BookId
+            }).ToList();
+
+            // load all ratings for same books
+            //var simUserRatings = new List<(int bookId, string userId, int rating)>();
+            // var simUserRatings = new List<(int bookId, string userId, int rating)>();
+            var simUserRatings = new List<HelpStruct>();
+
+
+            foreach (var rating in userRatings)
+            {
+                var simRatings = db.Ratings.Where(r => r.BookId == rating.Book && r.UserId != userId).ToList();
+                var s = simRatings.Select(r =>
+                new HelpStruct
+                {
+                    bookId = r.BookId,
+                    userId = r.UserId,
+                    rating = r.Rating
+                });
+                if (simRatings != null && simRatings.Any())
+                {
+                    simUserRatings.AddRange(s);
+                }
+            }
+
+            // count book averages for users that has not rated the book
+            var bookAvg = simUserRatings.GroupBy(r => r.bookId).Select(group =>
+            new
+            {
+                BookId = group.Key,
+                AvgScore = group.Sum(s => s.rating) / group.Count()
+            }
+            );
+
+
+
+            //count similarities - use book avg if rating not available
+
+            var simUsers = simUserRatings.GroupBy(r => r.userId).Select(group =>
+            new
+            {
+                UserId = group.Key,
+                // we want to evaluate every book for every user, so we will use bookAvg as a linq base element in score count
+                // because it has all books
+                Score = bookAvg.Sum(b =>
+                {
+                    int scoreA = userRatings.First(ra => ra.Book == b.BookId).Rating;
+
+                    //if sim has data, use it, else use default from bookAvg
+                    var hasData = group.Any(p => p.bookId == b.BookId);
+                    var scoreB = hasData ? group.First(p => p.bookId == b.BookId).rating : b.AvgScore;
+                    //count metrics
+                    return Math.Pow(scoreA - scoreB, 2);
+                })
+            }
+            );
+
+            var closestFourUsers = simUsers.OrderBy(u => u.Score).Take(4).ToList();
+            var recommendedBooks = new List<int>();
+
+
+            foreach (var score in new int[] { 5, 4, 3 })
+            {
+                foreach (var closestUser in closestFourUsers)
+                {
+                    var potenionalBooks = db.Ratings.Where(r => r.UserId == closestUser.UserId && r.Rating == score).ToList();
+                    var pBNotYetSeen = potenionalBooks.Where(b => !userRatings.Select(r => r.Book).Contains(b.BookId)).ToList();
+                    recommendedBooks.AddRange(pBNotYetSeen.Select(b => b.BookId));
+                    if (recommendedBooks.Distinct().Count() >= howMany)
+                    {
+                        return recommendedBooks.Distinct().ToList();
+                    }
+                }
+            }
+            return recommendedBooks;
+        }
+
+        public List<int> RecommendForUserCBased(string userId, int howMany = 6)
+        {
+            var db = new BookRecommenderContext();
+            db.ChangeTracker.QueryTrackingBehavior = Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking;
+
+            var booksToFindSimilarityFor = new List<int>();
+
+            var user = db.Users.Where(u => u.Id == userId).FirstOrDefault();
+            if (user == null)
+            {
+                return null;
+            }
+
+            // get all positive ratings
+            var userRatings = db.Ratings.Where(r => r.UserId == userId && r.Rating >= 3).Select(r => new
+            {
+                Rating = r.Rating,
+                Book = r.BookId,
+                Date = r.CreatedTime
+            }).OrderByDescending(o => o.Date).Take(6).Select(r => r.Book).ToList();
+
+            booksToFindSimilarityFor.AddRange(userRatings);
+
+            var userActionsBookViewed = db.UsersActivities.Where(a => a.UserId == userId &&
+                                                            a.Type == Models.UserActivity.ActivityType.BookDetailViewed)
+                                                .OrderByDescending(a => a.CreatedTime)
+                                                .Take(6)
+                                                .Select(a => int.Parse(a.Value)).ToList();
+
+            booksToFindSimilarityFor.AddRange(userActionsBookViewed);
+
+
+
+            var recommendedBooks = new List<int>();
+
+
+            foreach (var book in booksToFindSimilarityFor)
+            {
+                var result = RecommendBookSimilar(book, 1);
+                if(result.Count != 0){
+                    recommendedBooks.Add(result[0]);
+                    if(recommendedBooks.Distinct().Count() >= howMany){
+                        return recommendedBooks.Distinct().ToList();
+                    }
+                }
+
+            }
+            return recommendedBooks.Distinct().ToList();
         }
     }
 }

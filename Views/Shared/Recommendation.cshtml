@@ -55,15 +55,15 @@
                 <div class="col-xs-8" style="padding">
                     @if(recommendation.Authors.Count() > 0){
                         @if(recommendation.Authors.Count() > 1){
-                    <p> <strong>Authors: </strong></p>
+                    <p style="margin:5px 0"> <strong>Authors: </strong></p>
                         } else {
-                    <p> <strong>Author: </strong></p>
+                    <p style="margin:5px 0"> <strong>Author: </strong></p>
                         }
                     @foreach (var author in recommendation.Authors.Take(3)){
-                    <p><a href="/Author/Detail/@author.AuthorId"> @author.GetNameEn() </a></p>
+                    <p style="margin:0px 0"><a href="/Author/Detail/@author.AuthorId"> @author.GetNameEn() </a></p>
                     } }
                     @if(recommendation.Authors.Count() > 3){
-                        <p>...</p>
+                        <p style="margin:0px 0">...</p>
                     }
                     @if (recommendation.Genres.Count() > 0){
                         @if(recommendation.Genres.Count() > 1){
