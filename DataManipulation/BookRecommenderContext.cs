@@ -55,6 +55,24 @@ namespace BookRecommender.DataManipulation
             modelBuilder.Entity<UserActivity>()
                 .HasIndex(c => c.UserId);
 
+            modelBuilder.Entity<BookAuthor>()
+                .HasIndex(c => c.AuthorId);
+
+            modelBuilder.Entity<BookAuthor>()
+                .HasIndex(c => c.BookId);
+
+            modelBuilder.Entity<BookGenre>()
+                .HasIndex(c => c.BookId);
+
+            modelBuilder.Entity<BookGenre>()
+                .HasIndex(c => c.GenreId);
+
+            modelBuilder.Entity<BookCharacter>()
+                .HasIndex(c => c.BookId);
+
+            modelBuilder.Entity<BookCharacter>()
+                .HasIndex(c => c.CharacterId);
+
 
             //--------------------------------
             // Alternative keys

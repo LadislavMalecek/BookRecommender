@@ -199,9 +199,9 @@ namespace BookRecommender.Models
         {
             AddRatingAsync(textRating, rating, user, db).Wait();
         }
-        public async Task AddRatingAsync(string textRating, int rating, ApplicationUser user, BookRecommenderContext db)
+        public async Task AddRatingAsync(string review, int rating, ApplicationUser user, BookRecommenderContext db)
         {
-            await db.Ratings.AddAsync(new BookRating(user, this, rating, textRating));
+            await db.Ratings.AddAsync(new BookRating(user, this, rating, review));
         }
 
 
