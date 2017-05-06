@@ -34,14 +34,7 @@
     </script>
 
     <div class="container-fluid" style="padding-left:0; padding-right:0; margin: -5px; padding-top: 5px;">
-        @{
-            var count = 0;
-        }
         @foreach(var recommendation in Model){
-            count++;
-            if(count > 6){
-                break;
-            }
         <div class="col-md-4 col-sm-6 col-xs-12" style="padding-left:0; padding-right:0;">
             <div class="container-fluid rec-container" style="height: 200px">
                 <a href="/Book/Detail/@recommendation.Book.BookId">

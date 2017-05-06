@@ -7,8 +7,12 @@ namespace BookRecommender.DataManipulation
 {
     class RecommenderEngine
     {
-        public List<int> RecommendBookSimilar(int bookId, int howMany = 6)
+        public List<int> RecommendBookSimilar(int bookId, string userId = null, int howMany = 6)
         {
+            // TODO: nenabizet jiz ratovane knihy
+
+
+
             // MUCH OPTIMISATION AVAILABLE
 
             var timer = new Stopwatch();
@@ -62,6 +66,24 @@ namespace BookRecommender.DataManipulation
                          });
             var sortedList = groupedList.OrderByDescending(b => b.Count).Select(b => b.BookId);
 
+
+            // if user signed in, remove already rated books
+            if (userId != null)
+            {
+                var user = db.Users.Where(u => u.Id == userId).FirstOrDefault();
+                if (user != null)
+                {
+                    // get all ratings
+                var userRatings = db.Ratings.Where(r => r.UserId == userId).ToList();
+
+                // remove books which user already rated
+                sortedList = sortedList.Where(b => !userRatings
+                                                        .Select(r => r.BookId)
+                                                        .Contains(b)).ToList();
+                }
+            }
+
+
             var recList = sortedList.Take(howMany + 1).ToList();
 
             // remove myself
@@ -76,7 +98,47 @@ namespace BookRecommender.DataManipulation
 
             return recList;
         }
-        public List<int> RecommendBookSimilarByTags(int bookId, int howMany = 6)
+
+        internal List<int> RecommendMostPopular(int howMany, string userId = null)
+        {
+            var db = new BookRecommenderContext();
+            db.ChangeTracker.QueryTrackingBehavior = Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking;
+
+            var mostPopularBooks = db.Ratings
+                             .OrderByDescending(r => r.CreatedTime)
+                             .Take(1000)
+                             .Select(r => new {Id = r.BookId, Rating = r.Rating})
+                             .ToList();
+
+
+            var groupedList = mostPopularBooks.GroupBy(r => r.Id).
+                     Select(group =>
+                         new
+                         {
+                             BookId = group.Key,
+                             Score = group.Sum(i => i.Rating)
+                         });
+            var sortedList = groupedList.OrderByDescending(b => b.Score).Select(b => b.BookId);
+
+            if (userId != null)
+            {
+                var user = db.Users.Where(u => u.Id == userId).FirstOrDefault();
+                if (user != null)
+                {
+                    // get all ratings
+                var userRatings = db.Ratings.Where(r => r.UserId == userId).ToList();
+
+                // remove books which user already rated
+                sortedList = sortedList.Where(b => !userRatings
+                                                        .Select(r => r.BookId)
+                                                        .Contains(b));
+                }
+            }
+
+            return sortedList.Take(howMany).ToList();
+        }
+
+        public List<int> RecommendBookSimilarByTags(int bookId, string userId = null, int howMany = 6)
         {
             var db = new BookRecommenderContext();
             db.ChangeTracker.QueryTrackingBehavior = Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking;
@@ -100,22 +162,21 @@ namespace BookRecommender.DataManipulation
             {
                 var tagsInLang = tags.Where(t => t.Lang == lang);
 
-                var simTagsQuery = new List<(int bookId, double score)>();
+                var simTagsQuery = new List<ItemWeight<int>>();
 
                 foreach (var tag in tagsInLang)
                 {
                     var simTags = db.Tags.Where(t => (t.Value == tag.Value && t.Lang == lang && t.Score != null)).Select(t =>
-                    new ValueTuple<int, double>(
+                    new ItemWeight<int>(
                         t.BookId,
-                        t.Score.Value * tag.Score.Value
-                    ));
+                        t.Score.Value * tag.Score.Value));
                     simTagsQuery.AddRange(simTags);
                 }
                 // generate top matches for lang
-                var orderedFinalScore = simTagsQuery.GroupBy(t => t.Item1).Select(g => new
+                var orderedFinalScore = simTagsQuery.GroupBy(t => t.itemId).Select(g => new
                 {
                     BookId = g.Key,
-                    FinalScore = g.Sum(s => s.Item2)
+                    FinalScore = g.Sum(s => s.itemWeight)
                 }).OrderByDescending(t => t.FinalScore);
 
                 // take top 10 from language and add it to final list
@@ -134,6 +195,22 @@ namespace BookRecommender.DataManipulation
                     Score = g.Sum(s => PenalizeLang(s.score, s.lang))
                 }
             ).OrderByDescending(t => t.Score).Select(t => t.BookId);
+
+            // if user signed in, remove already rated books
+            if (userId != null)
+            {
+                var user = db.Users.Where(u => u.Id == userId).FirstOrDefault();
+                if (user != null)
+                {
+                    // get all ratings
+                var userRatings = db.Ratings.Where(r => r.UserId == userId).ToList();
+
+                // remove books which user already rated
+                finalList = finalList.Where(b => !userRatings
+                                                        .Select(r => r.BookId)
+                                                        .Contains(b)).ToList();
+                }
+            }
 
             var recList = finalList.Take(howMany + 1).ToList();
 
@@ -254,8 +331,8 @@ namespace BookRecommender.DataManipulation
             {
                 foreach (var closestUser in closestFourUsers)
                 {
-                    var potenionalBooks = db.Ratings.Where(r => r.UserId == closestUser.UserId && r.Rating == score).ToList();
-                    var pBNotYetSeen = potenionalBooks.Where(b => !userRatings.Select(r => r.Book).Contains(b.BookId)).ToList();
+                    var potentialBooks = db.Ratings.Where(r => r.UserId == closestUser.UserId && r.Rating == score).ToList();
+                    var pBNotYetSeen = potentialBooks.Where(b => !userRatings.Select(r => r.Book).Contains(b.BookId)).ToList();
                     recommendedBooks.AddRange(pBNotYetSeen.Select(b => b.BookId));
                     if (recommendedBooks.Distinct().Count() >= howMany)
                     {
@@ -267,8 +344,10 @@ namespace BookRecommender.DataManipulation
         }
 
 
-        struct ItemWeight<T>{
-            public ItemWeight(T itemId, double itemWeight){
+        struct ItemWeight<T>
+        {
+            public ItemWeight(T itemId, double itemWeight)
+            {
                 this.itemId = itemId;
                 this.itemWeight = itemWeight;
             }
@@ -294,8 +373,9 @@ namespace BookRecommender.DataManipulation
             var userRatings = db.Ratings.Where(r => r.UserId == userId && r.Rating >= 3).ToList();
 
 
-            var userRatingNormalized = userRatings.OrderByDescending(o => o.CreatedTime).Take(howManyLastItems).Select(r => 
-            new ItemWeight<int>{
+            var userRatingNormalized = userRatings.OrderByDescending(o => o.CreatedTime).Take(howManyLastItems).Select(r =>
+            new ItemWeight<int>
+            {
                 itemId = r.BookId,
                 itemWeight = r.Rating - 2
             }).ToList();
@@ -307,11 +387,12 @@ namespace BookRecommender.DataManipulation
                                                 .OrderByDescending(a => a.CreatedTime)
                                                 .Take(howManyLastItems).ToArray();
 
-           var userActionsBookViewedModified = userActionsBookViewed.Select(b => 
-                                                    new ItemWeight<int>{
-                                                        itemId = int.Parse(b.Value),
-                                                        itemWeight = 1
-                                                    }).ToList();
+            var userActionsBookViewedModified = userActionsBookViewed.Select(b =>
+                                                     new ItemWeight<int>
+                                                     {
+                                                         itemId = int.Parse(b.Value),
+                                                         itemWeight = 1
+                                                     }).ToList();
 
             booksToFindSimilarityFor.AddRange(userActionsBookViewedModified);
 
@@ -322,7 +403,8 @@ namespace BookRecommender.DataManipulation
             var characters = new List<ItemWeight<int>>();
             var tags = new List<ItemWeight<Models.Tag>>();
 
-            foreach(var book in booksToFindSimilarityFor){
+            foreach (var book in booksToFindSimilarityFor)
+            {
                 var queriedAuthors = db.BooksAuthors.Where(ba => ba.BookId == book.itemId);
                 authors.AddRange(queriedAuthors.Select(qa => new ItemWeight<int>(qa.AuthorId, book.itemWeight)));
 
@@ -379,12 +461,16 @@ namespace BookRecommender.DataManipulation
             {
                 var simTags = db.Tags.Where(t => t.Value == tag.itemId.Value && t.TagId != tag.itemId.TagId).ToArray();
                 candidateBooksByTags.AddRange(simTags.Select(
-                        st => 
+                        st =>
                         new ItemWeight<int>(
                                 st.BookId,
                                 st.Score.GetValueOrDefault() * tag.itemId.Score.GetValueOrDefault() * tag.itemWeight)));
             }
 
+            // remove books which user already rated
+            candidateBooks = candidateBooks.Where(b => !userRatings
+                                                        .Select(r => r.BookId)
+                                                        .Contains(b.itemId)).ToList();
 
             var candidateBooksFinalOrdered = candidateBooks.GroupBy(g => g.itemId)
                                                     .Select(group =>
@@ -405,71 +491,9 @@ namespace BookRecommender.DataManipulation
                                                     .OrderByDescending(o => o.itemWeight)
                                                     .Take(howMany).Select(b => b.itemId);
 
-            return candidateBooksFinalOrdered.Take(howMany/2)
-                                              .Concat(candidateBooksByTagsFinalOrdered.Take(howMany/2))
+            return candidateBooksFinalOrdered.Take(howMany / 2)
+                                              .Concat(candidateBooksByTagsFinalOrdered.Take(howMany / 2))
                                               .ToList();
-            
-
-            //dodelej query tagu a pak podle toho doporuc
-
-            // get data from the book we want to be the center of a search
-
-
-
-
-
         }
-
-
-        // primitive content recommender based on the first method for single book
-        // public List<int> RecommendForUserCBased(string userId, int howMany = 6)
-        // {
-        //     var db = new BookRecommenderContext();
-        //     db.ChangeTracker.QueryTrackingBehavior = Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking;
-
-        //     var booksToFindSimilarityFor = new List<int>();
-
-        //     var user = db.Users.Where(u => u.Id == userId).FirstOrDefault();
-        //     if (user == null)
-        //     {
-        //         return null;
-        //     }
-
-        //     // get all positive ratings
-        //     var userRatings = db.Ratings.Where(r => r.UserId == userId && r.Rating >= 3).Select(r => new
-        //     {
-        //         Rating = r.Rating,
-        //         Book = r.BookId,
-        //         Date = r.CreatedTime
-        //     }).OrderByDescending(o => o.Date).Take(6).Select(r => r.Book).ToList();
-
-        //     booksToFindSimilarityFor.AddRange(userRatings);
-
-        //     var userActionsBookViewed = db.UsersActivities.Where(a => a.UserId == userId &&
-        //                                                     a.Type == Models.UserActivity.ActivityType.BookDetailViewed)
-        //                                         .OrderByDescending(a => a.CreatedTime)
-        //                                         .Take(6)
-        //                                         .Select(a => int.Parse(a.Value)).ToList();
-
-        //     booksToFindSimilarityFor.AddRange(userActionsBookViewed);
-
-
-
-        //     var recommendedBooks = new List<int>();
-
-
-        //     foreach (var book in booksToFindSimilarityFor)
-        //     {
-        //         var result = RecommendBookSimilar(book, 1);
-        //         if(result.Count != 0){
-        //             recommendedBooks.Add(result[0]);
-        //             if(recommendedBooks.Distinct().Count() >= howMany){
-        //                 return recommendedBooks.Distinct().ToList();
-        //             }
-        //         }
-
-        //     }
-        //     return recommendedBooks.Distinct().ToList();
-        // }
     }
 }

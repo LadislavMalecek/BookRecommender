@@ -23,7 +23,7 @@ namespace BookRecommender.Controllers
         {
             var db = new BookRecommenderContext();
             var author = db.Authors.Where(a => a.AuthorId == id)?.FirstOrDefault();
-            var authorBooks = author.GetBooks(db);
+            var authorBooks = author.GetBooks(db).OrderBy(b => b.GetNameEn());
 
             if (author == null)
             {

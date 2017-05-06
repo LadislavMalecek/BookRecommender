@@ -40,66 +40,50 @@ namespace BookRecommender.Controllers
             // return "ahoj jak se vede".Split(' ');
             return SearchEngine.Autocomplete(new BookRecommenderContext(), query, 10).ToArray();
         }
-        public IActionResult Recommendation(string type, int data)
+        public IActionResult Recommendation(string type, int data, int howMany = 6)
         {
             IEnumerable<int> recList;
+            string userId = null;
+            if (User.Identity.IsAuthenticated){
+                userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+            }
 
             switch (type)
             {
                 case "bookPage":
-                    recList = new RecommenderEngine().RecommendBookSimilar(data);
+                    recList = new RecommenderEngine().RecommendBookSimilar(data,userId,howMany);
                     break;
                 case "bookPageByTags":
-                    recList = new RecommenderEngine().RecommendBookSimilarByTags(data);
+                    recList = new RecommenderEngine().RecommendBookSimilarByTags(data,userId,howMany);
                     break;
                 case "userBased":
-
-                    if (User.Identity.IsAuthenticated)
-                    {
-                        var userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
-                        recList = new RecommenderEngine().RecommendForUserUBased(userId);
-                    }
-                    else
-                    {
-                        recList = null;
-                    }
-
+                     recList = 
+                        userId != null
+                        ? new RecommenderEngine().RecommendForUserUBased(userId,howMany)
+                        :null;
                     break;
                 case "contentBased":
-
-                    if (User.Identity.IsAuthenticated)
-                    {
-                        var userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
-                        recList = new RecommenderEngine().RecommendForUserCBased(userId);
-                    }
-                    else
-                    {
-                        recList = null;
-                    }
-
+                    recList = 
+                        userId != null
+                        ? new RecommenderEngine().RecommendForUserCBased(userId,howMany)
+                        :null;
+                    break;
+                case "mostPopular":
+                    recList = new RecommenderEngine().RecommendMostPopular(howMany, userId);
                     break;
                 default:
-                    return View("Error");
+                    return null;
             }
 
             if (recList == null)
             {
-                return null;
+                recList = new List<int>();
             }
 
             var recommendations = new List<Recommendation>();
-            recommendations = recList.Take(6).Select(r => new Recommendation(r)).ToList();
+            recommendations = recList.Select(r => new Recommendation(r)).ToList();
 
             return PartialView("Recommendation", recommendations);
-
-            // var db = new BookRecommenderContext();
-            // Random rnd = new Random();
-            // var books = db.Books.Where(b => !string.IsNullOrEmpty(b.NameEn)).Select(b => b.BookId).OrderBy(x => rnd.Next()).Take(6).ToList();
-            // var data = new List<Recommendation>();
-            // foreach(var i in books){
-            //     data.Add(new Recommendation(i));
-            // }
-            // return PartialView("Recommendation", data);
         }
     }
 }

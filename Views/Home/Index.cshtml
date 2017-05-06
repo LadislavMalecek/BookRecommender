@@ -8,16 +8,29 @@
     </h2>
 </div>
 </a>
-
-<h2 class="text-center"> Books you might like </h2>
+@{
+    bool IsSignedIn = (bool)ViewData["SignedIn"];
+}
+@if(IsSignedIn){
+    <h2 class="text-center"> Books you might like that others liked:</h2>
 <div class "container-fluid">
-    <div id="recommendations" class="tab-pane fade in active recommendation" data-type="userBased" data-data="0">
+    <div id="recommendations" class="tab-pane fade in active recommendation" data-type="userBased" data-data="0" data-count="6">
         <img class="center-block" style="width: 150px" src="/images/loading.svg">
     </div>
 </div>
-<h2 class="text-center"> Trending books </h2>
+<h2 class="text-center"> Books you might like similar to those you have rated:</h2>
 <div class "container-fluid">
-    <div id="recommendations" class="tab-pane fade in active recommendation" data-type="contentBased" data-data="0">
+    <div id="recommendations" class="tab-pane fade in active recommendation" data-type="contentBased" data-data="0" data-count="6">
+        <img class="center-block" style="width: 150px" src="/images/loading.svg">
+    </div>
+</div>
+}
+
+
+
+<h2 class="text-center"> Most popular books:</h2>
+<div class "container-fluid">
+    <div id="recommendations" class="tab-pane fade in active recommendation" data-type="mostPopular" data-data="0" data-count="12">
         <img class="center-block" style="width: 150px" src="/images/loading.svg">
     </div>
 </div>
@@ -40,7 +53,8 @@ $('.recommendation').each(function(){
     var item = this;
     var type = $(this).data('type');
     var data = $(this).data('data');
-    var ajaxUrl = "/Ajax/Recommendation?type=" + type + "&data=" + data;
+    var count = $(this).data('count');
+    var ajaxUrl = "/Ajax/Recommendation?type=" + type + "&data=" + data + "&howMany=" + count;
 
     $.ajax({
             type: "GET",

@@ -17,15 +17,9 @@ namespace BookRecommender.Controllers
         {
             _userManager = userManager;
         }
-        public IActionResult Users()
-        {
-            var db = new BookRecommenderContext();
-            var users = db.Users.ToList();
-            ViewData["CurrentName"] = User.Identity.Name;
-            return View(users);
-        }
         public IActionResult Index()
         {
+            ViewData["SignedIn"] = User.Identity.IsAuthenticated;
             return View();
         }
 
