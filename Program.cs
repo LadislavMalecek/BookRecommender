@@ -54,16 +54,19 @@ namespace BookRecommender
                 
             var insideDocker = config["INSIDE_DOCKER"] == "yes";
             System.Console.WriteLine("Are we inside docker: " + insideDocker);
-            string url = insideDocker ? "0.0.0.0" : "localhost";
+            string url = insideDocker ? "0.0.0.0" : "*";
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
+                // .UseKestrel(options =>{
+                //     options.UseHttps("C:\\netcore\\myCertificateAuthority\\myCertificates\\10.0.0.10\\10.0.0.10.pfx", "CFahojCFahoj25");
+                // })
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
+                // .UseUrls($"https://{url}:443")
                 .UseUrls($"http://{url}:5000")
-                // .UseUrls("http://0.0.0.0:5000")
                 .Build();
 
             host.Run();

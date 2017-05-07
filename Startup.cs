@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using BookRecommender.DataManipulation;
 using BookRecommender.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace BookRecommender
 {
@@ -25,7 +27,7 @@ namespace BookRecommender
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
-            
+
             // init config singleton
             //AppSettingsSingleton.Initialize(Configuration);
         }
@@ -37,7 +39,7 @@ namespace BookRecommender
         {
             // Add framework services.
             services.AddMvc();
-            
+
             //services.AddDbContext<BookRecommenderContext>(options => options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=BookRecommender;Integrated Security=True;Connect Timeout=30;"));
             // services.AddDbContext<BookRecommenderContext>(options => options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=BookRecommender"));
             //Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False
@@ -48,6 +50,11 @@ namespace BookRecommender
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<BookRecommenderContext>()
                 .AddDefaultTokenProviders();
+
+            // services.Configure<MvcOptions>(options =>
+            //     {
+            //         options.Filters.Add(new RequireHttpsAttribute());
+            //     });
 
             services.Configure<IdentityOptions>(options =>
             {
@@ -89,6 +96,8 @@ namespace BookRecommender
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            // var options = new RewriteOptions()
+            //     .AddRedirectToHttps();
 
             app.UseStaticFiles();
 
