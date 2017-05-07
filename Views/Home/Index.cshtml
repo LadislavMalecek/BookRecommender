@@ -35,36 +35,5 @@
     </div>
 </div>
 
-<script>
-$('img.dynamic').each(function(){
-    var item = this;
-    $.ajax({
-            type: "GET",
-            url: "/Ajax/DynamicImage?entityUri=" + $(this).data('uri'),
-            datatype: "html",
-            success: function (data) {
-                $(item).attr('src', data);
-            }
-        })
-});
-
-
-$('.recommendation').each(function(){
-    var item = this;
-    var type = $(this).data('type');
-    var data = $(this).data('data');
-    var count = $(this).data('count');
-    var ajaxUrl = "/Ajax/Recommendation?type=" + type + "&data=" + data + "&howMany=" + count;
-
-    $.ajax({
-            type: "GET",
-            url: ajaxUrl,
-            datatype: "html",
-            success: function (data) {
-                $(item).html(data);
-            }
-        })
-});
-</script>
 
 

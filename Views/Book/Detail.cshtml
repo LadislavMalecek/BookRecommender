@@ -65,20 +65,20 @@
 
 <div class="container-fluid" id="rateForm" style="display: none;">
     <form action="/Book/AddRating" method="POST" class="form-inline">
-        <div class="col-sm-2">
+        <div class="col-md-2">
             <select name="scoreRating" class="form-control" style="min-width: 100%">
-                <option value="1">1 - Awful</option>
-                <option value="2">2 - Poor</option>
-                <option value="3">3 - Ok</option>
-                <option value="4">4 - Good</option>
                 <option value="5">5 - Excelent</option>
+                <option value="4">4 - Good</option>
+                <option value="3">3 - Ok</option>
+                <option value="2">2 - Poor</option>
+                <option value="1">1 - Awful</option>
             </select>
         </div>
-        <div class="col-sm-8">
+        <div class="col-md-8">
             <input type="text" name="review" class="form-control" style="min-width: 100%"/>
             <input type="hidden" name="bookId" value="@Model.Book.BookId" />
         </div>
-        <div class="col-sm-2">
+        <div class="col-md-2">
             <button type="submit" value="Submit" class="btn btn-default" style="min-width: 100%">Add rating</button>
         </div>
     </form>
@@ -150,57 +150,3 @@
         </div>
     </div>
 </div>
-
-<script>
-$(function(){
-    $('#rateButton button').click(function()
-        {
-            $('#rateButton').hide();
-            $('#rateForm').fadeIn("slow");
-        }
-    );
-});
-
-$(function(){
-    $(window).on('load', function() {
-        $.ajax({
-            type: "GET",
-            url: "/Ajax/SparqlData?entityUri=" + $('#additionalData').data('uri'),
-            datatype: "html",
-            success: function (data) {
-                $('#additionalData').html(data);
-                <!--$('#additionalData').slideDown("slow");-->
-            }
-        })
-    });
-});
-
-
-$('img.dynamic').each(function(){
-    var item = this;
-    $.ajax({
-            type: "GET",
-            url: "/Ajax/DynamicImage?entityUri=" + $(this).data('uri'),
-            datatype: "html",
-            success: function (data) {
-                $(item).attr('src', data);
-            }
-        })
-});
-
-$('.recommendation').each(function(){
-    var item = this;
-    var type = $(this).data('type');
-    var data = $(this).data('data');
-    var ajaxUrl = "/Ajax/Recommendation?type=" + type + "&data=" + data;
-
-    $.ajax({
-            type: "GET",
-            url: ajaxUrl,
-            datatype: "html",
-            success: function (data) {
-                $(item).html(data);
-            }
-        })
-});
-</script>

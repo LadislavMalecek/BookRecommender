@@ -3,7 +3,6 @@
 .vscode/
 wwwroot/images
 wwwroot/lib
-wwwroot/js
 wwwroot/favicon.ico
 wwwroot/*/*.min.*
 wwwroot/*.min.*

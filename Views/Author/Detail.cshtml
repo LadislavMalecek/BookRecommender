@@ -43,31 +43,3 @@
         </div>
     </div>
 </div>
-
-<script>
-$(function(){
-    $(window).on('load', function() {
-        $.ajax({
-            type: "GET",
-            url: "/Ajax/SparqlData?entityUri=" + $('#additionalData').data('uri'),
-            datatype: "html",
-            success: function (data) {
-                $('#additionalData').html(data);
-            }
-        })
-    });
-});
-
-
-$('img.dynamic').each(function(){
-    var item = this;
-    $.ajax({
-            type: "GET",
-            url: "/Ajax/DynamicImage?entityUri=" + $(this).data('uri'),
-            datatype: "html",
-            success: function (data) {
-                $(item).attr('src', data);
-            }
-        })
-});
-</script>
