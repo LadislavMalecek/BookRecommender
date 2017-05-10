@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using BookRecommender.DataManipulation;
 
-namespace BookRecommender.Models
+namespace BookRecommender.Models.Database
 {
     public class UserActivity
     {

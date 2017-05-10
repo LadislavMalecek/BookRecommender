@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using BookRecommender.Models.AccountViewModels;
 using BookRecommender.Models;
+using BookRecommender.Models.Database;
+
 
 namespace BookRecommender.Controllers
 {

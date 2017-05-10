@@ -7,6 +7,8 @@ using BookRecommender.DataManipulation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using BookRecommender.Models.Database;
+using BookRecommender.Models.UserViewModels;
 
 namespace BookRecommender.Controllers
 {

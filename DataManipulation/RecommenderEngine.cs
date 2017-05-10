@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using BookRecommender.Models.Database;
 
 namespace BookRecommender.DataManipulation
 {
@@ -383,7 +384,7 @@ namespace BookRecommender.DataManipulation
             booksToFindSimilarityFor.AddRange(userRatingNormalized);
 
             var userActionsBookViewed = db.UsersActivities.Where(ac => ac.UserId == userId &&
-                                                            ac.Type == Models.UserActivity.ActivityType.BookDetailViewed)
+                                                            ac.Type == UserActivity.ActivityType.BookDetailViewed)
                                                 .OrderByDescending(a => a.CreatedTime)
                                                 .Take(howManyLastItems).ToArray();
 
@@ -401,7 +402,7 @@ namespace BookRecommender.DataManipulation
             var authors = new List<ItemWeight<int>>();
             var genres = new List<ItemWeight<int>>();
             var characters = new List<ItemWeight<int>>();
-            var tags = new List<ItemWeight<Models.Tag>>();
+            var tags = new List<ItemWeight<Tag>>();
 
             foreach (var book in booksToFindSimilarityFor)
             {
@@ -416,7 +417,7 @@ namespace BookRecommender.DataManipulation
 
                 // use only en lang for simplification, at book level, multiple languages are used
                 var queriedTags = db.Tags.Where(ba => ba.BookId == book.itemId && ba.Lang == "en");
-                tags.AddRange(queriedTags.Select(qt => new ItemWeight<Models.Tag>(qt, book.itemWeight)));
+                tags.AddRange(queriedTags.Select(qt => new ItemWeight<Tag>(qt, book.itemWeight)));
             }
 
             // agregate preferences to possibly meke the next queries smaller
@@ -430,7 +431,7 @@ namespace BookRecommender.DataManipulation
                                 new ItemWeight<int>(group.Key, group.Sum(i => i.itemWeight)))
                                 .ToList();
             tags = tags.GroupBy(g => g.itemId).Select(group =>
-                                new ItemWeight<Models.Tag>(group.Key, group.Sum(i => i.itemWeight)))
+                                new ItemWeight<Tag>(group.Key, group.Sum(i => i.itemWeight)))
                                 .ToList();
 
 

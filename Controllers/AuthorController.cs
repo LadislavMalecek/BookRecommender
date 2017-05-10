@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using BookRecommender.Models;
 using BookRecommender.DataManipulation;
 using Microsoft.AspNetCore.Identity;
-using static BookRecommender.Models.UserActivity;
+using BookRecommender.Models.Database;
+using static BookRecommender.Models.Database.UserActivity;
+using BookRecommender.Models.AuthorViewModels;
 
 namespace BookRecommender.Controllers
 {

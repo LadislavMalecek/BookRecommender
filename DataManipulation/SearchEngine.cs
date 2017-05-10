@@ -3,13 +3,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BookRecommender.Models;
+using BookRecommender.Models.Database;
 
 namespace BookRecommender.DataManipulation
 {
     class SearchEngine
     {
         public static List<string> Autocomplete(BookRecommenderContext db, string query, int howManyTop){
+            if(string.IsNullOrEmpty(query)){
+                return new List<string>();
+            }
             var booksStartingWith = db.Books.Select(b => b.NameEn).Where(b => b.ToLower().StartsWith(query.ToLower())).Take(howManyTop).ToList();
             var authorsStartingWith = db.Authors.Select(a => a.NameEn).Where(a => a.ToLower().StartsWith(query.ToLower())).Take(howManyTop).ToList();
             var startsWith = booksStartingWith.Concat(authorsStartingWith);

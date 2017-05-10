@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BookRecommender.DataManipulation.Stemmers;
 using BookRecommender.DataManipulation.WikiData;
 using BookRecommender.Models;
+using BookRecommender.Models.Database;
 
 namespace BookRecommender.DataManipulation.WikiPedia
 {

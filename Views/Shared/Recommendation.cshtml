@@ -1,5 +1,5 @@
 @using System.Linq
-@model List<BookRecommender.Models.Recommendation>
+@model List<BookRecommender.Models.AjaxViewModels.Recommendation>
 
 @{
     // is generater only for use in img ajax rendering, if no random element added, all images would load again
@@ -37,7 +37,7 @@
         <div class="col-md-4 col-sm-6 col-xs-12" style="padding-left:0; padding-right:0;">
             <div class="container-fluid rec-container" style="height: 200px">
                 <a href="/Book/Detail/@recommendation.Book.BookId">
-                    <h3 style="margin:5px">@recommendation.Book.GetNameEnShort(40)</h3>
+                    <h3 style="margin:5px">@recommendation.Book.GetNameEnShort(30)</h3>
                 </a>
 
                 <div class="col-xs-4 text-center" style="padding:0">

@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using BookRecommender.Models;
 using BookRecommender.DataManipulation;
 using Microsoft.AspNetCore.Identity;
-using static BookRecommender.Models.UserActivity;
 using System.Threading.Tasks;
+using BookRecommender.Models.Database;
+using BookRecommender.Models.HomeViewModels;
+using static BookRecommender.Models.Database.UserActivity;
 
 namespace BookRecommender.Controllers
 {
@@ -41,7 +43,7 @@ namespace BookRecommender.Controllers
             var books = SearchEngine.SearchBook(db, query);
             var authors = SearchEngine.SearchAuthor(db, query);
 
-            var searchModel = new Search(query, page.Value, books.ToList(), authors.ToList(), db);
+            var searchModel = new SearchViewModel(query, page.Value, books.ToList(), authors.ToList(), db);
 
             if (User.Identity.IsAuthenticated)
             {

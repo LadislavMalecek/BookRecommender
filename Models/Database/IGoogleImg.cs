@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace BookRecommender.Models
+namespace BookRecommender.Models.Database
 {
     interface IGoogleImg
     {

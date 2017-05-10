@@ -1,8 +1,9 @@
 using BookRecommender.DataManipulation;
 using System.Collections.Generic;
+using BookRecommender.Models.Database;
 using System.Linq;
 
-namespace BookRecommender.Models
+namespace BookRecommender.Models.BookViewModels
 {
     public class BookDetail
     {

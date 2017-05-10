@@ -2,7 +2,7 @@
 using System;
 using System.Globalization;
 
-namespace BookRecommender.Models
+namespace BookRecommender.Models.Database
 {
     public enum Era
     {

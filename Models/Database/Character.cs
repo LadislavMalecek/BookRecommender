@@ -4,9 +4,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using BookRecommender.DataManipulation;
-using BookRecommender.Models.Database;
 
-namespace BookRecommender.Models
+namespace BookRecommender.Models.Database
 {
     public class Character
     {

@@ -6,6 +6,8 @@ using BookRecommender.Models;
 using BookRecommender.DataManipulation;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using BookRecommender.Models.Database;
+using BookRecommender.Models.AjaxViewModels;
 
 namespace BookRecommender.Controllers
 {

@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BookRecommender.DataManipulation;
+using BookRecommender.Models.Database;
 
-namespace BookRecommender.Models
+
+namespace BookRecommender.Models.HomeViewModels
 {
-    public class Search
+    public class SearchViewModel
     {
-        public Search(string searchPhrase, int page, List<Book> books, List<Author> authors, BookRecommenderContext db)
+        public SearchViewModel(string searchPhrase, int page, List<Book> books, List<Author> authors, BookRecommenderContext db)
         {
             this.SearchPhrase = searchPhrase;
             this.Page = page;

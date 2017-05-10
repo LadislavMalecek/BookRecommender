@@ -8,7 +8,7 @@ using BookRecommender.DataManipulation;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
-namespace BookRecommender.Models
+namespace BookRecommender.Models.Database
 {
     public class Book : IGoogleImg
     {

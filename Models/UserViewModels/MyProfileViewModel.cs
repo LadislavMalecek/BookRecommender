@@ -4,8 +4,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using BookRecommender.DataManipulation;
+using BookRecommender.Models.Database;
 
-namespace BookRecommender.Models
+
+namespace BookRecommender.Models.UserViewModels
 {
     public class MyProfileViewModel
     {

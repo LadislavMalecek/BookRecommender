@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using BookRecommender.DataManipulation;
 using BookRecommender.Models.Database;
 
-namespace BookRecommender.Models
+namespace BookRecommender.Models.Database
 {
     public enum SexType { Male, Female }
     public class Author : IGoogleImg
