@@ -13,6 +13,7 @@ namespace BookRecommender{
         }
         public static class Mining{
             public static string WikiPagesStorage = "C:\\netcore\\booksWikiPages\\";
+            public static string ManagerPassword = "dontworrybehappy";
         }
         public static string DataBaseConnectionString  = "Filename=C://netcore//SQLite//BookRecommender.db;cache=shared";
     }

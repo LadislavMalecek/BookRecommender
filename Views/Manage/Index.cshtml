@@ -1,0 +1,128 @@
+@using System.Collections.Generic
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Http.Authentication
+@using Microsoft.AspNetCore.Identity
+@using BookRecommender.Models
+@model BookRecommender.Models.ManageViewModels.IndexViewModel
+
+@{
+    ViewData["Title"] = "Manage Mining";
+}
+<!--<div class="container-fluid" id="refreshContainer" style="opacity: 0;">-->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6">
+            <input type="button" id="buttonStart" class="btn pull-left" value="Start mining all"></input>
+            <input type="button" id="buttonStop" class="btn  pull-left" value="Stop mining all"></input>
+        </div>
+        <div class="col-sm-6">
+            <input type="button" id="buttonRefreshStop" class="btn pull-right" value="Stop refreshing" />
+            <input type="button" id="buttonRefreshStart" class="btn pull-right" value="Start refreshing" />
+        </div>
+    </div>
+</div>
+    <!--<input id="ex15" type="text" data-slider-min="1000" data-slider-max="10000000" data-slider-step="5" align="right"/>-->
+    <!--<input type="checkbox" checked data-toggle="toggle" align="right" />-->
+<!--</div>-->
+<div class="container-fluid">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>State</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var operation in Model.OperationsByEndpoint[0].Item2){
+            <tr id="@operation.Item2">
+                <td>@operation.Item1</td>
+                <td class="status"></td>
+                <th class="message"></th>
+                <th>
+                    <input type="button" onclick="start('@operation.Item2')" class="btn" value="Start"></input>
+                    <input type="button" onclick="stop('@operation.Item2')" class="btn" value="Stop"></input>
+                </th>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+$(document).ready(function(){
+    //$("#ex15").slider({
+    //        min: 1000,
+    //        max: 10000000,
+    //        scale: 'logarithmic',
+    //        step: 10
+    //});
+    //$('#refreshContainer').fadeTo(500,1);
+    $('#buttonStart').on('click', function(){
+        $.ajax({
+            type: "POST",
+            url: "/Ajax/Mining?command=start"
+        })
+    });
+
+    $('#buttonStop').on('click', function(){
+        $.ajax({
+            type: "POST",
+            url: "/Ajax/Mining?command=stop"
+        })
+    });
+
+    $('#buttonRefreshStart').on('click', function(){
+        if(!refreshing){
+            refreshing = true;
+            refresh();
+        }
+    });
+
+    $('#buttonRefreshStop').on('click', function(){
+        refreshing = false;
+    });
+
+});
+
+function start(id){
+    $.ajax({
+            type: "POST",
+            url: "/Ajax/Mining?command=start&param=" + id
+        })
+};
+
+function stop(id){
+    $.ajax({
+            type: "POST",
+            url: "/Ajax/Mining?command=stop&param=" + id
+        })
+};
+
+var refreshing = false;
+
+function refresh(){
+    if(refreshing){
+        $.ajax({
+                type: "GET",
+                url: "/Ajax/ManageSync",
+                datatype: "json",
+                success: function(data) {
+                    var json = jQuery.parseJSON(data);
+                    $.each(json, function(id,group){
+                        $('#' + id + ' .status').text(group.status);
+                        $('#' + id + ' .message').text(group.message);
+                    })
+                },
+                complete: function() {
+                    if(refreshing){
+                        setTimeout(function() { refresh(); }, 250);
+                    }
+                }
+            })
+    }
+};
+
+</script>
+       

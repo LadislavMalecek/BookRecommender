@@ -33,6 +33,9 @@ namespace BookRecommender.DataManipulation.WikiData
             }
             else return "http://www.wikidata.org/entity/" + id.Substring(3);
         }
+        public override string GetName(){
+            return "Wikidata endpoint";
+        }
 
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
@@ -41,58 +44,58 @@ namespace BookRecommender.DataManipulation.WikiData
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
-        public override void UpdateBooks(List<int> methodsList)
+        public override void UpdateBooks(List<int> methodsList, MiningState miningState)
         {
             if (methodsList == null || methodsList.Count == 0)
             {
-                base.UpdateDatabase(GetBooksUri(), SaveBooksUri);
-                base.UpdateDatabase(GetBooksTitleLabelCsLabelEn(), SaveBooksTitleLabelCsLabelEn);
-                base.UpdateDatabase(GetBooksNamesByLangOfOrigin(), SaveBooksNamesByLangOfOrigin);
-                base.UpdateDatabase(GetBooksNamesByAuthorCountryLang(), SaveBooksNamesByAuthorCountryLang);
-                base.UpdateDatabase(GetBooksLabelsAll(), SaveBookTitleWithNoOtherName);
-                base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers);
-                base.UpdateDatabase(GetBooksImages(), SaveBooksImages);
-                base.UpdateDatabase(GetBooksDescriptions(), SaveBooksDescriptions);
-                base.UpdateDatabase(GetBooksWikiPages(), SaveBooksWikipages);
+                base.UpdateDatabase(GetBooksUri(), SaveBooksUri, miningState);
+                base.UpdateDatabase(GetBooksTitleLabelCsLabelEn(), SaveBooksTitleLabelCsLabelEn, miningState);
+                base.UpdateDatabase(GetBooksNamesByLangOfOrigin(), SaveBooksNamesByLangOfOrigin, miningState);
+                base.UpdateDatabase(GetBooksNamesByAuthorCountryLang(), SaveBooksNamesByAuthorCountryLang, miningState);
+                base.UpdateDatabase(GetBooksLabelsAll(), SaveBookTitleWithNoOtherName, miningState);
+                base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers, miningState);
+                base.UpdateDatabase(GetBooksImages(), SaveBooksImages, miningState);
+                base.UpdateDatabase(GetBooksDescriptions(), SaveBooksDescriptions, miningState);
+                base.UpdateDatabase(GetBooksEnWikiPages(), SaveBooksEnWikipages, miningState);
 
             }
             else
             {
                 if (methodsList.Contains(0))
                 {
-                    base.UpdateDatabase(GetBooksUri(), SaveBooksUri);
+                    base.UpdateDatabase(GetBooksUri(), SaveBooksUri, miningState);
                 }
                 if (methodsList.Contains(1))
                 {
-                    base.UpdateDatabase(GetBooksTitleLabelCsLabelEn(), SaveBooksTitleLabelCsLabelEn);
+                    base.UpdateDatabase(GetBooksTitleLabelCsLabelEn(), SaveBooksTitleLabelCsLabelEn, miningState);
                 }
                 if (methodsList.Contains(2))
                 {
-                    base.UpdateDatabase(GetBooksNamesByLangOfOrigin(), SaveBooksNamesByLangOfOrigin);
+                    base.UpdateDatabase(GetBooksNamesByLangOfOrigin(), SaveBooksNamesByLangOfOrigin, miningState);
                 }
                 if (methodsList.Contains(3))
                 {
-                    base.UpdateDatabase(GetBooksNamesByAuthorCountryLang(), SaveBooksNamesByAuthorCountryLang);
+                    base.UpdateDatabase(GetBooksNamesByAuthorCountryLang(), SaveBooksNamesByAuthorCountryLang, miningState);
                 }
                 if (methodsList.Contains(4))
                 {
-                    base.UpdateDatabase(GetBooksLabelsAll(), SaveBookTitleWithNoOtherName);
+                    base.UpdateDatabase(GetBooksLabelsAll(), SaveBookTitleWithNoOtherName, miningState);
                 }
                 if (methodsList.Contains(5))
                 {
-                    base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers);
+                    base.UpdateDatabase(GetBooksIdentifiers(), SaveBooksIdentifiers, miningState);
                 }
                 if (methodsList.Contains(6))
                 {
-                    base.UpdateDatabase(GetBooksImages(), SaveBooksImages);
+                    base.UpdateDatabase(GetBooksImages(), SaveBooksImages, miningState);
                 }
                 if (methodsList.Contains(7))
                 {
-                    base.UpdateDatabase(GetBooksDescriptions(), SaveBooksDescriptions);
+                    base.UpdateDatabase(GetBooksDescriptions(), SaveBooksDescriptions, miningState);
                 }
                 if (methodsList.Contains(8))
                 {
-                    base.UpdateDatabase(GetBooksWikiPages(), SaveBooksWikipages);
+                    base.UpdateDatabase(GetBooksEnWikiPages(), SaveBooksEnWikipages, miningState);
                 }
             }
         }
@@ -418,7 +421,7 @@ namespace BookRecommender.DataManipulation.WikiData
             }
             yield break;
         }
-        void SaveBooksWikipages((string uri, string wikiPageUrl) line, BookRecommenderContext db)
+        void SaveBooksEnWikipages((string uri, string wikiPageUrl) line, BookRecommenderContext db)
         {
             var book = db.Books.Where(b => b.Uri == line.uri)?.FirstOrDefault();
             if (book == null)
@@ -441,48 +444,48 @@ namespace BookRecommender.DataManipulation.WikiData
         // ------------------------------------------------------------------------------------------------------------------------------------
         //------------------------------------------------------------------------------------------------------------------------------------
 
-        public override void UpdateAuthors(List<int> methodsList)
+        public override void UpdateAuthors(List<int> methodsList, MiningState miningState)
         {
             if (methodsList == null || methodsList.Count == 0)
             {
-                base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri);
-                base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData);
-                base.UpdateDatabase(GetAuthorsData2(), SaveAuthorsData2);
-                base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
-                base.UpdateDatabase(GetAuthorsImages(), SaveAuthorsImages);
-                base.UpdateDatabase(GetAuthorsDescriptions(), SaveAuthorsDescriptions);
-                base.UpdateDatabase(GetAuthorsWikiPages(), SaveAuthorsWikiPages);
+                base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri, miningState);
+                base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData, miningState);
+                base.UpdateDatabase(GetAuthorsData2(), SaveAuthorsData2, miningState);
+                base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations, miningState);
+                base.UpdateDatabase(GetAuthorsImages(), SaveAuthorsImages, miningState);
+                base.UpdateDatabase(GetAuthorsDescriptions(), SaveAuthorsDescriptions, miningState);
+                base.UpdateDatabase(GetAuthorsWikiPages(), SaveAuthorsWikiPages, miningState);
 
             }
             else
             {
                 if (methodsList.Contains(0))
                 {
-                    base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri);
+                    base.UpdateDatabase(GetAuthorsUri(), SaveAuthorsUri, miningState);
                 }
                 if (methodsList.Contains(1))
                 {
-                    base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData);
+                    base.UpdateDatabase(GetAuthorsData(), SaveAuthorsData, miningState);
                 }
                 if (methodsList.Contains(2))
                 {
-                    base.UpdateDatabase(GetAuthorsData2(), SaveAuthorsData2);
+                    base.UpdateDatabase(GetAuthorsData2(), SaveAuthorsData2, miningState);
                 }
                 if (methodsList.Contains(3))
                 {
-                    base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations);
+                    base.UpdateDatabase(GetAuthorBookRelations(), SaveAuthorBookRelations, miningState);
                 }
                 if (methodsList.Contains(4))
                 {
-                    base.UpdateDatabase(GetAuthorsImages(), SaveAuthorsImages);
+                    base.UpdateDatabase(GetAuthorsImages(), SaveAuthorsImages, miningState);
                 }
                 if (methodsList.Contains(5))
                 {
-                    base.UpdateDatabase(GetAuthorsDescriptions(), SaveAuthorsDescriptions);
+                    base.UpdateDatabase(GetAuthorsDescriptions(), SaveAuthorsDescriptions, miningState);
                 }
                 if (methodsList.Contains(6))
                 {
-                    base.UpdateDatabase(GetAuthorsWikiPages(), SaveAuthorsWikiPages);
+                    base.UpdateDatabase(GetAuthorsWikiPages(), SaveAuthorsWikiPages, miningState);
                 }
             }
         }
@@ -633,7 +636,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 return;
             }
 
-            if (db.BooksAuthors.Where(x => x == new BookAuthor(book, author))?.FirstOrDefault() != null)
+            var ba = new BookAuthor(book, author);
+            var w = db.BooksAuthors.Where(x => x == ba);
+            var fd = w?.FirstOrDefault();
+            if (fd != null)
             {
                 return;
             }
@@ -743,23 +749,23 @@ namespace BookRecommender.DataManipulation.WikiData
         // ------------------------------------------------------------------------------------------------------------------------------------
         //------------------------------------------------------------------------------------------------------------------------------------
 
-        public override void UpdateCharacters(List<int> methodsList)
+        public override void UpdateCharacters(List<int> methodsList, MiningState miningState)
         {
             if (methodsList == null || methodsList.Count == 0)
             {
-                base.UpdateDatabase(GetCharacters(), SaveCharacters);
-                base.UpdateDatabase(GetCharacterBookRelations(), SaveCharacterBookRelations);
+                base.UpdateDatabase(GetCharacters(), SaveCharacters, miningState);
+                base.UpdateDatabase(GetCharacterBookRelations(), SaveCharacterBookRelations, miningState);
 
             }
             else
             {
                 if (methodsList.Contains(0))
                 {
-                    base.UpdateDatabase(GetCharacters(), SaveCharacters);
+                    base.UpdateDatabase(GetCharacters(), SaveCharacters, miningState);
                 }
                 if (methodsList.Contains(1))
                 {
-                    base.UpdateDatabase(GetCharacterBookRelations(), SaveCharacterBookRelations);
+                    base.UpdateDatabase(GetCharacterBookRelations(), SaveCharacterBookRelations, miningState);
                 }
             }
         }
@@ -834,7 +840,11 @@ namespace BookRecommender.DataManipulation.WikiData
             {
                 return;
             }
-            if (db.BooksCharacters.Where(x => x == new BookCharacter(book, character))?.FirstOrDefault() != null)
+
+            var bc = new BookCharacter(book, character);
+            var w = db.BooksCharacters.Where(x => x == bc);
+            var fd = w?.FirstOrDefault();
+            if (fd != null)
             {
                 return;
             }
@@ -849,22 +859,22 @@ namespace BookRecommender.DataManipulation.WikiData
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------------------------------------------
-        public override void UpdateGenres(List<int> methodsList)
+        public override void UpdateGenres(List<int> methodsList, MiningState miningState)
         {
             if (methodsList == null || methodsList.Count == 0)
             {
-                base.UpdateDatabase(GetGenres(), SaveGenres);
-                base.UpdateDatabase(GetGenreBookRelations(), SaveGenreBookRelations);
+                base.UpdateDatabase(GetGenres(), SaveGenres, miningState);
+                base.UpdateDatabase(GetGenreBookRelations(), SaveGenreBookRelations, miningState);
             }
             else
             {
                 if (methodsList.Contains(0))
                 {
-                    base.UpdateDatabase(GetGenres(), SaveGenres);
+                    base.UpdateDatabase(GetGenres(), SaveGenres, miningState);
                 }
                 if (methodsList.Contains(1))
                 {
-                    base.UpdateDatabase(GetGenreBookRelations(), SaveGenreBookRelations);
+                    base.UpdateDatabase(GetGenreBookRelations(), SaveGenreBookRelations, miningState);
                 }
             }
         }
@@ -940,7 +950,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 return;
             }
 
-            if (db.BooksGenres.Where(x => x == new BookGenre(book, genre))?.FirstOrDefault() != null)
+            var bg = new BookGenre(book, genre);
+            var w = db.BooksGenres.Where(x => x == bg);
+            var fd = w?.FirstOrDefault();
+            if (fd != null)
             {
                 return;
             }

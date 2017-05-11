@@ -15,8 +15,8 @@ namespace BookRecommender.Models.Database
 
         public BookAuthor(Book book, Author author)
         {
-            this.Book = book;
-            this.Author = author;
+            this.BookId = book.BookId;
+            this.AuthorId = author.AuthorId;
         }
         // EF needs simple constructor
         public BookAuthor() { }
