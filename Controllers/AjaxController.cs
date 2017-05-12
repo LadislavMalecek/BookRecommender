@@ -11,6 +11,7 @@ using BookRecommender.Models.AjaxViewModels;
 using System.Text;
 using Newtonsoft.Json;
 using static BookRecommender.DataManipulation.MiningStateType;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BookRecommender.Controllers
 {
@@ -101,8 +102,13 @@ namespace BookRecommender.Controllers
                 this.message = message;
             }
         }
+        [Authorize]
         public string ManageSync()
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return null;
+            }
             var jsonDic = new Dictionary<string, JsonHelp>();
             var miningProxy = DataMiningProxySingleton.Instance;
             foreach (var operation in miningProxy.Operations)
@@ -124,8 +130,13 @@ namespace BookRecommender.Controllers
             }
             return (JsonConvert.SerializeObject(jsonDic));
         }
+        [Authorize]
         public void Mining(string command, string param)
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return;
+            }
             if (string.IsNullOrEmpty(command))
             {
                 return;
@@ -171,6 +182,23 @@ namespace BookRecommender.Controllers
                 default:
                     return;
             }
+        }
+        [Authorize]
+        public void Feedback(string text, string name){
+            string userId = null;
+            if (User.Identity.IsAuthenticated)
+            {
+                userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
+            } else {
+                return;
+            }
+            if(string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(name)){
+                return;
+            }
+            var db = new BookRecommenderContext();
+
+            db.Feedback.Add(new Feedback(userId,text,name));
+            db.SaveChanges();
         }
     }
 }

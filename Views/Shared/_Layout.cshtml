@@ -1,3 +1,9 @@
+@using Microsoft.AspNetCore.Identity
+@using BookRecommender.Models.Database
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
 <!DOCTYPE html>
 <html>
 
@@ -34,11 +40,111 @@
                 <ul class="nav navbar-nav">
                     <li><a asp-area="" asp-controller="Home" asp-action="Search">Search</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
+                    @if (SignInManager.IsSignedIn(User)){
+                        <li><a data-toggle="modal" data-target="#myModal">Send feedback</a></li>
+                    }
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>
         </div>
     </div>
+
+                    
+@if (SignInManager.IsSignedIn(User)){
+    <!-- Modal -->
+    <div id="myModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">If you want to share a bug or a mistake you have found or simply have some idea for improving the app. Please share it with us! :)</h4>
+                </div>
+                <div class="modal-body">
+                    <textarea id="feedbackText" class="form-control" placeholder="Your feedback..." style="min-width: 100%" rows="3"></textarea>
+                    <span id="feedbackInfoText" class="text-danger field-validation-error" style="display: none">What for is an empty feedback?</span>
+                    <br>
+                    <input id="feedbackName" type="text" class="form-control" placeholder="Your name..." style="min-width: 100%">
+                    <span id="feedbackInfoName" class="text-danger field-validation-error" style="display: none">Fill in your name please. :)</span>
+                    
+                </div>
+                <div class="modal-footer">
+                    <label id="feedbackInfo"></label>
+                    <span id="feedbackOk" class="text-success" style="display: none; padding-right:10px">Thank you for your feedback :-*</span>
+                    
+                    <button id="feedbackSend" type="button" class="btn btn-default">Send</button>
+                    <button id="feedbackClose" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var feedbackSent = false;
+
+        $('#feedbackSend').click(function(){
+            var text = $("#feedbackText").val();
+            var name = $("#feedbackName").val();
+            var allOk = true;
+            if(!text.trim()){
+                $("#feedbackInfoText").show();
+                allOk = false;
+            } else {
+                $("#feedbackInfoText").hide();
+            }
+            if(!name.trim()){
+                $("#feedbackInfoName").show();
+                allOk = false;
+            } else {
+                $("#feedbackInfoName").hide();
+            }
+            if(allOk){
+                $("#feedbackInfoText").hide();
+                $("#feedbackInfoName").hide();
+                $("#feedbackOk").show();
+
+                $('#feedbackSend').prop('disabled', true)
+                sendFeedback(text,name);
+                feedbackSent = true;
+            }
+        });
+
+         $('#feedbackClose').click(function(){
+            closingModal();
+         });
+        
+         function closingModal() {
+            if(feedbackSent){
+                $("#feedbackText").val("");
+                $("#feedbackName").val("");
+
+                $("#feedbackInfoText").hide();
+                $("#feedbackInfoName").hide();
+                $("#feedbackOk").hide();
+                $('#feedbackSend').prop('disabled', false);
+            }
+         }
+
+         $(function () {
+            /* hidden.bs.modal event example */
+            $('#myModal').on('hidden.bs.modal', function () {
+                closingModal();
+            })
+        });
+
+        function sendFeedback(text,name){
+            
+            $.ajax({
+                type: "POST",
+                url: "/Ajax/Feedback?text=" + text + "&name=" + name
+            })
+        }
+
+
+    </script>
+}
+
     <div class="container body-content">
         @RenderBody()
     </div>

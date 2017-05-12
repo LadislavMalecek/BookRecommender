@@ -26,6 +26,8 @@ namespace BookRecommender.DataManipulation
         public DbSet<BookGenre> BooksGenres { get; set; }
         public DbSet<UserActivity> UsersActivities { get; set; }
 
+        public DbSet<Feedback> Feedback { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder)
         {
             optionBuilder.UseSqlite(AppSettingsSingleton.DataBaseConnectionString);
@@ -72,6 +74,9 @@ namespace BookRecommender.DataManipulation
 
             modelBuilder.Entity<BookCharacter>()
                 .HasIndex(c => c.CharacterId);
+
+            modelBuilder.Entity<Feedback>()
+                .HasIndex(c => c.UserId);
 
 
             //--------------------------------
