@@ -53,7 +53,9 @@ namespace BookRecommender.Controllers
             if (ModelState.IsValid)
             {
                 var db = new DataManipulation.BookRecommenderContext();
-                var user = db.Users.Where(u => u.Email == model.Email).FirstOrDefault();
+                var user = db.Users.Where(u => u.Email == model.Login ||
+                                               u.UserName == model.Login)
+                                   .FirstOrDefault();
 
                 if(user == null){
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
