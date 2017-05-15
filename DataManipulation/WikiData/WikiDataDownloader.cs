@@ -65,7 +65,8 @@ namespace BookRecommender.DataManipulation.WikiData
 
                 using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
                 {
-                    return streamReader.ReadToEnd();
+                    var text =  streamReader.ReadToEnd();
+                    return text;
                 }
             }
             catch (Exception)

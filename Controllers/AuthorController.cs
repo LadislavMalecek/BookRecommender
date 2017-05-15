@@ -40,7 +40,7 @@ namespace BookRecommender.Controllers
                 {
                     return View("Error");
                 }
-                var ua = new UserActivity(user, ActivityType.BookDetailViewed, id.ToString());
+                var ua = new UserActivity(user, ActivityType.AuthorDetailViewed, id.ToString());
                 await db.UsersActivities.AddAsync(ua);
                 await db.SaveChangesAsync();
             }

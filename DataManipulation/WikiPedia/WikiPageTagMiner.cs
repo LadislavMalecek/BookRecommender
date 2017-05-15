@@ -22,7 +22,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
             this.verbose = verbose;
         }
 
-        public void UpdateRatings(List<int> methodsList)
+        public void UpdateTags(List<int> methodsList, MiningState miningState = null)
         {
 
             if (methodsList == null || methodsList.Count == 0)
@@ -32,16 +32,30 @@ namespace BookRecommender.DataManipulation.WikiPedia
             if (methodsList.Contains(0))
             {
                 // todo: dependency injection
+                if (miningState != null)
+                {
+                    miningState.CurrentState = MiningStateType.RunningQueryingEndpoint;
+                }
                 var sparqlData = new WikiDataEndpointMiner().GetBooksWikiPages().ToList();
                 DownloadAndTrimPages(sparqlData);
+
             }
             if (methodsList.Contains(1))
             {
-                CalculateAndSaveBookTagsToDb();
+                CalculateAndSaveBookTagsToDb(miningState);
             }
         }
-        public void DownloadAndTrimPages(List<(string bookId, string wikiPageUrl)> wikiPages, int degreeOfParallelism = 7, bool skipAlreadyDownloaded = true)
+        public void UpdateTags(int methodNumber, MiningState miningState = null){
+            var list = new List<int>() { methodNumber };
+            UpdateTags(list, miningState);
+        }
+        public void DownloadAndTrimPages(List<(string bookId, string wikiPageUrl)> wikiPages, MiningState miningState = null, int degreeOfParallelism = 7, bool skipAlreadyDownloaded = true)
         {
+            if (miningState != null)
+            {
+                miningState.CurrentState = MiningStateType.Running;
+            }
+            var counterForMiningState = 0;
             // How many thread are going to be run in parallel
             var options = new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism };
             // if disabled do not create counter
@@ -66,12 +80,23 @@ namespace BookRecommender.DataManipulation.WikiPedia
                     {
                         File.AppendAllText("C:\\netcore\\Log.txt", "\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
                     }
+                    if (miningState != null)
+                    {
+                        miningState.Message = string.Format("{1}/{2}",
+                            counterForMiningState, wikiPages.Count);
+                        counterForMiningState++;
+                    }
                     if (verbose)
                     {
                         counter.Update();
                     }
                 });
                 // }
+            }
+            if (miningState != null)
+            {
+                miningState.CurrentState = MiningStateType.Completed;
+                miningState.Message = DateTime.Now.ToString();
             }
         }
         string GetLangFromWikiUrl(string url)
@@ -82,32 +107,49 @@ namespace BookRecommender.DataManipulation.WikiPedia
             return splittedUrl.Length >= 1 ? splittedUrl[1] : null;
         }
 
-        public void CalculateAndSaveBookTagsToDb()
+        public void CalculateAndSaveBookTagsToDb(MiningState miningState = null)
         {
             var db = new BookRecommenderContext();
             var endpoint = new WikiDataEndpointMiner();
             var books = db.Books;
             var langs = storage.GetLangs();
             var langDoneCount = 0;
+            if (miningState != null)
+            {
+                miningState.CurrentState = MiningStateType.Running;
+            }
             foreach (var lang in langs)
             {
+                var howManyLeft = langs.Count() - langDoneCount;
                 System.Console.WriteLine("---");
                 System.Console.WriteLine(lang);
+                if (miningState != null)
+                {
+                    miningState.Message = string.Format("lang:{0}, left:{1} - {2}",
+                            lang, howManyLeft, "Loading from disk");
+                }
                 System.Console.WriteLine("Loading pages from disk");
                 var pages = storage.GetPagesInLang(lang);
                 System.Console.Write("Loading pages from disk finished");
 
                 var pagesCount = storage.PagesInLangCount(lang);
-
                 // Update count table
-                if(db.TagsCount.Where(t => t.Lang == lang).Count() == 0){
-                    
+                TagCount tc = db.TagsCount.Where(t => t.Lang == lang).FirstOrDefault();
+                if (tc == null)
+                {
                     db.TagsCount.Add(new TagCount(lang, pagesCount));
-                }else{
-                    db.TagsCount.Update(new TagCount(lang, pagesCount));
                 }
-
+                else
+                {
+                    tc.Count = pagesCount;
+                }
+                db.SaveChanges();
                 var documents = new List<(string docId, string[] words)>();
+                if (miningState != null)
+                {
+                    miningState.Message = string.Format("lang:{0}, left:{1} - {2}",
+                            lang, howManyLeft, "Parsing");
+                }
                 foreach (var page in pages)
                 {
                     // basic parse
@@ -122,10 +164,20 @@ namespace BookRecommender.DataManipulation.WikiPedia
                     }
                     documents.Add((page.id, words));
                 }
+                if (miningState != null)
+                {
+                    miningState.Message = string.Format("lang:{0}, left:{1} - {2}",
+                         lang, howManyLeft, "ComputingTdIdf");
+                }
                 var ratings = ComputeTdIdf(documents);
                 // save ratings to database
+
+                // remove all tags of current lang, we need this to avoid updating, that is very expensive
+                db.Tags.RemoveRange(db.Tags.Where(t => t.Lang == lang));
+
                 foreach (var doc in ratings)
                 {
+
                     var uri = endpoint.GetUriFromId(doc.docId);
 
                     var book = db.Books.Where(b => b.Uri == uri)?.FirstOrDefault();
@@ -135,6 +187,9 @@ namespace BookRecommender.DataManipulation.WikiPedia
                         System.Console.WriteLine("Book with uri not found: \"" + uri + "\"");
                         continue;
                     }
+
+
+
                     foreach (var tag in doc.ratings)
                     {
                         var newTag = new Tag()
@@ -146,11 +201,21 @@ namespace BookRecommender.DataManipulation.WikiPedia
                         book.AddTag(newTag, db);
                     }
                 }
+                if (miningState != null)
+                {
+                    miningState.Message = string.Format("lang:{0}, left:{1} - {2}",
+                            lang, howManyLeft, "Saving to database");
+                }
                 System.Console.WriteLine("Saving to database");
                 db.SaveChanges();
                 System.Console.Write("Saving to database finished");
                 langDoneCount++;
-                System.Console.WriteLine($"{lang} done, {langs.Count() - langDoneCount} left");
+                System.Console.WriteLine($"{lang} done, {howManyLeft} left");
+            }
+            if (miningState != null)
+            {
+                miningState.CurrentState = MiningStateType.Completed;
+                miningState.Message = DateTime.Now.ToString();
             }
         }
         static List<(string docId, List<(string word, double score)> ratings)> ComputeTdIdf(List<(string docId, string[] words)> parsedDocuments, int howManyTop = 10)

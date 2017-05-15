@@ -1,5 +1,8 @@
 @using Microsoft.AspNetCore.Identity
 @using BookRecommender.Models.Database
+@using Microsoft.AspNetCore.Mvc
+@using BookRecommender.DataManipulation
+@using Microsoft.AspNetCore.Http
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -41,7 +44,14 @@
                     <li><a asp-area="" asp-controller="Home" asp-action="Search">Search</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     @if (SignInManager.IsSignedIn(User)){
-                        <li><a data-toggle="modal" data-target="#myModal">Send feedback</a></li>
+                        <li><a data-toggle="modal" data-target="#feedbackModal">Send feedback</a></li>
+                    }
+                    @if(SignInManager.IsSignedIn(User)){
+                        var userId = UserManager.GetUserId(User);
+                        var hasManagerAccess = new BookRecommenderContext().Users.Where(u => u.Id == userId).Any(u => u.HasManageAccess);
+                        if(hasManagerAccess){
+                            <li><a asp-area="" asp-controller="Manage" asp-action="">Manage</a></li>
+                        }
                     }
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
@@ -52,7 +62,7 @@
                     
 @if (SignInManager.IsSignedIn(User)){
     <!-- Modal -->
-    <div id="myModal" class="modal fade" role="dialog">
+    <div id="feedbackModal" class="modal fade" role="dialog">
         <div class="modal-dialog">
 
             <!-- Modal content-->
@@ -66,12 +76,12 @@
                     <span id="feedbackInfoText" class="text-danger field-validation-error" style="display: none">What for is an empty feedback?</span>
                     <br>
                     <input id="feedbackName" type="text" class="form-control" placeholder="Your name..." style="min-width: 100%">
-                    <span id="feedbackInfoName" class="text-danger field-validation-error" style="display: none">Fill in your name please. :)</span>
+                    <span id="feedbackInfoName" class="text-danger field-validation-error" style="display: none">Fill in your name please.</span>
                     
                 </div>
                 <div class="modal-footer">
                     <label id="feedbackInfo"></label>
-                    <span id="feedbackOk" class="text-success" style="display: none; padding-right:10px">Thank you for your feedback :-*</span>
+                    <span id="feedbackOk" class="text-success" style="display: none; padding-right:10px">Thank you for your feedback.</span>
                     
                     <button id="feedbackSend" type="button" class="btn btn-default">Send</button>
                     <button id="feedbackClose" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -104,7 +114,7 @@
                 $("#feedbackInfoName").hide();
                 $("#feedbackOk").show();
 
-                $('#feedbackSend').prop('disabled', true)
+                $('#feedbackSend').hide();
                 sendFeedback(text,name);
                 feedbackSent = true;
             }
@@ -122,13 +132,13 @@
                 $("#feedbackInfoText").hide();
                 $("#feedbackInfoName").hide();
                 $("#feedbackOk").hide();
-                $('#feedbackSend').prop('disabled', false);
+                $('#feedbackSend').show();
             }
          }
 
          $(function () {
             /* hidden.bs.modal event example */
-            $('#myModal').on('hidden.bs.modal', function () {
+            $('#feedbackModal').on('hidden.bs.modal', function () {
                 closingModal();
             })
         });

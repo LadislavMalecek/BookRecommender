@@ -56,6 +56,9 @@ namespace BookRecommender.Models.Database
         public string GetNameEnShort(int numberOfChars, string afterChars = "...")
         {
             var name = GetNameEn();
+            if(name == null){
+                return null;
+            }
             if (name.Length <= numberOfChars)
             {
                 return name;

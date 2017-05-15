@@ -23,7 +23,7 @@ namespace BookRecommender.Models.Database
 
         public Tag(Book book, string value, string lang, double? score = null)
         {
-            Book = book;
+            BookId = book.BookId;
             Value = value;
             Score = score;
             Lang = lang;

@@ -28,23 +28,25 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>State</th>
-                <th>Message</th>
+                <th class="col-md-3">Name</th>
+                <th class="col-md-4 text-center">State</th>
+                <th class="col-md-3 text-center">Message</th>
+                <th class="col-md-2 text-right">Start/Stop</th>
             </tr>
         </thead>
         <tbody>
-            @foreach(var operation in Model.OperationsByEndpoint[0].Item2){
-            <tr id="@operation.Item2">
-                <td>@operation.Item1</td>
-                <td class="status"></td>
-                <th class="message"></th>
-                <th>
-                    <input type="button" onclick="start('@operation.Item2')" class="btn" value="Start"></input>
-                    <input type="button" onclick="stop('@operation.Item2')" class="btn" value="Stop"></input>
-                </th>
-            </tr>
-            }
+            @foreach(var operationsByEndpoint in Model.OperationsByEndpoint){
+                @foreach(var operation in operationsByEndpoint.Item2){
+                <tr id="@operation.Item2">
+                    <td>@operation.Item1</td>
+                    <td class="status  text-center"></td>
+                    <td class="message  text-center"></td>
+                    <td class="text-right">
+                        <input type="button" onclick="start('@operation.Item2')" class="btn" value="Start"></input>
+                        <input type="button" onclick="stop('@operation.Item2')" class="btn" value="Stop"></input>
+                    </td>
+                </tr>
+            }}
         </tbody>
     </table>
 </div>

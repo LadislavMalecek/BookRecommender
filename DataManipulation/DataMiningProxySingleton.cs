@@ -22,6 +22,7 @@ namespace BookRecommender.DataManipulation
         public int methodNumber { get; }
         public SparqlEndPointMiner endpoint { get; }
         public MiningState state { get; }
+        public Action<MiningState> ActionToRun { get; }
         public Operation(string name, MiningEntityType entityType, int methodNumber, SparqlEndPointMiner endpoint)
         {
             this.UniqueId = Guid.NewGuid().ToString();
@@ -31,10 +32,24 @@ namespace BookRecommender.DataManipulation
             this.endpoint = endpoint;
             this.state = new MiningState();
         }
+        public Operation(string name, Action<MiningState> actionToRun)
+        {
+            this.UniqueId = Guid.NewGuid().ToString();
+            this.name = name;
+            this.ActionToRun = actionToRun;
+            this.state = new MiningState();
+        }
         public void Execute()
         {
-            state.CurrentState = MiningStateType.Started;
-            endpoint.Update(entityType, methodNumber, state);
+            if (ActionToRun != null)
+            {
+                ActionToRun(state);
+            }
+            else
+            {
+                state.CurrentState = MiningStateType.Started;
+                endpoint.Update(entityType, methodNumber, state);
+            }
         }
     }
     enum MiningEntityType
@@ -96,10 +111,8 @@ namespace BookRecommender.DataManipulation
         {
             lock (synchLock)
             {
-                System.Console.WriteLine("ahoj");
                 Enumerable.Range(0, PendingOperations.Count).ToList().ForEach((x) =>
                 {
-                    System.Console.WriteLine("ahoj2");
                     Operation op;
                     PendingOperations.TryDequeue(out op);
                     op.state.CurrentState = MiningStateType.NotRunning;
@@ -191,6 +204,7 @@ namespace BookRecommender.DataManipulation
             new Operation("Books - Images", MiningEntityType.Books, 6, wikiDataEndpoint),
             new Operation("Books - Descriptions", MiningEntityType.Books, 7, wikiDataEndpoint),
             new Operation("Books - WikiPages en", MiningEntityType.Books, 8, wikiDataEndpoint),
+            new Operation("Books - Remove duplicates", MiningEntityType.Books, 9, wikiDataEndpoint),
 
             new Operation("Authors - URIs", MiningEntityType.Authors, 0, wikiDataEndpoint),
             new Operation("Authors - Data 1", MiningEntityType.Authors, 1, wikiDataEndpoint),
@@ -204,7 +218,11 @@ namespace BookRecommender.DataManipulation
             new Operation("Characters - Books relations", MiningEntityType.Characters, 1, wikiDataEndpoint),
 
             new Operation("Genres - URIs and Labels", MiningEntityType.Genres, 0, wikiDataEndpoint),
-            new Operation("Genres - Books relations", MiningEntityType.Genres, 1, wikiDataEndpoint)
+            new Operation("Genres - Books relations", MiningEntityType.Genres, 1, wikiDataEndpoint),
+            
+            new Operation("WikiPages - Download", (state) => new WikiPedia.WikiPageTagMiner().UpdateTags(0, state)),
+            new Operation("WikiPages - Calculate ratings", (state) => new WikiPedia.WikiPageTagMiner().UpdateTags(1, state))
+            
             }.AsReadOnly();
         }
 
@@ -216,24 +234,6 @@ namespace BookRecommender.DataManipulation
         {
             OperationsQueue.RemoveAll();
         }
-
-        private void TickMethod()
-        {
-            var operation = OperationsQueue.LastOperationDequeued;
-            if (operation != null)
-            {
-                System.Console.Write("\rMINING STATE: {0}, {1}/{2}, message:{3} --- NAME: {4}",
-                                        operation.state.CurrentState,
-                                        operation.state.CurrentPosition,
-                                        operation.state.Count,
-                                        operation.state.Message,
-                                        operation.name);
-            }
-        }
-
-
-
-
 
         public void AddForProccessing(string id)
         {

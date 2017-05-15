@@ -121,11 +121,6 @@ namespace BookRecommender.Controllers
                 message = message == null ? "" : message;
 
                 // add mining progress as a message
-                if (status == MiningStateType.Running)
-                {
-                    message = String.Format("{0}/{1}", operation.state.CurrentPosition,
-                                                       operation.state.Count);
-                }
                 jsonDic.Add(id, new JsonHelp(status.ToString(), message));
             }
             return (JsonConvert.SerializeObject(jsonDic));

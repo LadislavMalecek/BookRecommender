@@ -27,13 +27,16 @@ namespace BookRecommender.DataManipulation.WikiData
             var trimmedUrl = "WD_" + uri.Substring(lastSlash + 1);
             return trimmedUrl;
         }
-        public override string GetUriFromId(string id){
-            if(id == null || id.Length < 5 || id.Substring(0,4) != "WD_Q"){
+        public override string GetUriFromId(string id)
+        {
+            if (id == null || id.Length < 5 || id.Substring(0, 4) != "WD_Q")
+            {
                 throw new ArgumentException("id param not valid");
             }
             else return "http://www.wikidata.org/entity/" + id.Substring(3);
         }
-        public override string GetName(){
+        public override string GetName()
+        {
             return "Wikidata endpoint";
         }
 
@@ -57,6 +60,7 @@ namespace BookRecommender.DataManipulation.WikiData
                 base.UpdateDatabase(GetBooksImages(), SaveBooksImages, miningState);
                 base.UpdateDatabase(GetBooksDescriptions(), SaveBooksDescriptions, miningState);
                 base.UpdateDatabase(GetBooksEnWikiPages(), SaveBooksEnWikipages, miningState);
+                base.UpdateDatabase(GetBooksDuplicates(), SaveRemovesBookDuplicates, miningState);
 
             }
             else
@@ -97,6 +101,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 {
                     base.UpdateDatabase(GetBooksEnWikiPages(), SaveBooksEnWikipages, miningState);
                 }
+                if (methodsList.Contains(9))
+                {
+                    base.UpdateDatabase(GetBooksDuplicates(), SaveRemovesBookDuplicates, miningState);
+                }
             }
         }
 
@@ -129,6 +137,42 @@ namespace BookRecommender.DataManipulation.WikiData
                 Uri = line
             });
         }
+
+        IEnumerable<(string duplicateBook, string book)> GetBooksDuplicates()
+        {
+            // Query which loads all books and returns uri
+            // wdt:P31 - instance of
+            // wd:Q571 - book
+            var query = @"SELECT ?duplicateBook ?book
+                        WHERE {
+                            ?book wdt:P31 wd:Q571.
+                            ?duplicateBook owl:sameAs ?book.
+                        }";
+            var result = Execute(query);
+            foreach (var line in result)
+            {
+                yield return (line["duplicateBook"], line["book"]);
+            }
+            yield break;
+        }
+
+        void SaveRemovesBookDuplicates((string duplicateBook, string book) line, BookRecommenderContext db)
+        {
+            // check if book exists, delete it if it does
+            var duplicateBook = db.Books.Where(b => b.Uri == line.duplicateBook).FirstOrDefault();
+            var book = db.Books.Where(b => b.Uri == line.book).FirstOrDefault();
+
+            if (duplicateBook != null && book != null)
+            {
+                // both books in database
+                // move ratings from duplicatedBook to book and then remove the duplicate book
+                var duplicateBRatings = db.Ratings.Where(r => r.BookId == duplicateBook.BookId);
+                duplicateBRatings.ToList().ForEach(r => r.BookId = book.BookId);
+                db.Books.Remove(duplicateBook);
+            }
+        }
+
+
 
         IEnumerable<(string uri, string title, string labelCs, string labelEn)> GetBooksTitleLabelCsLabelEn()
         {

@@ -73,18 +73,22 @@ namespace BookRecommender.DataManipulation
                 miningState.CurrentState = MiningStateType.RunningQueryingEndpoint;
                 var listData = data.ToList();
                 miningState.CurrentState = MiningStateType.Running;
-                miningState.Count = listData.Count;
+                var currentPosition = 0;
                 using (var db = new BookRecommenderContext())
                 {
+
                     //Insert all books in database
                     foreach (var line in listData)
                     {
                         lineAction(line, db);
-                        miningState.CurrentPosition++;
+                        currentPosition++;
+                        miningState.Message = String.Format("{0}/{1}",
+                                 currentPosition, listData.Count);
                     }
                     miningState.CurrentState = MiningStateType.RunningSavingToDatabase;
                     db.SaveChanges();
                     miningState.CurrentState = MiningStateType.Completed;
+                    miningState.Message = DateTime.Now.ToString();
                 }
             }
             catch (Exception ex)

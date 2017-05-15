@@ -68,7 +68,7 @@ namespace BookRecommender.DataManipulation
                         endpoint.UpdateGenres(methodNumberList);
                         break;
                     case "wikitags":
-                        new WikiPageTagMiner().UpdateRatings(methodNumberList);
+                        new WikiPageTagMiner().UpdateTags(methodNumberList);
                         break;
 
                     default:
