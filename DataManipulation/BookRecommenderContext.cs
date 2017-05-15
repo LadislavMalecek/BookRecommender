@@ -30,7 +30,7 @@ namespace BookRecommender.DataManipulation
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder)
         {
-            optionBuilder.UseSqlite(AppSettingsSingleton.DataBaseConnectionString);
+            optionBuilder.UseSqlite(AppSettingsSingleton.Database.Connection);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -43,6 +43,9 @@ namespace BookRecommender.DataManipulation
             //--------------------------------
             modelBuilder.Entity<Tag>()
                 .HasIndex(c => c.Value);
+            
+            modelBuilder.Entity<Tag>()
+                .HasIndex(c => c.BookId);
 
             modelBuilder.Entity<TagCount>()
                 .HasIndex(c => c.Lang)

@@ -51,6 +51,11 @@ namespace BookRecommender
                 .AddEntityFrameworkStores<BookRecommenderContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddResponseCompression();
+
+            services.AddSingleton<IConfiguration>(Configuration);
+
+
             // services.Configure<MvcOptions>(options =>
             //     {
             //         options.Filters.Add(new RequireHttpsAttribute());
@@ -83,6 +88,13 @@ namespace BookRecommender
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+
+            // add values to the appsetting singleton from appsettings.json
+            AppSettingsSingleton.Database.Connection = Configuration["Database:Connection"];
+            AppSettingsSingleton.Mining.WikiPagesStorage = Configuration["Mining:WikiPagesStorage"];
+            AppSettingsSingleton.Mining.Password = Configuration["Mining:Password"];
+
+
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
@@ -110,6 +122,8 @@ namespace BookRecommender
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            app.UseResponseCompression();
         }
     }
 }

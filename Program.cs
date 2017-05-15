@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using BookRecommender.DataManipulation;
 using System.Linq;
+using System.Reflection;
 
 namespace BookRecommender
 {
@@ -56,13 +57,35 @@ namespace BookRecommender
             System.Console.WriteLine("Are we inside docker: " + insideDocker);
             string url = insideDocker ? "0.0.0.0" : "*";
 
+
+            // this code pick the right path to root, because of Linux service does not run with
+            // the path 1
+            // we try to read the index view from the path location
+
+            var path1 = Directory.GetCurrentDirectory();
+            var path2 = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
+            string pickedPath = null;
+
+            if(File.Exists(path1 + "\\Views\\Home\\Index.cshtml")){
+                pickedPath = path1;
+            }
+            if(File.Exists(path2 + "\\Views\\Home\\Index.cshtml")){
+                pickedPath = path2;
+            }
+
+            if(pickedPath == null){
+                System.Console.WriteLine("No root path found, does .\\View\\Home\\Index.cshtml exist from the current context?");
+                return;
+            }
+
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 // .UseKestrel(options =>{
                 //     options.UseHttps("C:\\netcore\\myCertificateAuthority\\myCertificates\\10.0.0.10\\10.0.0.10.pfx", "CFahojCFahoj25");
                 // })
                 .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseContentRoot(pickedPath)
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 // .UseUrls($"https://{url}:443")

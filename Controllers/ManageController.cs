@@ -50,7 +50,7 @@ namespace BookRecommender.Controllers
             {
                 return View("Error");
             }
-            if(model.Password == AppSettingsSingleton.Mining.ManagerPassword){
+            if(model.Password == AppSettingsSingleton.Mining.Password){
                 string userId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
                 var db = new BookRecommenderContext();
                 var user = db.Users.Where(u => u.Id == userId).FirstOrDefault();
