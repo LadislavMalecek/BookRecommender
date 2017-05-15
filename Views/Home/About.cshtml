@@ -2,7 +2,32 @@
     ViewData["Title"] = "About";
 }
 
+@model BookRecommender.Models.HomeViewModels.AboutViewModel
+
 <h2> About this project: </h2>
-<p> This website can recommend book for you based on your feedback which you have provided </p>
-<p> It is developed as a bachelor thesis on Charles uni in czech republic </p>
-<p> More info comming soon... </p>
+<p> This website can recommend book for you based on your 
+    feedback which you have provided.</p>
+<p> It is being developed as a bachelor thesis at the Charles university,
+     faculty of Mathematics and Physics in the Czech Republic by Ladislav Maleček
+      under the supervision of Mgr. Ladislav Peška.</p>
+<h2>How it all started</h2>
+<p> Since he was a little boy, he knew. He 
+    knew that one day he is going to rule the mighty computer. 
+    It all started by sticking a butter knife in a toaster. 
+    It blew up, his hair was all mad scientist style. And that was 
+    the moment he realised that the MFF is the right and only choice 
+    for his future. Now he stands here before you with his bachelor thesis.
+     Ready to conquer every objection and every obstacle. 
+     (For my objector: Please don't sack me)</p> 
+
+     <hr>
+
+<h3> Live information about the server:</h3>
+
+<ul>
+    <li>Books - @Model.BooksCount</li>
+    <li>Authors - @Model.AuthorsCount</li>
+    <li>Reviews - @Model.ReviewsCount</li>
+    <li>Ratings - @Model.RatingsCount</li>
+    <li>Users - @Model.UsersCount</li>
+<ul>

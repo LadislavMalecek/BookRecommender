@@ -64,7 +64,7 @@ namespace BookRecommender.Controllers
         {
             ViewData["Message"] = "Your application description page.";
 
-            return View();
+            return View(new AboutViewModel());
         }
 
         public IActionResult Contact()

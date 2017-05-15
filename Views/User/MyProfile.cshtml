@@ -7,34 +7,90 @@
         <table class="table table-striped">
             <tbody>
                 @foreach(var rating in Model.BookRatings){
-                var lStars = rating.Item1.Rating;
+                var lStars = rating.Rating;
                 var stars = new String('★', lStars) + new String('☆', 5 - lStars);
                 <tr>
                     <td>
                         <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-sm-10">
-                                    <a href="/Book/Detail/@rating.Item2.BookId"> @rating.Item2.NameEn </a>
+                            <div class="col-xs-9">
+                                <div class="row">
+                                    <a href="/Book/Detail/@rating.Book.BookId"> @rating.Book.GetNameEn() </a>
                                 </div>
-                                <div class="col-sm-2">
-                                    <p class="text-right stars">@stars</p>
+                                @if(!string.IsNullOrEmpty(rating.Review)){
+                                <div class="row">
+                                    <p>@rating.Review</p>
                                 </div>
+                                }
                             </div>
 
-                            @if(!string.IsNullOrEmpty(rating.Item1.Review)){
-                            <div class="row">
-                                <div class="col-sm-10">
-                                    <p>@rating.Item1.Review</p>
+                            <div class="col-xs-3">
+                                <div class="row">
+                                    <p class="text-right stars">@stars</p>
                                 </div>
-                                <div class="col-sm-2">
-                                    <p class="text-right">@rating.Item1.CreatedTime.ToString("dd. MM. yyyy")</p>
+                                <div class="row">
+                                    <p class="text-right">@rating.CreatedTime.ToString("dd. MM. yyyy")</p>
                                 </div>
                             </div>
-                            }
                         </div>
                     </td>
                 </tr>
                 }
+            </tbody>
         </table>
+    </div>
+
+    <div class="col-md-4">
+    <h3>Last visited:</h3>
+        <ul class="nav nav-tabs nav-justified">
+            <li class="active"><a data-toggle="tab" href="#searches">Search</a></li>
+            <li><a data-toggle="tab" href="#books">Books</a></li>
+            <li><a data-toggle="tab" href="#authors">Authors</a></li>
+        </ul>
+
+        <div class="tab-content">
+
+            <div id="searches" class="tab-pane fade in active">
+                <table class="table table-striped">
+                    <tbody>
+                        @foreach(var search in Model.LastSearched){
+                            <tr>
+                                <td>
+                                    <a href="/Home/Search?query=@search"><p>@search</p></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="books" class="tab-pane fade">
+                <table class="table table-striped">
+                    <tbody>
+                        @foreach(var book in Model.LastViewedBooks){
+                            <tr>
+                                <td>
+                                    <a href="/Book/Detail/@book.BookId"><p>@book.GetNameEn()</p></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="authors" class="tab-pane fade">
+                <table class="table table-striped">
+                    <tbody>
+                        @foreach(var author in Model.LastViewedAuthors){
+                            <tr>
+                                <td>
+                                    <a href="/Author/Detail/@author.AuthorId"><p>@author.GetNameEn()</p></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
     </div>
 </div>

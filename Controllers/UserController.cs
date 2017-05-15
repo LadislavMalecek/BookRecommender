@@ -29,9 +29,7 @@ namespace BookRecommender.Controllers
                 return View("Error");
             }
             string userId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
-            var db = new BookRecommenderContext();
-            var ratings = db.Ratings.Where(r => r.UserId == userId);
-            return View(new MyProfileViewModel(ratings, db));
+            return View(new MyProfileViewModel(userId));
         }
     }
 }
