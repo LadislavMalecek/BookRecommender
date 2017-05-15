@@ -10,10 +10,16 @@ namespace BookRecommender.Models.ManageViewModels
     public class IndexViewModel
     {
         public List<(string endpointName, List<(string Name, string Id)> operations)> OperationsByEndpoint;
+        public readonly static int PageSize = 10;
+        public int FeedbackPageCount;
 
 
         public IndexViewModel()
         {
+            var db = new BookRecommenderContext();
+            // how many pages
+            FeedbackPageCount = (db.Feedback.Count() + PageSize - 1) / PageSize;
+
             OperationsByEndpoint = new List<(string endpointName, List<(string Name, string Id)> operations)>();
             var miningProxy = DataMiningProxySingleton.Instance;
             

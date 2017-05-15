@@ -12,6 +12,7 @@ using System.Text;
 using Newtonsoft.Json;
 using static BookRecommender.DataManipulation.MiningStateType;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookRecommender.Controllers
 {
@@ -109,6 +110,12 @@ namespace BookRecommender.Controllers
             {
                 return null;
             }
+            bool hasAccess = _userManager.GetUserAsync(HttpContext.User).Result.HasManageAccess;
+            if (!hasAccess)
+            {
+                return null;
+            }
+
             var jsonDic = new Dictionary<string, JsonHelp>();
             var miningProxy = DataMiningProxySingleton.Instance;
             foreach (var operation in miningProxy.Operations)
@@ -132,6 +139,13 @@ namespace BookRecommender.Controllers
             {
                 return;
             }
+
+            bool hasAccess = _userManager.GetUserAsync(HttpContext.User).Result.HasManageAccess;
+            if (!hasAccess)
+            {
+                return;
+            }
+
             if (string.IsNullOrEmpty(command))
             {
                 return;
@@ -179,21 +193,111 @@ namespace BookRecommender.Controllers
             }
         }
         [Authorize]
-        public void Feedback(string text, string name){
+        public void Feedback(string text, string name)
+        {
             string userId = null;
             if (User.Identity.IsAuthenticated)
             {
                 userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
-            } else {
+            }
+            else
+            {
                 return;
             }
-            if(string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(name)){
+            if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(name))
+            {
                 return;
             }
             var db = new BookRecommenderContext();
 
-            db.Feedback.Add(new Feedback(userId,text,name));
+            db.Feedback.Add(new Feedback(userId, text, name));
             db.SaveChanges();
+        }
+
+
+        [Authorize]
+        public IActionResult GetFeedback(int page)
+        {
+            if (page < 1)
+            {
+                return StatusCode(400);
+            }
+            if (!User.Identity.IsAuthenticated)
+            {
+                return null;
+            }
+
+            bool hasAccess = _userManager.GetUserAsync(HttpContext.User).Result.HasManageAccess;
+            if (!hasAccess)
+            {
+                return null;
+            }
+
+            int howManySkip = (page - 1) * Models.ManageViewModels.IndexViewModel.PageSize;
+            //return Authors?.Skip(howManySkip)?.Take(PageSize)
+
+            var feedbackList = new List<(string name, string feedback, string email)>();
+            var db = new BookRecommenderContext();
+            db.Feedback.OrderByDescending(f => f.CreatedTime)
+                       .Include(x => x.User)
+                       .Skip(howManySkip)?
+                       .Take(Models.ManageViewModels.IndexViewModel.PageSize)?
+                       .ToList()
+                       .ForEach(f =>
+                       {
+                           feedbackList.Add((f.Name, f.Text, f.User.Email));
+                       });
+
+            var model = new GetFeedback()
+            {
+                Data = feedbackList
+            };
+
+            return PartialView(model);
+        }
+        [Authorize]
+        public IActionResult SqlExecute(string query)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return null;
+            }
+
+            bool hasAccess = _userManager.GetUserAsync(HttpContext.User).Result.HasManageAccess;
+            if (!hasAccess)
+            {
+                return null;
+            }
+
+            using (var context = new BookRecommenderContext())
+            using (var command = context.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = query;
+                context.Database.OpenConnection();
+                using (var rdr = command.ExecuteReader())
+                {
+                    var columns = new List<string>();
+                    var data = new List<List<string>>();
+                    for (int i = 0; i < rdr.FieldCount; i++)
+                    {
+                        columns.Add(rdr.GetName(i));
+                    }
+
+                    while(rdr.Read()){
+                        var row = new List<string>();
+                        for (int i = 0; i < rdr.FieldCount; i++){
+                            row.Add(rdr.GetValue(i).ToString());
+                        }
+                        data.Add(row);
+                    }
+                    var model = new SqlExecute(){
+                        ColumnNames = columns,
+                        Data = data
+                    };
+
+                    return PartialView(model);
+                }
+            }
         }
     }
 }

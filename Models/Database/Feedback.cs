@@ -21,6 +21,7 @@ namespace BookRecommender.Models.Database
 
         [Required]
         public DateTime CreatedTime { get; private set; }
+        public Feedback() { }
         public Feedback(string userId, string text, string name)
         {
             UserId = userId;

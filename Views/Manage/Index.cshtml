@@ -8,51 +8,172 @@
 @{
     ViewData["Title"] = "Manage Mining";
 }
-<!--<div class="container-fluid" id="refreshContainer" style="opacity: 0;">-->
-<div class="container">
-    <div class="row">
-        <div class="col-sm-6">
-            <input type="button" id="buttonStart" class="btn pull-left" value="Start mining all"></input>
-            <input type="button" id="buttonStop" class="btn  pull-left" value="Stop mining all"></input>
+
+<ul class="nav nav-tabs nav-justified">
+    <li class="active"><a data-toggle="tab" href="#mining">Mining</a></li>
+    <li><a data-toggle="tab" href="#feedback">Feedback</a></li>
+    <li><a data-toggle="tab" href="#sql">SQL</a></li>
+</ul>
+
+<div class="tab-content" style="padding-top: 20px">
+
+    <div id="mining" class="tab-pane fade in active">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <input type="button" id="buttonStart" class="btn pull-left" value="Start mining all"></input>
+                    <input type="button" id="buttonStop" class="btn  pull-left" value="Stop mining all"></input>
+                </div>
+                <div class="col-sm-6">
+                    <input type="button" id="buttonRefreshStop" class="btn pull-right" value="Stop refreshing" />
+                    <input type="button" id="buttonRefreshStart" class="btn pull-right" value="Start refreshing" />
+                </div>
+            </div>
         </div>
-        <div class="col-sm-6">
-            <input type="button" id="buttonRefreshStop" class="btn pull-right" value="Stop refreshing" />
-            <input type="button" id="buttonRefreshStart" class="btn pull-right" value="Start refreshing" />
+        <div class="container-fluid">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="col-md-3">Name</th>
+                        <th class="col-md-4 text-center">State</th>
+                        <th class="col-md-3 text-center">Message</th>
+                        <th class="col-md-2 text-right">Start/Stop</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var operationsByEndpoint in Model.OperationsByEndpoint){
+                        @foreach(var operation in operationsByEndpoint.Item2){
+                        <tr id="@operation.Item2">
+                            <td>@operation.Item1</td>
+                            <td class="status  text-center"></td>
+                            <td class="message  text-center"></td>
+                            <td class="text-right">
+                                <input type="button" onclick="start('@operation.Item2')" class="btn" value="Start"></input>
+                                <input type="button" onclick="stop('@operation.Item2')" class="btn" value="Stop"></input>
+                            </td>
+                        </tr>
+                    }}
+                </tbody>
+            </table>
         </div>
     </div>
-</div>
-    <!--<input id="ex15" type="text" data-slider-min="1000" data-slider-max="10000000" data-slider-step="5" align="right"/>-->
-    <!--<input type="checkbox" checked data-toggle="toggle" align="right" />-->
-<!--</div>-->
-<div class="container-fluid">
-    <table class="table">
-        <thead>
-            <tr>
-                <th class="col-md-3">Name</th>
-                <th class="col-md-4 text-center">State</th>
-                <th class="col-md-3 text-center">Message</th>
-                <th class="col-md-2 text-right">Start/Stop</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach(var operationsByEndpoint in Model.OperationsByEndpoint){
-                @foreach(var operation in operationsByEndpoint.Item2){
-                <tr id="@operation.Item2">
-                    <td>@operation.Item1</td>
-                    <td class="status  text-center"></td>
-                    <td class="message  text-center"></td>
-                    <td class="text-right">
-                        <input type="button" onclick="start('@operation.Item2')" class="btn" value="Start"></input>
-                        <input type="button" onclick="stop('@operation.Item2')" class="btn" value="Stop"></input>
-                    </td>
-                </tr>
-            }}
-        </tbody>
-    </table>
+
+    <div id="feedback" class="tab-pane fade">
+        <div id="feedbackContent">
+        </div>
+        @if(Model.FeedbackPageCount > 1){
+        <ul class="pager">
+            <li class="previous"><a id="pagerPrevious">Previous</a></li>
+            <li id="pagerCount"></li>
+            <li class="next"><a id="pagerNext">Next</a></li>
+        </ul>
+        }
+    </div>
+    
+    <div id="sql" class="tab-pane fade">
+        <textarea id="sqlCommand" class="form-control" placeholder="Your SQL..." style="min-width: 100%" rows="3"></textarea>
+        <button id="executeSqlButton" type="button" class="btn btn-default">Execute</button>
+        <div id="sqlContent">
+        </div>
+    </div>
+
 </div>
 
 <script>
+<!--sql-->
 
+
+$(document).ready(function(){
+    $("#executeSqlButton").on('click', function(){
+        var query = $('#sqlCommand').val();
+        executeSqlQuery(query);
+    });
+});
+
+function executeSqlQuery(query){
+    var item = $("#sqlContent");
+    var ajaxUrl = "/Ajax/SqlExecute?query=" + query;
+    $.ajax({
+        type: "GET",
+        url: ajaxUrl,
+        datatype: "html",
+        success: function(data) {
+            $(item).hide();
+            $(item).html(data);
+            $(item).fadeIn();
+        }
+    })
+}
+
+
+
+
+<!--Feedback-->
+var currentPage = 1;
+var maxPage = @Model.FeedbackPageCount;
+
+$(document).ready(function(){
+    loadFeedback(1);
+    actualizatePager();
+
+    $('#pagerPrevious').on('click',function(){
+        previousPage();
+    });
+    $('#pagerNext').on('click',function(){
+        nextPage();
+    });
+});
+
+function loadFeedback(page){
+    var item = $("#feedbackContent");
+    var ajaxUrl = "/Ajax/GetFeedback?page=" + page;
+
+    $.ajax({
+        type: "GET",
+        url: ajaxUrl,
+        datatype: "html",
+        success: function(data) {
+            $(item).hide();
+            $(item).html(data);
+            $(item).fadeIn();
+        }
+    })
+}
+function nextPage(){
+    if(currentPage != maxPage){
+        currentPage++;
+        actualizatePager();
+        loadFeedback(currentPage);
+    }
+};
+
+function previousPage(){
+    if(currentPage != 1){
+        currentPage--;
+        actualizatePager();
+        loadFeedback(currentPage);
+    }
+};
+
+function actualizatePager(){
+    var prev = $('#pagerPrevious').parent();
+    var next = $('#pagerNext').parent();
+
+    $("#pagerCount").text("Page " + currentPage + "/" + maxPage);
+
+    if(currentPage == 1){
+        prev.css('visibility', 'hidden');
+    } else {
+        prev.css('visibility', 'visible');
+    }
+    if(currentPage == maxPage){
+        next.css('visibility', 'hidden');
+    } else {
+        next.css('visibility', 'visible');
+    }
+}
+
+<!--manage-->
 $(document).ready(function(){
     //$("#ex15").slider({
     //        min: 1000,
