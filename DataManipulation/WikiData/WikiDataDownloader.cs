@@ -51,6 +51,7 @@ namespace BookRecommender.DataManipulation.WikiData
         }
         string Exec(WebRequest request)
         {
+            System.Console.WriteLine(request.RequestUri.OriginalString);
             HttpWebResponse httpResponse;
             try
             {
@@ -69,8 +70,9 @@ namespace BookRecommender.DataManipulation.WikiData
                     return text;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                System.Console.WriteLine(ex);
                 return null;
             }
         }

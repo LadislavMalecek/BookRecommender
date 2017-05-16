@@ -61,4 +61,26 @@
 </p>
 
 <h3> Building system specific </h3>
-<code> dotnet build --runtime ubuntu.16.04-x64 --configuration Release --output C:\netcore\builds\ubuntu16.04-x64\ </code>
+<code> dotnet publish --runtime ubuntu.16.04-x64 --configuration Release</code>
+
+<code> scp -P 42222 /C/netcore/SQLite/BookRecommender.db malecek@recommender.projekty.ms.mff.cuni.cz:/home/malecek/ </code>
+<code> scp -r -P 42222 /c/netcore/BookRecommender/bin/release/netcoreapp1.1/ubuntu.16.04-x64/publish malecek@recommender.projekty.ms.mff.cuni.cz:/home/malecek/  </code>
+
+
+<code>
+[Unit]                                                                       
+Description=.Net Core Book Recommender application                           
+                                                                             
+[Service]                                                                    
+WorkingDirectory=/home/malecek/netcore/bookrecommender                       
+ExecStart=/home/malecek/netcore/bookrecommender/BookRecommender              
+Restart=always                                                               
+RestartSec=10  # Restart service after 10 seconds if dotnet service crashes  
+SyslogIdentifier=dotnet-bookrecommender                                      
+User=malecek #name of account under which should the service run             
+Environment=ASPNETCORE_ENVIRONMENT=Production                                
+                                                                             
+[Install]                                                                    
+WantedBy=multi-user.target           </code>
+
+<code>  sudo chown -R malecek /home/malecek</code>

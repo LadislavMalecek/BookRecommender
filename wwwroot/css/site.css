@@ -136,3 +136,7 @@ select,
 textarea {
     max-width: 280px;
 }
+
+.panel-heading {
+    cursor: pointer;
+}
