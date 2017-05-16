@@ -341,7 +341,7 @@ namespace BookRecommender.DataManipulation
                     }
                 }
             }
-            return recommendedBooks;
+            return recommendedBooks.Distinct().ToList();
         }
 
 
