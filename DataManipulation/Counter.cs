@@ -5,7 +5,11 @@ using System.Threading;
 
 namespace BookRecommender.DataManipulation
 {
-
+    /// <summary>
+    /// counter used to view progress when mining from command line
+    /// not used when mining from the web manage interface
+    /// It is designed to be used with USING(){} pattern
+    /// </summary>
     class Counter : IDisposable
     {
         int count = 0;
@@ -19,7 +23,9 @@ namespace BookRecommender.DataManipulation
             System.Console.Write(this);
             sW.Start();
         }
-
+        /// <summary>
+        /// Updates and writes progress to the console
+        /// </summary>
         public void Update()
         {
             Interlocked.Increment(ref count);
@@ -35,11 +41,16 @@ namespace BookRecommender.DataManipulation
                 }
             }
         }
+        /// <summary>
+        /// Updates timer without writing to console
+        /// </summary>
         public void UpdateOnly()
         {
             Interlocked.Increment(ref count);
         }
-
+        /// <summary>
+        /// Method to enable using pattern
+        /// </summary>
         public void Dispose()
         {
             Console.WriteLine();
@@ -48,6 +59,11 @@ namespace BookRecommender.DataManipulation
             System.Console.WriteLine($"Query execution time: {elapsed}s");
         }
 
+        /// <summary>
+        /// Custom to string format to write always to the current line, not newline
+        /// Counts time left based on the current count, time from start and final count
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             if (count != 0)

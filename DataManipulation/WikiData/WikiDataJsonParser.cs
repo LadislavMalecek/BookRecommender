@@ -4,6 +4,9 @@ using Newtonsoft.Json.Linq;
 
 namespace BookRecommender.DataManipulation.WikiData
 {
+    /// <summary>
+    /// Wikidata specifics implementation of IParser
+    /// </summary>
     class WikiDataJsonParser : IParser
     {
         public List<Dictionary<string, string>> Parse(string data)

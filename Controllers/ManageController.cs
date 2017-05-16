@@ -12,6 +12,12 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace BookRecommender.Controllers
 {
+
+    /// <summary>
+    /// Controller that handles all manage pages
+    /// Only available to signed in users
+    /// /Manage/
+    /// </summary>
     [Authorize]
     public class ManageController : Controller
     {
@@ -21,7 +27,11 @@ namespace BookRecommender.Controllers
             _userManager = userManager;
         }
 
-
+        /// <summary>
+        /// Main manage page action, if user does not have an Admin access,
+        /// he will be redirected to get access action.  
+        /// </summary>
+        /// <returns>Manage page or Redirect</returns>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -38,12 +48,21 @@ namespace BookRecommender.Controllers
             return View(new IndexViewModel());
         }
 
+        /// <summary>
+        /// Get access to manage page action
+        /// </summary>
+        /// <returns>Get access page</returns>
         [HttpGet]
         public IActionResult GetAccess(){
             return View();
         }
 
-
+        /// <summary>
+        /// Evaluation of access request. If password successful, the access will be saved to the database.
+        /// for later automatic aproval.
+        /// </summary>
+        /// <param name="model">Model with access request information</param>
+        /// <returns>Redirect to Manage page or prompt to reinsert the password</returns>
         [HttpPost]
         public async Task<IActionResult> GetAccess(GetAccessViewModel model){
             if (!User.Identity.IsAuthenticated)

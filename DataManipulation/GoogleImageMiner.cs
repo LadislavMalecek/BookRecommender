@@ -9,9 +9,19 @@ using System.Threading.Tasks;
 
 namespace BookRecommender.DataManipulation
 {
+    /// <summary>
+    /// It handles requests for images which are not available from the LOD data
+    /// We are using image extraction from the Google search image web page. Google also offers,
+    /// paid service to search for images, so there is risk of this service not beeing available.
+    /// If Google makes assumption that our traffic is machine generated.
+    /// </summary>
     class GoogleImageMiner
     {
-        //This method tries to get URI to the first google image search item of corresponding query
+        /// <summary>
+        /// This method tries to get URI to the first google image search item of corresponding query
+        /// </summary>
+        /// <param name="queryItems">query to be send to Google Image search</param>
+        /// <returns>Url of the first image on the Google search page</returns>
         public async Task<string> GetFirstImageUrlAsync(string queryItems)
         {
             try
@@ -26,6 +36,12 @@ namespace BookRecommender.DataManipulation
             }
 
         }
+
+        /// <summary>
+        /// Retrieves HTML page from url of Google Image search using simple HTTP client
+        /// </summary>
+        /// <param name="queryItems">search params</param>
+        /// <returns>HTML page file</returns>
         async Task<string> GetHtmlCodeAsync(string[] queryItems)
         {
             var queryUrl = "https://www.google.cz/search?q=" + string.Join("+", queryItems) + "&tbm=isch";
@@ -58,7 +74,6 @@ namespace BookRecommender.DataManipulation
                 return null;
             }
         }
-
         string Deescape(string s)
         {
             Regex rx = new Regex(@"\\[uU]([0-9A-Fa-f]{4})");

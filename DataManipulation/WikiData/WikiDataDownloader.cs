@@ -9,8 +9,16 @@ using System.Threading.Tasks;
 
 namespace BookRecommender.DataManipulation.WikiData
 {
+    /// <summary>
+    /// Simple http web request downloader
+    /// implementing IDownloader specific to query Wikidata endpoint
+    /// Specification of this API can be found in Wikidata documentation.
+    /// </summary>
     class WikiDataDownloader : IDownloader
     {
+        /// <summary>
+        /// Supported return formats
+        /// </summary>
         public enum FormatType
         {
             Json, Csv
@@ -20,6 +28,11 @@ namespace BookRecommender.DataManipulation.WikiData
         {
             this.formatType = formatType;
         }
+        /// <summary>
+        /// Executes query on query.wikidata.org, that is spe
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
         public string MineData(string query)
         {
             if (formatType == FormatType.Csv)

@@ -5,6 +5,9 @@ using System.Text;
 
 namespace BookRecommender.DataManipulation.Stemmers
 {
+    /// <summary>
+    /// Specific class that is used for stemming english words.
+    /// </summary>
     public class EnglishStemmer : IStemmer
     {
         ConcurrentDictionary<string, string> wordCache = new ConcurrentDictionary<string, string>();

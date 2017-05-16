@@ -11,6 +11,11 @@ using BookRecommender.Models.Database;
 
 namespace BookRecommender.DataManipulation.WikiPedia
 {
+    /// <summary>
+    /// Wikipedia tag miner takes all tags from the wikipage storage and then calculates tags
+    /// using TF-IDF metric. It does this separately for each language and
+    /// then saves top 10 tags for each book wiki page to the database.
+    /// </summary>
     class WikiPageTagMiner
     {
         WikiPageDownloader downloader = new WikiPageDownloader();
@@ -22,22 +27,20 @@ namespace BookRecommender.DataManipulation.WikiPedia
             this.verbose = verbose;
         }
 
+        /// <summary>
+        /// Generalized mining method, used from mining proxy and cmd miner
+        /// </summary>
+        /// <param name="methodsList">Which functions should execute</param>
+        /// <param name="miningState">Link to mining proxy monitoring instance</param>
         public void UpdateTags(List<int> methodsList, MiningState miningState = null)
         {
-
             if (methodsList == null || methodsList.Count == 0)
             {
                 throw new NotImplementedException();
             }
             if (methodsList.Contains(0))
             {
-                // todo: dependency injection
-                if (miningState != null)
-                {
-                    miningState.CurrentState = MiningStateType.RunningQueryingEndpoint;
-                }
-                var sparqlData = new WikiDataEndpointMiner().GetBooksWikiPages().ToList();
-                DownloadAndTrimPages(sparqlData);
+                DownloadAndTrimPages(miningState);
 
             }
             if (methodsList.Contains(1))
@@ -45,12 +48,29 @@ namespace BookRecommender.DataManipulation.WikiPedia
                 CalculateAndSaveBookTagsToDb(miningState);
             }
         }
-        public void UpdateTags(int methodNumber, MiningState miningState = null){
+        public void UpdateTags(int methodNumber, MiningState miningState = null)
+        {
             var list = new List<int>() { methodNumber };
             UpdateTags(list, miningState);
         }
-        public void DownloadAndTrimPages(List<(string bookId, string wikiPageUrl)> wikiPages, MiningState miningState = null, int degreeOfParallelism = 7, bool skipAlreadyDownloaded = true)
+        /// <summary>
+        /// Main method for begining of mining action. It runs in parallel for a speeded up performance.
+        /// Change degree of parallelism with caution, when limit too high, then Wikipedia will trigger DOS
+        /// protection and blocks your connection.
+        /// </summary>
+        /// <param name="miningState">Link to mining proxy singleton monitoring instance</param>
+        /// <param name="degreeOfParallelism">How many simultaneous operations should be executed</param>
+        /// <param name="skipAlreadyDownloaded">True then page already in storage will be skiped.</param>
+        public void DownloadAndTrimPages(MiningState miningState = null, int degreeOfParallelism = 7, bool skipAlreadyDownloaded = true)
         {
+            if (miningState != null)
+            {
+                miningState.CurrentState = MiningStateType.RunningQueryingEndpoint;
+            }
+            // Download wikipage address from endpoint
+            // todo: Dependency injection
+            var wikiPages = new WikiDataEndpointMiner().GetBooksWikiPages().ToList();
+
             if (miningState != null)
             {
                 miningState.CurrentState = MiningStateType.Running;
@@ -58,6 +78,10 @@ namespace BookRecommender.DataManipulation.WikiPedia
             var counterForMiningState = 0;
             // How many thread are going to be run in parallel
             var options = new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism };
+
+
+            //File.Delete("C:\\netcore\\Log.txt");
+
             // if disabled do not create counter
             using (var counter = verbose ? new Counter(wikiPages.Count, 5) : null)
             {
@@ -78,7 +102,9 @@ namespace BookRecommender.DataManipulation.WikiPedia
                     }
                     catch (Exception e)
                     {
-                        File.AppendAllText("C:\\netcore\\Log.txt", "\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
+                        // log exceptions
+                        System.Console.WriteLine("\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
+                        // File.AppendAllText("C:\\netcore\\Log.txt", "\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
                     }
                     if (miningState != null)
                     {
@@ -99,6 +125,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
                 miningState.Message = DateTime.Now.ToString();
             }
         }
+        ///
         string GetLangFromWikiUrl(string url)
         {
             // Example:
@@ -107,6 +134,10 @@ namespace BookRecommender.DataManipulation.WikiPedia
             return splittedUrl.Length >= 1 ? splittedUrl[1] : null;
         }
 
+        /// <summary>
+        /// Gets all tags from the local wikipedia storage and counts and then saves all tags using TF-IDF
+        /// </summary>
+        /// <param name="miningState">Mining state pointing to entity which we want to update</param>
         public void CalculateAndSaveBookTagsToDb(MiningState miningState = null)
         {
             var db = new BookRecommenderContext();
@@ -133,7 +164,8 @@ namespace BookRecommender.DataManipulation.WikiPedia
                 System.Console.Write("Loading pages from disk finished");
 
                 var pagesCount = storage.PagesInLangCount(lang);
-                // Update count table
+
+                // Update count table, used to speed up recommender engine
                 TagCount tc = db.TagsCount.Where(t => t.Lang == lang).FirstOrDefault();
                 if (tc == null)
                 {
@@ -177,7 +209,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
 
                 foreach (var doc in ratings)
                 {
-
+                    // check if book in database
                     var uri = endpoint.GetUriFromId(doc.docId);
 
                     var book = db.Books.Where(b => b.Uri == uri)?.FirstOrDefault();
@@ -188,8 +220,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
                         continue;
                     }
 
-
-
+                    // create tags
                     foreach (var tag in doc.ratings)
                     {
                         var newTag = new Tag()
@@ -201,6 +232,8 @@ namespace BookRecommender.DataManipulation.WikiPedia
                         book.AddTag(newTag, db);
                     }
                 }
+
+                // write out info
                 if (miningState != null)
                 {
                     miningState.Message = string.Format("lang:{0}, left:{1} - {2}",
@@ -214,10 +247,17 @@ namespace BookRecommender.DataManipulation.WikiPedia
             }
             if (miningState != null)
             {
+                // update mining singleton
                 miningState.CurrentState = MiningStateType.Completed;
                 miningState.Message = DateTime.Now.ToString();
             }
         }
+        /// <summary>
+        /// Computes final td idf ratings. It first count in how many documents the word appears - IDF
+        /// and then continues with with each document counting the TF and finally TF-IDF.
+        /// </summary>
+        /// <param name="parsedDocuments">Parsed and trimmed list of documnets</param>
+        /// /// <returns>List of counted ratings for each document</returns>
         static List<(string docId, List<(string word, double score)> ratings)> ComputeTdIdf(List<(string docId, string[] words)> parsedDocuments, int howManyTop = 10)
         {
             // compute Idf:

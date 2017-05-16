@@ -8,13 +8,21 @@ namespace BookRecommender.DataManipulation
 {
     class RecommenderEngine
     {
+        /// <summary>
+        /// Recommender algorithm to search for books similar to one other.
+        /// It is used on the Book page under the Similar books.
+        /// Algorithm is described in depth in bachelor thesis.
+        /// We check for all books with similar attributes, for each matching attribute we add a point to the book.
+        /// At the end, we return the books ordered by the most points.
+        /// If user logged in, we remove already visited books from the recommendation.
+        /// /// </summary>
+        /// <param name="bookId">Id of book on which will the recommendation be based</param>
+        /// <param name="userId">Id of the signed in user</param>
+        /// <param name="howMany">How many books to return</param>
+        /// <returns>List of books with the biggest similarity with the book from boookId</returns>
         public List<int> RecommendBookSimilar(int bookId, string userId = null, int howMany = 6)
         {
-            // TODO: nenabizet jiz ratovane knihy
-
-
-
-            // MUCH OPTIMISATION AVAILABLE
+            // MUCH OPTIMIZATION AVAILABLE
 
             var timer = new Stopwatch();
 
@@ -58,6 +66,8 @@ namespace BookRecommender.DataManipulation
             listOfBooks.AddRange(db.Books.Where(b => b.Publisher == publisher).Select(b => b.BookId));
             listOfBooks.AddRange(db.Books.Where(b => b.OrigLang == lang).Select(b => b.BookId));
 
+            // group by the bookId and sum up the score,
+            // then order the books to get the ones with the biggest sum on the begining
             var groupedList = listOfBooks.GroupBy(b => b).
                      Select(group =>
                          new
@@ -87,7 +97,7 @@ namespace BookRecommender.DataManipulation
 
             var recList = sortedList.Take(howMany + 1).ToList();
 
-            // remove myself
+            // remove the book upon which we have made the recommendation
             var wasRemoved = recList.Remove(bookId);
 
             if (!wasRemoved)
@@ -100,7 +110,17 @@ namespace BookRecommender.DataManipulation
             return recList;
         }
 
-        internal List<int> RecommendMostPopular(int howMany, string userId = null)
+
+        /// <summary>
+        /// Simple recommendation method which takes the latest 1000 ratings, then group the ratings
+        /// by the bookId and sums all awarded scores, then we will order the books by the sum of scores
+        /// and returns those with the biggest scores.
+        /// If the user is logged in, we remove books already rated by him from the recommendation.
+        /// </summary>
+        /// <param name="howMany">How many books to return</param>
+        /// <param name="userId">Id of the signed in user</param>
+        /// <returns>List of most popular latest books</returns>
+        public List<int> RecommendMostPopular(int howMany, string userId = null)
         {
             var db = new BookRecommenderContext();
             db.ChangeTracker.QueryTrackingBehavior = Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking;
@@ -138,7 +158,18 @@ namespace BookRecommender.DataManipulation
 
             return sortedList.Take(howMany).ToList();
         }
-
+        /// <summary>
+        /// This method recommend books by the similarity in tags. We have a single book with which
+        /// we make as a center of our similarity search. Then we will query all tags with similar value and
+        /// language. We take only tags from the top 5 language list. Then we will count similarity score 
+        /// between all pairs. Then we will group these books by their id and sum the scores. (If some books have similarity in
+        /// multiple languages, we will sum the separate scores). Then we chose the books with highest scores,
+        /// removing books user has already rated. And return the final list. 
+        /// </summary>
+        /// <param name="bookId">Id of book on which will the recommendation be based</param>
+        /// <param name="userId">Id of the signed in user</param>
+        /// <param name="howMany">How many books to return</param>
+        /// <returns>List of recommended books</returns>
         public List<int> RecommendBookSimilarByTags(int bookId, string userId = null, int howMany = 6)
         {
             var db = new BookRecommenderContext();
@@ -153,10 +184,8 @@ namespace BookRecommender.DataManipulation
 
 
             var tagsLanguages = TopLang(tags.Select(t => t.Lang).Distinct());
-            // var tagsLanguages = new string[] {"en"};
 
             // for each language find the most matching books by tags and then apply the merging function
-
             var listTopFromAllLangs = new List<(string lang, int bookId, double score)>();
 
             foreach (var lang in tagsLanguages)
@@ -253,6 +282,12 @@ namespace BookRecommender.DataManipulation
             public int rating;
         }
 
+        /// <summary>
+        /// We will find the most similar users and then return books they have liked the most.
+        /// </summary>
+        /// <param name="userId">Id of the signed in user</param>
+        /// <param name="howMany">How many books to return</param>
+        /// <returns>List of recommended books</returns>
         public List<int> RecommendForUserUBased(string userId, int howMany = 6)
         {
             var db = new BookRecommenderContext();
@@ -271,8 +306,6 @@ namespace BookRecommender.DataManipulation
             }).ToList();
 
             // load all ratings for same books
-            //var simUserRatings = new List<(int bookId, string userId, int rating)>();
-            // var simUserRatings = new List<(int bookId, string userId, int rating)>();
             var simUserRatings = new List<HelpStruct>();
 
 
@@ -327,7 +360,7 @@ namespace BookRecommender.DataManipulation
             var closestFourUsers = simUsers.OrderBy(u => u.Score).Take(4).ToList();
             var recommendedBooks = new List<int>();
 
-
+            // Take books from the similar users, from the Top user and top rating down.
             foreach (var score in new int[] { 5, 4, 3 })
             {
                 foreach (var closestUser in closestFourUsers)
@@ -355,6 +388,15 @@ namespace BookRecommender.DataManipulation
             public T itemId;
             public double itemWeight;
         }
+
+        /// <summary>
+        /// We will first gather the users preferences and the find books that will match the most,
+        /// search is similar to the single book centric recommendation in method RecommendBookSimilar
+        /// the difference is at the start, where we first gather the information from user history.
+        /// </summary>
+        /// <param name="userId">Id of the signed in user</param>
+        /// <param name="howMany">How many books to return</param>
+        /// <returns>List of recommended books</returns>
         public List<int> RecommendForUserCBased(string userId, int howMany = 6)
         {
             var howManyLastItems = 5;
@@ -374,6 +416,7 @@ namespace BookRecommender.DataManipulation
             var userRatings = db.Ratings.Where(r => r.UserId == userId && r.Rating >= 3).ToList();
 
 
+            // each rated book will contribute to the score 1,2 or 3 points
             var userRatingNormalized = userRatings.OrderByDescending(o => o.CreatedTime).Take(howManyLastItems).Select(r =>
             new ItemWeight<int>
             {
@@ -383,6 +426,7 @@ namespace BookRecommender.DataManipulation
 
             booksToFindSimilarityFor.AddRange(userRatingNormalized);
 
+            // every action will contribute with the weight of one
             var userActionsBookViewed = db.UsersActivities.Where(ac => ac.UserId == userId &&
                                                             ac.Type == UserActivity.ActivityType.BookDetailViewed)
                                                 .OrderByDescending(a => a.CreatedTime)
@@ -399,6 +443,7 @@ namespace BookRecommender.DataManipulation
 
             booksToFindSimilarityFor = booksToFindSimilarityFor.Distinct().ToList();
 
+            // now just get the similarity properties 
             var authors = new List<ItemWeight<int>>();
             var genres = new List<ItemWeight<int>>();
             var characters = new List<ItemWeight<int>>();
@@ -439,7 +484,7 @@ namespace BookRecommender.DataManipulation
             var candidateBooks = new List<ItemWeight<int>>();
             var candidateBooksByTags = new List<ItemWeight<int>>();
 
-
+            // add to the candidate books books that have similar attributes to our preferred 
             foreach (var author in authors)
             {
                 var books = db.BooksAuthors.Where(ba => ba.AuthorId == author.itemId).Select(ba => ba.BookId);
@@ -458,6 +503,7 @@ namespace BookRecommender.DataManipulation
                 candidateBooks.AddRange(books.Select(b => new ItemWeight<int>(b, character.itemWeight)));
             }
 
+            // add similar books by tags to separate list, the weights are too small to be mixed, the tag based information would be lost
             foreach (var tag in tags)
             {
                 var simTags = db.Tags.Where(t => t.Value == tag.itemId.Value && t.TagId != tag.itemId.TagId).ToArray();
@@ -468,11 +514,17 @@ namespace BookRecommender.DataManipulation
                                 st.Score.GetValueOrDefault() * tag.itemId.Score.GetValueOrDefault() * tag.itemWeight)));
             }
 
+            // can be moved down to improve performance
             // remove books which user already rated
             candidateBooks = candidateBooks.Where(b => !userRatings
                                                         .Select(r => r.BookId)
                                                         .Contains(b.itemId)).ToList();
 
+            candidateBooksByTags = candidateBooksByTags.Where(b => !userRatings
+                                                        .Select(r => r.BookId)
+                                                        .Contains(b.itemId)).ToList();
+            
+            // group books by id and sum the scores, pick the ones with biggest weight
             var candidateBooksFinalOrdered = candidateBooks.GroupBy(g => g.itemId)
                                                     .Select(group =>
                                                         new ItemWeight<int>(
@@ -492,6 +544,7 @@ namespace BookRecommender.DataManipulation
                                                     .OrderByDescending(o => o.itemWeight)
                                                     .Take(howMany).Select(b => b.itemId);
 
+            // combine the best candidates from both lists
             return candidateBooksFinalOrdered.Take(howMany / 2)
                                               .Concat(candidateBooksByTagsFinalOrdered.Take(howMany / 2))
                                               .ToList();

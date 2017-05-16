@@ -1,4 +1,8 @@
 namespace BookRecommender.DataManipulation{
+
+    /// <summary>
+    /// Mining states that represent current state of mining operation.
+    /// </summary>
     public enum MiningStateType
         {
             Completed,
@@ -12,6 +16,10 @@ namespace BookRecommender.DataManipulation{
 
 
         }
+
+        /// <summary>
+        /// Represent the current state of the operation object
+        /// </summary>
         public class MiningState
         {
             public MiningStateType CurrentState { get; set; } = MiningStateType.NotRunning;

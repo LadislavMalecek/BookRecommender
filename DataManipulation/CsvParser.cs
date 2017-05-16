@@ -6,16 +6,27 @@ using System.Linq;
 
 namespace BookRecommender.DataManipulation
 {
+    /// <summary>
+    /// CSV parser, tests available at the test folder.
+    /// Tests needs to be actualized. But no algorithm changes were made from the last successful test run. 
+    /// </summary>
     class CsvParser
     {
         enum CharType { Comma, Quote, CR, LF, Other, Nothing }
         string data;
-
+        /// <summary>
+        /// Initialize new CSV parser
+        /// </summary>
+        /// <param name="data">CSV standard data file</param>
         public CsvParser(string data)
         {
             this.data = data;
         }
 
+        /// <summary>
+        /// Parse CSV to the table represented by list of list.
+        /// </summary>
+        /// <returns>Returns List of rows, where row is also a List of values</returns>
         public List<List<string>> ParseToList()
         {
             return ParseData().ToList();

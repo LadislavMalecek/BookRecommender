@@ -12,6 +12,11 @@ using BookRecommender.Models.AuthorViewModels;
 
 namespace BookRecommender.Controllers
 {
+
+    /// <summary>
+    /// Controller for handling pages about authors
+    /// /Author/
+    /// </summary>
     public class AuthorController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -21,7 +26,12 @@ namespace BookRecommender.Controllers
         }
 
         // GET: /Author/Detail
-       async public Task<IActionResult> Detail(int id)
+        /// <summary>
+        /// Gets the main page for the autor
+        /// </summary>
+        /// <param name="id">Id of the author</param>
+        /// <returns>Page with na author detail</returns>
+        async public Task<IActionResult> Detail(int id)
         {
             var db = new BookRecommenderContext();
             var author = db.Authors.Where(a => a.AuthorId == id)?.FirstOrDefault();
@@ -50,21 +60,6 @@ namespace BookRecommender.Controllers
                 Author = author,
                 Books = authorBooks,
             });
-        }
-
-
-
-        // GET: /Author/Review
-        public IActionResult Review()
-        {
-            return View();
-        }
-
-
-        // GET: /Author/Similar
-        public IActionResult Similar()
-        {
-            return View();
         }
     }
 }

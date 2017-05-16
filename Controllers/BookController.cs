@@ -14,6 +14,10 @@ using static BookRecommender.Models.Database.UserActivity;
 
 namespace BookRecommender.Controllers
 {
+    /// <summary>
+    /// Controller for handling pages about books
+    /// /Book/
+    /// </summary>
     public class BookController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -30,7 +34,11 @@ namespace BookRecommender.Controllers
             _logger = loggerFactory.CreateLogger<AccountController>();
         }
 
-        // GET: /Book/Detail
+        /// <summary>
+        /// Detail of the book.
+        /// </summary>
+        /// <param name="id">DId of the book</param>
+        /// <returns>Page with the main detail page</returns>
         async public Task<IActionResult> Detail(int id)
         {
             string userId = null;
@@ -59,6 +67,15 @@ namespace BookRecommender.Controllers
 
             return View(bookDetail);
         }
+
+
+        /// <summary>
+        /// Method to validate and add a book rating from the user
+        /// </summary>
+        /// <param name="bookId">Id of the book</param>
+        /// <param name="review">Review written by the user</param>
+        /// <param name="scoreRating">Score awarded by the user</param>
+        /// <returns>Result of the rating</returns>
         [HttpPost]
         async public Task<IActionResult> AddRating(string bookId, string review, string scoreRating)
         {
@@ -94,19 +111,6 @@ namespace BookRecommender.Controllers
             }
             return RedirectToAction("Detail", "Book", new { id = bookIdParsed });
 
-        }
-
-        // GET: /Book/Review
-        public IActionResult Review()
-        {
-            return View();
-        }
-
-
-        // GET: /Book/Similar
-        public IActionResult Similar()
-        {
-            return View();
         }
     }
 }

@@ -3,8 +3,16 @@ using System.Text;
 
 namespace BookRecommender.DataManipulation.WikiPedia
 {
+    /// <summary>
+    /// Wikipedia  parser
+    /// </summary>
     class WikiPageTrimmer
     {
+        /// <summary>
+        /// Parser that will trim parts of the text that is viewed as annotations from wikipages
+        /// </summary>
+        /// <param wikiPage="data">Wiki page format text</param>
+        /// <returns>Cleaned text</returns>
         public string Trim(string wikiPage)
         {
                 var page = RemoveComments(wikiPage);

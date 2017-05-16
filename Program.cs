@@ -66,8 +66,6 @@ namespace BookRecommender
             // this code pick the right path to root, because of Linux service does not run with
             // the path 1
             // we try to read the index view from the path location
-
-
             string pickedPath = null;
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
             {

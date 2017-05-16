@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace BookRecommender.DataManipulation
 {
+    /// <summary>
+    /// Database context of our application, here we define and create the database schema based on classes
+    /// from our BookRecommender.Models.Database
+    /// </summary>
     public class BookRecommenderContext : IdentityDbContext<ApplicationUser>
     {
         //public BookRecommenderContext(DbContextOptions<BookRecommenderContext> options) : base(options)

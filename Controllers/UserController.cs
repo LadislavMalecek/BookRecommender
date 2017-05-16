@@ -12,6 +12,10 @@ using BookRecommender.Models.UserViewModels;
 
 namespace BookRecommender.Controllers
 {
+    /// <summary>
+    /// Controller that handles all user related actions
+    /// /User/
+    /// </summary>
     public class UserController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -20,7 +24,10 @@ namespace BookRecommender.Controllers
             _userManager = userManager;
         }
 
-
+        /// <summary>
+        /// /User/MyProfile, page with a user specific information.
+        /// </summary>
+        /// <returns>Returns users profile page</returns>
         [HttpGet]
         public async Task<IActionResult> MyProfile()
         {

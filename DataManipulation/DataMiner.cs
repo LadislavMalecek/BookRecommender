@@ -15,11 +15,20 @@ using System.Threading.Tasks;
 
 namespace BookRecommender.DataManipulation
 {
-
+    /// <summary>
+    /// This class is the start point of mining from console.
+    /// This is deprecated, use the interface from the manage part of the webpage
+    /// </summary>
     public class DataMiner
     {
+        /// <summary>
+        /// Deprecated, use the mining interface on the web.
+        /// Starts mining operation based on the arguments provided
+        /// </summary>
+        /// <param name="args"></param>
         public static void Mine(string[] args)
         {
+            // start all when no args present
             SparqlEndPointMiner endpoint = new WikiDataEndpointMiner();
             if (args.Length == 1)
             {
@@ -104,6 +113,11 @@ namespace BookRecommender.DataManipulation
             // System.Console.WriteLine("Downloading from wiki");
             // new WikiPageTagMiner().DownloadAndTrimPages(sparqlData);
         }
+        /// <summary>
+        /// Used as a middle man to mine additional data from WikiData query
+        /// </summary>
+        /// <param name="entityUrl">Url of entity</param>
+        /// <returns>All available data about the entity</returns>
         public async static Task<AdditionalSparqlData> GetAdditionalDataAsync(string entityUrl)
         {
             // Branching by the entityUrl

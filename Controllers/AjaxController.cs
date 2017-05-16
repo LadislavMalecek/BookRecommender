@@ -16,6 +16,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookRecommender.Controllers
 {
+    /// <summary>
+    /// Controller that is responsible for all AJAX calls issued from the client jQuery script calls
+    /// /Ajax/
+    /// </summary>
     public class AjaxController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -23,11 +27,25 @@ namespace BookRecommender.Controllers
         {
             _userManager = userManager;
         }
+
+        /// <summary>
+        /// Ajax call that is responsible for loading additional SPARQL data ond book and author detail pages
+        /// </summary>
+        /// <param name="entityUri">Url of the entity we want to load additional data about</param>
+        /// <returns>html of the response which can be inserted in the page</returns>
         public async Task<IActionResult> SparqlData(string entityUri)
         {
             var additionalData = await DataMiner.GetAdditionalDataAsync(entityUri);
             return PartialView("AdditionalSparqlData", additionalData);
         }
+
+        /// <summary>
+        /// Ajax call that is responsible for handling the dynamic loading of images from database.
+        /// When the picture is not in the database, we try to obtain the picture from Google image search.
+        /// If loaded from Google, caching will occur.
+        /// </summary>
+        /// <param name="entityUri">Url of the entity for which we want to load the image</param>
+        /// <returns>Url of the image</returns>
         public async Task<string> DynamicImage(string entityUri)
         {
             var db = new BookRecommenderContext();
@@ -42,11 +60,25 @@ namespace BookRecommender.Controllers
             }
             return await dbObj.TryToGetImgUrlAsync();
         }
+        /// <summary>
+        /// Ajax call that is responsible for handling the help whisperer list generated under the search bar.
+        /// Directly calls Search engine to retrive simpler version of search.
+        /// </summary>
+        /// <param name="query">Query that is the subject of the search</param>
+        /// <returns>Array of the resulted whispered items</returns>
         public string[] QueryAutoComplete(string query)
         {
             // return "ahoj jak se vede".Split(' ');
             return SearchEngine.Autocomplete(new BookRecommenderContext(), query, 10).ToArray();
         }
+
+        /// <summary>
+        /// Ajax call that handles the recommendation calls from the client.
+        /// </summary>
+        /// <param name="type">Type of the recommendation - bookPage, bookPageByTags, userBased, contentBased, mostPopular</param>
+        /// <param name="data">Parameters for the recommendation - bookPage, bookPageByTags: id of the book</param>
+        /// <param name="howMany">How many items should be retrieved</param>
+        /// <returns>Formated HTML that can be inserted into the page</returns>
         public IActionResult Recommendation(string type, int data, int howMany = 6)
         {
             IEnumerable<int> recList;
@@ -93,6 +125,8 @@ namespace BookRecommender.Controllers
 
             return PartialView("Recommendation", recommendations);
         }
+
+        // object that will be send in a list to the client at ManageSync()
         public class JsonHelp
         {
             public string status;
@@ -103,6 +137,12 @@ namespace BookRecommender.Controllers
                 this.message = message;
             }
         }
+
+        /// <summary>
+        /// It checks the state of miner and returns the information back to the user.
+        /// Ajax call only available to signed in users with admin privilege.
+        /// </summary>
+        /// <returns>Simple Json format with data about the mining engine. </returns>
         [Authorize]
         public string ManageSync()
         {
@@ -132,6 +172,13 @@ namespace BookRecommender.Controllers
             }
             return (JsonConvert.SerializeObject(jsonDic));
         }
+
+        /// <summary>
+        /// Ajax call for issuing a new commands to the mining engine.
+        /// Only available to signed users with admin privilege.
+        /// </summary>
+        /// <param name="command">2 commands available - start, stop.</param>
+        /// <param name="param">Parameter of the command, unique id of the operation that we want to execute.</param>
         [Authorize]
         public void Mining(string command, string param)
         {
@@ -150,20 +197,13 @@ namespace BookRecommender.Controllers
             {
                 return;
             }
+            var paramIsValid = param != null && Guid.TryParse(param, out Guid guid);
             switch (command)
             {
                 case "start":
-                    if (param != null)
+                    if (paramIsValid)
                     {
-                        var isValid = Guid.TryParse(param, out Guid guid);
-                        if (isValid)
-                        {
-                            DataMiningProxySingleton.Instance.AddForProccessing(param);
-                        }
-                        else
-                        {
-                            return;
-                        }
+                        DataMiningProxySingleton.Instance.AddForProccessing(param);
                     }
                     else
                     {
@@ -171,17 +211,9 @@ namespace BookRecommender.Controllers
                     }
                     break;
                 case "stop":
-                    if (param != null)
+                    if (paramIsValid)
                     {
-                        var isValid = Guid.TryParse(param, out Guid guid);
-                        if (isValid)
-                        {
-                            DataMiningProxySingleton.Instance.RemoveFromProccessing(param);
-                        }
-                        else
-                        {
-                            return;
-                        }
+                        DataMiningProxySingleton.Instance.RemoveFromProccessing(param);
                     }
                     else
                     {
@@ -192,6 +224,13 @@ namespace BookRecommender.Controllers
                     return;
             }
         }
+        /// <summary>
+        /// Ajax call for saving feedback from the user.
+        /// Only available to logged in users.
+        /// </summary>
+        /// <param name="text">Text of the feedback</param>
+        /// <param name="name">Name of the person giving the feedback</param>
+
         [Authorize]
         public void Feedback(string text, string name)
         {
@@ -214,7 +253,12 @@ namespace BookRecommender.Controllers
             db.SaveChanges();
         }
 
-
+        /// <summary>
+        /// Ajax call that load feedback for it to be shown at a manage page.
+        /// User has to be signed in with administrators privilege.
+        /// </summary>
+        /// <param name="page">Page number of feedback list to be returned</param>
+        /// <returns>Formated HTML table with feedback values</returns>
         [Authorize]
         public IActionResult GetFeedback(int page)
         {
@@ -255,6 +299,14 @@ namespace BookRecommender.Controllers
 
             return PartialView(model);
         }
+
+        /// <summary>
+        /// Ajax call to return the custom SQL command issued from the manage page.
+        /// Only available to signed in users with manage privileges.
+        /// Security critical!!!
+        /// </summary>
+        /// <param name="query">SQL query to be executed</param>
+        /// <returns>Formated HTML table with the result</returns>
         [Authorize]
         public IActionResult SqlExecute(string query)
         {
@@ -268,14 +320,17 @@ namespace BookRecommender.Controllers
             {
                 return null;
             }
-
+            // ToDo: move to separate class as a new object
             using (var context = new BookRecommenderContext())
             using (var command = context.Database.GetDbConnection().CreateCommand())
             {
                 command.CommandText = query;
                 context.Database.OpenConnection();
+
+                // execute the query
                 using (var rdr = command.ExecuteReader())
                 {
+                    // get names of columns
                     var columns = new List<string>();
                     var data = new List<List<string>>();
                     for (int i = 0; i < rdr.FieldCount; i++)
@@ -283,18 +338,21 @@ namespace BookRecommender.Controllers
                         columns.Add(rdr.GetName(i));
                     }
 
-                    while(rdr.Read()){
+                    // get values
+                    while (rdr.Read())
+                    {
                         var row = new List<string>();
-                        for (int i = 0; i < rdr.FieldCount; i++){
+                        for (int i = 0; i < rdr.FieldCount; i++)
+                        {
                             row.Add(rdr.GetValue(i).ToString());
                         }
                         data.Add(row);
                     }
-                    var model = new SqlExecute(){
+                    var model = new SqlExecute()
+                    {
                         ColumnNames = columns,
                         Data = data
                     };
-
                     return PartialView(model);
                 }
             }

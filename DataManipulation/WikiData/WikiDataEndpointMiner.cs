@@ -8,7 +8,11 @@ using BookRecommender.Models.Database;
 
 namespace BookRecommender.DataManipulation.WikiData
 {
-
+    /// <summary>
+    /// Object that contains methods for retrieving data from Wikidata,
+    /// you can use it as a template when adding a new data point.
+    /// For more information see the parrent of this object: SparqlEndpointMiner.
+    /// </summary>
     class WikiDataEndpointMiner : SparqlEndPointMiner
     {
         IDownloader miner = new WikiDataDownloader();

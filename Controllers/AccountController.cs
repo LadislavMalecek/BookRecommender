@@ -15,6 +15,10 @@ using BookRecommender.Models.Database;
 
 namespace BookRecommender.Controllers
 {
+    /// <summary>
+    /// Controller that mannages account authorization, and all related loging events.
+    /// /Account/
+    /// </summary>
     [Authorize]
     public class AccountController : Controller
     {

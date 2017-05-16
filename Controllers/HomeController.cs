@@ -12,6 +12,11 @@ using static BookRecommender.Models.Database.UserActivity;
 
 namespace BookRecommender.Controllers
 {
+
+    /// <summary>
+    /// Controller for managing the home page and other general things such as About page and Search page
+    /// /Home/
+    /// </summary>
     public class HomeController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -19,13 +24,24 @@ namespace BookRecommender.Controllers
         {
             _userManager = userManager;
         }
+
+        /// <summary>
+        /// The main action for the controler and the default route.
+        /// </summary>
+        /// <returns>Renders the homepage</returns>
         public IActionResult Index()
         {
             ViewData["SignedIn"] = User.Identity.IsAuthenticated;
             return View();
         }
 
-        // GET: /Book/Search  
+        /// <summary>
+        /// Search page shown. Can be show with or without results based on the query parameter.
+        /// Supports pagination.
+        /// </summary>
+        /// <param name="query">Search query</param>
+        /// <param name="page">Page of the search result to be retrieved</param>
+        /// <returns>Search page</returns>
         [HttpGet]
         async public Task<IActionResult> Search(string query, int? page)
         {
@@ -34,6 +50,7 @@ namespace BookRecommender.Controllers
                 return View();
             }
 
+            // Add default pagination
             if (!page.HasValue)
             {
                 page = 1;
@@ -45,6 +62,7 @@ namespace BookRecommender.Controllers
 
             var searchModel = new SearchViewModel(query, page.Value, books.ToList(), authors.ToList(), db);
 
+            // search the searched query if the user is signed in
             if (User.Identity.IsAuthenticated)
             {
                 string userId = _userManager.GetUserAsync(HttpContext.User).Result.Id;
@@ -60,23 +78,16 @@ namespace BookRecommender.Controllers
             return View(searchModel);
         }
 
+
+        /// <summary>
+        /// About page.
+        /// </summary>
+        /// <returns>About page</returns>
         public IActionResult About()
         {
             ViewData["Message"] = "Your application description page.";
 
             return View(new AboutViewModel());
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
-        }
-
-        public IActionResult Error()
-        {
-            return View();
         }
     }
 }

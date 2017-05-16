@@ -7,8 +7,18 @@ using BookRecommender.Models.Database;
 
 namespace BookRecommender.DataManipulation
 {
+    /// <summary>
+    /// Search engine drives the search of entities in the database.
+    /// </summary>
     class SearchEngine
     {
+        /// <summary>
+        /// Simpler and faster version of search to be used in dynamically loaded whispering when searching.
+        /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="query">Current query</param>
+        /// <param name="howManyTop">how many to show</param>
+        /// <returns>List of recommendations</returns>
         public static List<string> Autocomplete(BookRecommenderContext db, string query, int howManyTop){
             if(string.IsNullOrEmpty(query)){
                 return new List<string>();
@@ -25,6 +35,14 @@ namespace BookRecommender.DataManipulation
 
             return final.ToList();
         }
+
+        /// <summary>
+        /// Main algorithm to return book searches from the database. We start with prefering the whole string matches
+        /// and then starts to include more and more granular results, by words count match
+        /// /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="query">Current query</param>
+        /// <returns>List of returned books</returns>
         public static IEnumerable<Book> SearchBook(BookRecommenderContext db, string query)
         {
             // First try to find the exact query within books
@@ -58,7 +76,13 @@ namespace BookRecommender.DataManipulation
             var combQuery = wholeQueryFound.Concat(orderedResult).Distinct();
             return combQuery;
         }
-
+        /// <summary>
+        /// Main algorithm to return author searches from the database. We start with prefering the whole string matches
+        /// and then starts to include more and more granular results, by words count match
+        /// /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="query">Current query</param>
+        /// <returns>List of returned books</returns>
         public static IEnumerable<Author> SearchAuthor(BookRecommenderContext db, string query)
         {
             // First try to find the exact query within books

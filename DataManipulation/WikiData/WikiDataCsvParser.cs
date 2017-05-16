@@ -6,8 +6,17 @@ using System.IO;
 
 namespace BookRecommender.DataManipulation.WikiData
 {
+    /// <summary>
+    /// Simple wikidata  parser
+    /// Implementing IParser for a specific WikiData use
+    /// </summary>
     class WikiDataCsvParser : IParser
     {
+        /// <summary>
+        /// Parser that proccesses the returned data format. It is described at a Wikidata query API help page.
+        /// </summary>
+        /// <param name="data">Wikidata text data</param>
+        /// <returns>parsed text, for each line there is dictionary with name and value</returns>
         public List<Dictionary<string, string>> Parse(string data)
         {
             var list = new CsvParser(data).ParseToList();
