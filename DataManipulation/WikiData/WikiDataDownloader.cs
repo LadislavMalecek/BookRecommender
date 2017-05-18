@@ -35,6 +35,7 @@ namespace BookRecommender.DataManipulation.WikiData
         /// <returns></returns>
         public string MineData(string query)
         {
+            System.Console.WriteLine(query);
             if (formatType == FormatType.Csv)
             {
                 return ExecQueryCsv(query);

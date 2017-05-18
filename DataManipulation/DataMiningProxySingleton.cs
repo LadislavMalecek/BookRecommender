@@ -61,10 +61,12 @@ namespace BookRecommender.DataManipulation
         {
             if (ActionToRun != null)
             {
+                System.Console.WriteLine("Custom operation executed");
                 ActionToRun(state);
             }
             else
             {
+                System.Console.WriteLine("Generic operation executed");
                 state.CurrentState = MiningStateType.Started;
                 endpoint.Update(entityType, methodNumber, state);
             }

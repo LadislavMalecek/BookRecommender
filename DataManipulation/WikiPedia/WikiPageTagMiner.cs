@@ -99,22 +99,22 @@ namespace BookRecommender.DataManipulation.WikiPedia
                             var trimmedPage = trimmer.Trim(downloadedPage);
                             storage.SavePage(trimmedPage, lang, page.bookId);
                         }
+                        if (miningState != null)
+                        {
+                            miningState.Message = string.Format("{0}/{1}",
+                                counterForMiningState, wikiPages.Count);
+                            counterForMiningState++;
+                        }
+                        if (verbose)
+                        {
+                            counter.Update();
+                        }
                     }
                     catch (Exception e)
                     {
                         // log exceptions
                         System.Console.WriteLine("\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
                         // File.AppendAllText("C:\\netcore\\Log.txt", "\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
-                    }
-                    if (miningState != null)
-                    {
-                        miningState.Message = string.Format("{1}/{2}",
-                            counterForMiningState, wikiPages.Count);
-                        counterForMiningState++;
-                    }
-                    if (verbose)
-                    {
-                        counter.Update();
                     }
                 });
                 // }

@@ -51,6 +51,7 @@ namespace BookRecommender.DataManipulation.WikiData
                 retList.Add(dictionary);
             }
             if(somethingWrong){
+                System.Console.WriteLine(errorSB);
                 throw new InvalidDataException(errorSB.ToString());
             }
             return retList;
