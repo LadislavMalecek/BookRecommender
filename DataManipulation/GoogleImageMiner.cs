@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace BookRecommender.DataManipulation
 {
@@ -28,7 +29,7 @@ namespace BookRecommender.DataManipulation
             {
                 string html = await GetHtmlCodeAsync(queryItems.Split(new char[] { ' ' }));
                 //File.WriteAllText("html.txt", html);
-                return GetFirstUrl(html);
+                return GetFirstHttpsUrl(html);
             }
             catch (Exception)
             {
@@ -95,6 +96,13 @@ namespace BookRecommender.DataManipulation
             string url = html.Substring(start, end - start);
             return Deescape(url);
         }
+        string GetFirstHttpsUrlSLOW(string html){
+            var list = GetUrls(html);
+            var firstHttps = list.FirstOrDefault(url => url.ToLower().StartsWith("https://"));
+            return firstHttps;
+        }
+
+
         List<string> GetUrls(string html)
         {
             var urls = new List<string>();
@@ -111,6 +119,24 @@ namespace BookRecommender.DataManipulation
                 start = html.IndexOf("\"ou\"", end, StringComparison.Ordinal);
             }
             return urls;
+        }
+
+        string GetFirstHttpsUrl(string html)
+        {
+            int start = html.IndexOf("\"ou\"", StringComparison.Ordinal);
+
+            while (start >= 0)
+            {
+                start = html.IndexOf("\"", start + 4, StringComparison.Ordinal);
+                start++;
+                int end = html.IndexOf("\"", start, StringComparison.Ordinal);
+                string url = html.Substring(start, end - start);
+                if(url.StartsWith("https://")){
+                    return url;
+                }
+                start = html.IndexOf("\"ou\"", end, StringComparison.Ordinal);
+            }
+            return null;
         }
     }
 }
