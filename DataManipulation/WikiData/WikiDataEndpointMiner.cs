@@ -214,10 +214,18 @@ namespace BookRecommender.DataManipulation.WikiData
                 System.Console.WriteLine("book not in database: " + line.uri);
                 return;
             }
-            book.Title = line.title;
-            book.NameCs = line.labelCs;
-            book.NameEn = line.labelEn;
-
+            if (!string.IsNullOrWhiteSpace(line.title))
+            {
+                book.Title = line.title;
+            }
+            if (!string.IsNullOrWhiteSpace(line.labelCs))
+            {
+                book.NameCs = line.labelCs;
+            }
+            if (!string.IsNullOrWhiteSpace(line.labelEn))
+            {
+                book.NameEn = line.labelEn;
+            }
             db.Books.Update(book);
         }
         //------------------------------------------------------------------------------------------------------------------------------------
@@ -249,8 +257,15 @@ namespace BookRecommender.DataManipulation.WikiData
                 System.Console.WriteLine("book not in database: " + line.uri);
                 return;
             }
-            book.OrigLang = line.langCode;
-            book.NameOrig = line.label;
+
+            if (!string.IsNullOrWhiteSpace(line.langCode))
+            {
+                book.OrigLang = line.langCode;
+            }
+            if (!string.IsNullOrWhiteSpace(line.label))
+            {
+                book.NameOrig = line.label;
+            }
             db.Books.Update(book);
         }
         //------------------------------------------------------------------------------------------------------------------------------------        
@@ -288,8 +303,14 @@ namespace BookRecommender.DataManipulation.WikiData
                 System.Console.WriteLine("book not in database: " + line.uri);
                 return;
             }
-            book.OrigLang = line.countryLangCode;
-            book.NameOrig = line.label;
+            if (!string.IsNullOrWhiteSpace(line.countryLangCode))
+            {
+                book.OrigLang = line.countryLangCode;
+            }
+            if (!string.IsNullOrWhiteSpace(line.label))
+            {
+                book.NameOrig = line.label;
+            }
             db.Books.Update(book);
         }
         //------------------------------------------------------------------------------------------------------------------------------------
@@ -327,7 +348,10 @@ namespace BookRecommender.DataManipulation.WikiData
             }
             if (BookHasNoName(book))
             {
-                book.Title = line.label;
+                if (!string.IsNullOrWhiteSpace(line.label))
+                {
+                    book.Title = line.label;
+                }
                 db.Books.Update(book);
             }
 
@@ -377,11 +401,26 @@ namespace BookRecommender.DataManipulation.WikiData
                 return;
             }
 
-            book.ISBN10 = line.isbn10;
-            book.ISBN13 = line.isbn13;
-            book.GndId = line.gndId;
-            book.OpenLibId = line.openLibId;
-            book.FreeBase = line.freeBase;
+            if (!string.IsNullOrWhiteSpace(line.isbn10))
+            {
+                book.ISBN10 = line.isbn10;
+            }
+            if (!string.IsNullOrWhiteSpace(line.isbn13))
+            {
+                book.ISBN13 = line.isbn13;
+            }
+            if (!string.IsNullOrWhiteSpace(line.gndId))
+            {
+                book.GndId = line.gndId;
+            }
+            if (!string.IsNullOrWhiteSpace(line.openLibId))
+            {
+                book.OpenLibId = line.openLibId;
+            }
+            if (!string.IsNullOrWhiteSpace(line.freeBase))
+            {
+                book.FreeBase = line.freeBase;
+            }
             db.Books.Update(book);
 
         }
@@ -445,7 +484,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 return;
             }
 
-            book.Description = line.description;
+            if (!string.IsNullOrWhiteSpace(line.description))
+            {
+                book.Description = line.description;
+            }
             db.Books.Update(book);
 
         }
@@ -478,7 +520,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 return;
             }
 
-            book.WikipediaPage = line.wikiPageUrl;
+            if (!string.IsNullOrWhiteSpace(line.wikiPageUrl))
+            {
+                book.WikipediaPage = line.wikiPageUrl;
+            }
             db.Books.Update(book);
 
         }
@@ -597,10 +642,14 @@ namespace BookRecommender.DataManipulation.WikiData
                 System.Console.WriteLine("author not in database: " + line.uri);
                 return;
             }
-
-            author.NameEn = line.labelEn;
-            author.NameCs = line.labelCs;
-
+            if (!string.IsNullOrWhiteSpace(line.labelEn))
+            {
+                author.NameEn = line.labelEn;
+            }
+            if (!string.IsNullOrWhiteSpace(line.labelCs))
+            {
+                author.NameCs = line.labelCs;
+            }
             db.Authors.Update(author);
         }
         //------------------------------------------------------------------------------------------------------------------------------------
@@ -646,7 +695,7 @@ namespace BookRecommender.DataManipulation.WikiData
             author.DateBirth = HistoricalDateTime.FromWikiData(line.dateOfBirth);
             author.DateDeath = HistoricalDateTime.FromWikiData(line.dateOfDeath);
 
-            if (!string.IsNullOrEmpty(line.sex))
+            if (!string.IsNullOrWhiteSpace(line.sex))
             {
                 if (line.sex == "male")
                 {
@@ -720,8 +769,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 System.Console.WriteLine("author not in database: " + line.uri);
                 return;
             }
-
-            author.OriginalImage = line.imageUri;
+            if (!string.IsNullOrWhiteSpace(line.imageUri))
+            {
+                author.OriginalImage = line.imageUri;
+            }
             db.Authors.Update(author);
         }
 
@@ -751,8 +802,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 System.Console.WriteLine("author not in database: " + line.uri);
                 return;
             }
-
-            author.Description = line.description;
+            if (!string.IsNullOrWhiteSpace(line.description))
+            {
+                author.Description = line.description;
+            }
             db.Authors.Update(author);
         }
 
@@ -782,8 +835,10 @@ namespace BookRecommender.DataManipulation.WikiData
                 System.Console.WriteLine("author not in database: " + line.uri);
                 return;
             }
-
-            author.WikipediaPage = line.wikiPageUrl;
+            if (!string.IsNullOrWhiteSpace(line.wikiPageUrl))
+            {
+                author.WikipediaPage = line.wikiPageUrl;
+            }
             db.Authors.Update(author);
         }
 
@@ -860,8 +915,14 @@ namespace BookRecommender.DataManipulation.WikiData
             }
             else
             {
-                character.NameCs = line.nameCs;
-                character.NameEn = line.nameEn;
+                if (!string.IsNullOrWhiteSpace(line.nameCs))
+                {
+                    character.NameCs = line.nameCs;
+                }
+                if (!string.IsNullOrWhiteSpace(line.nameEn))
+                {
+                    character.NameEn = line.nameEn;
+                }
                 db.Characters.Update(character);
             }
         }
@@ -969,8 +1030,14 @@ namespace BookRecommender.DataManipulation.WikiData
             }
             else
             {
-                genre.NameCs = line.nameCs;
-                genre.NameEn = line.nameEn;
+                if (!string.IsNullOrWhiteSpace(line.nameCs))
+                {
+                    genre.NameCs = line.nameCs;
+                }
+                if (!string.IsNullOrWhiteSpace(line.nameEn))
+                {
+                    genre.NameEn = line.nameEn;
+                }
                 db.Genres.Update(genre);
             }
         }
