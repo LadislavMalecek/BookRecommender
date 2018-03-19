@@ -4,6 +4,8 @@ using BookRecommender.Models;
 using BookRecommender.Models.Database;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BookRecommender.DataManipulation
 {
@@ -32,6 +34,8 @@ namespace BookRecommender.DataManipulation
 
         public DbSet<Feedback> Feedback { get; set; }
 
+        public DbSet<WikiStorageEntry> WikiStorage { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder)
         {
             optionBuilder.UseSqlite(AppSettingsSingleton.Database.Connection);
@@ -41,6 +45,7 @@ namespace BookRecommender.DataManipulation
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<WikiStorageEntry>(WikiStorageEntry.Configure);
 
             //--------------------------------
             // Indexes
@@ -105,7 +110,7 @@ namespace BookRecommender.DataManipulation
             modelBuilder.Entity<Genre>()
                 .HasAlternateKey(c => c.Uri)
                 .HasName("AlternateKey_Uri");
-
+       
             //--------------------------------
             // Many to many relationships
             //--------------------------------

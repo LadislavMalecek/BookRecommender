@@ -34,7 +34,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <param name="pageId">Wikipedia page id</param>
         /// <param name="lang">Desired language</param>
         /// <returns>True if page with desired language exists.</returns>
-        public bool PageExist(string pageId, string lang)
+        public virtual  bool PageExist(string pageId, string lang)
         {
             var dirpath = rootDir + lang + Path.DirectorySeparatorChar;
             var filePath = dirpath + pageId;
@@ -45,7 +45,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// </summary>
         /// <param name="pageId">Wikipedia page id</param>
         /// <param name="lang"></param>
-        public void RemovePage(string pageId, string lang)
+        public virtual  void RemovePage(string pageId, string lang)
         {
             var dirpath = rootDir + lang + Path.DirectorySeparatorChar;
             var filePath = dirpath + pageId;
@@ -58,7 +58,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <param name="lang">Page language</param>
         /// <param name="pageId">Page id</param>
         /// <returns>True if the operation succeeds</returns>
-        public bool SavePage(string page, string lang, string pageId)
+        public virtual  bool SavePage(string page, string lang, string pageId)
         {
             var dirpath = rootDir + lang + Path.DirectorySeparatorChar;
             if (!Directory.Exists(dirpath))
@@ -87,7 +87,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <param name="lang">Page lang</param>
         /// <param name="pageId">Page id</param>
         /// <returns>Data for the page, or null if the page does not exists</returns>
-        public string GetPage(string lang, string pageId)
+        public virtual  string GetPage(string lang, string pageId)
         {
             var filePath = rootDir + lang + Path.DirectorySeparatorChar + pageId;
             if (File.Exists(filePath))
@@ -101,7 +101,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// </summary>
         /// <param name="lang">Language to retrive</param>
         /// <return>Return list of pages in specified language.</return>
-        public IEnumerable<(string id, string text)> GetPagesInLang(string lang)
+        public virtual  IEnumerable<(string id, string text)> GetPagesInLang(string lang)
         {
             var dirpath = rootDir + lang + Path.DirectorySeparatorChar;
             if (!Directory.Exists(dirpath))
@@ -120,7 +120,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// </summary>
         /// <param name="lang">Which language to count</param>
         /// <returns>Number of pages in language</returns>
-        public int PagesInLangCount(string lang){
+        public virtual  int PagesInLangCount(string lang){
             var dirpath = rootDir + lang + Path.DirectorySeparatorChar;
             if (!Directory.Exists(dirpath))
             {
@@ -132,7 +132,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// Retrieves all languages in which we store data
         /// </summary>
         /// <returns>Enum of all languages</returns>
-        public IEnumerable<string> GetLangs()
+        public virtual  IEnumerable<string> GetLangs()
         {
             return Directory.GetDirectories(rootDir).Select(d => new DirectoryInfo(d).Name);
         }

@@ -496,6 +496,12 @@ namespace BookRecommender.DataManipulation.WikiData
 
         IEnumerable<(string uri, string wikiPageUrl)> GetBooksEnWikiPages()
         {
+            // temp. fix, wikidata endpoint sends invalid csv without escape quotes
+            var currentMiner = miner;
+            var currentParser = parser;
+            miner = new WikiDataDownloader(WikiDataDownloader.FormatType.Json);
+            parser = new WikiDataJsonParser();
+
             // Query to obtain the identifiers
             // wdt:P18 - image
             var query = @"SELECT *
@@ -509,6 +515,8 @@ namespace BookRecommender.DataManipulation.WikiData
             {
                 yield return (line["book"], line["article"]);
             }
+            miner = currentMiner;
+            parser = currentParser;
             yield break;
         }
         void SaveBooksEnWikipages((string uri, string wikiPageUrl) line, BookRecommenderContext db)
@@ -813,6 +821,12 @@ namespace BookRecommender.DataManipulation.WikiData
 
         IEnumerable<(string uri, string wikiPageUrl)> GetAuthorsWikiPages()
         {
+            // temp. fix, wikidata endpoint sends invalid csv without escape quotes
+            var currentMiner = miner;
+            var currentParser = parser;
+            miner = new WikiDataDownloader(WikiDataDownloader.FormatType.Json);
+            parser = new WikiDataJsonParser();
+
             var query = @"SELECT DISTINCT ?author ?article
                             WHERE {
                             ?book wdt:P31 wd:Q571.
@@ -825,6 +839,10 @@ namespace BookRecommender.DataManipulation.WikiData
             {
                 yield return (line["author"], line["article"]);
             }
+
+            miner = currentMiner;
+            parser = currentParser;
+
             yield break;
         }
         void SaveAuthorsWikiPages((string uri, string wikiPageUrl) line, BookRecommenderContext db)
@@ -1177,6 +1195,12 @@ namespace BookRecommender.DataManipulation.WikiData
 
         public override IEnumerable<(string bookId, string wikiPageUrl)> GetBooksWikiPages()
         {
+            // temp. fix, wikidata endpoint sends invalid csv without escape quotes
+            var currentMiner = miner;
+            var currentParser = parser;
+            miner = new WikiDataDownloader(WikiDataDownloader.FormatType.Json);
+            parser = new WikiDataJsonParser();
+
             // Query to obtain the identifiers
             // wdt:P18 - image
             var query = @"SELECT *
@@ -1194,6 +1218,10 @@ namespace BookRecommender.DataManipulation.WikiData
                     yield return (GetIdFromUri(line["book"]), line["article"]);
                 }
             }
+
+            miner = currentMiner;
+            parser = currentParser;
+            
             yield break;
         }
     }

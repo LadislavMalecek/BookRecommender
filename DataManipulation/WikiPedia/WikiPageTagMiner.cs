@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,9 +20,14 @@ namespace BookRecommender.DataManipulation.WikiPedia
     class WikiPageTagMiner
     {
         WikiPageDownloader downloader = new WikiPageDownloader();
-        WikiPageStorage storage = new WikiPageStorage();
+        WikiPageStorage storage = new WikiPageDatabaseStorage();
         WikiPageTrimmer trimmer = new WikiPageTrimmer();
         readonly bool verbose;
+        MiningState miningState;
+        int degreeOfParallelism = 7;
+        bool skipAlreadyDownloaded = true;
+        int counterForMiningState = 0;
+
         public WikiPageTagMiner(bool verbose = true)
         {
             this.verbose = verbose;
@@ -34,18 +40,19 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <param name="miningState">Link to mining proxy monitoring instance</param>
         public void UpdateTags(List<int> methodsList, MiningState miningState = null)
         {
+            this.miningState = miningState;
+
             if (methodsList == null || methodsList.Count == 0)
             {
                 throw new NotImplementedException();
             }
             if (methodsList.Contains(0))
             {
-                DownloadAndTrimPages(miningState);
-
+                DownloadAndTrimPages();
             }
             if (methodsList.Contains(1))
             {
-                CalculateAndSaveBookTagsToDb(miningState);
+                CalculateAndSaveBookTagsToDb();
             }
         }
         public void UpdateTags(int methodNumber, MiningState miningState = null)
@@ -53,6 +60,98 @@ namespace BookRecommender.DataManipulation.WikiPedia
             var list = new List<int>() { methodNumber };
             UpdateTags(list, miningState);
         }
+
+        void AddPagesToDownload(BlockingCollection<(string bookId, string lang, string text)> downloadList, IEnumerable<(string bookId, string wikiPageUrl)> pagesList, Counter counter, int counterForMiningState, int totalPages)
+        {
+            int internalCount = 0;
+            foreach (var page in pagesList)
+            {
+                string lang = GetLangFromWikiUrl(page.wikiPageUrl);
+                bool skipDownload = skipAlreadyDownloaded && storage.PageExist(page.bookId, lang);
+                if (!skipDownload)
+                {
+                    downloadList.Add((page.bookId, lang, page.wikiPageUrl));
+                }
+                else
+                {
+                    if (verbose)
+                    {
+                        counter.Update();
+                    }
+                    if (miningState != null)
+                    {
+                        miningState.Message = string.Format("{0}/{1}",
+                            counterForMiningState, totalPages);
+                        counterForMiningState++;
+                    }
+                }
+                if (internalCount % 1000 == 0)
+                {
+                    System.Console.WriteLine($"Added to download: {internalCount / 1000}k");
+                }
+                internalCount++;
+            }
+            downloadList.CompleteAdding();
+        }
+
+        void DownloadPages(BlockingCollection<(string bookId, string lang, string url)> downloadList, BlockingCollection<(string bookId, string lang, string text)> itemsDownloaded, Counter counter, int counterForMiningState, int totalPages)
+        {
+            int internalCount = 0;
+
+            var options = new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism };
+
+            var parLoop = Parallel.ForEach<(string bookId, string lang, string url)>(downloadList.GetConsumingEnumerable(), options, page =>
+            // foreach (var page in wikiPages)
+            {
+                try
+                {
+                    var downloadedPage = downloader.DownloadPage(page.url).Result;
+                    var trimmedPage = trimmer.Trim(downloadedPage);
+                    itemsDownloaded.Add((page.bookId, page.lang, trimmedPage));
+                    if (verbose)
+                    {
+                        counter.Update();
+                    }
+                    if (miningState != null)
+                    {
+                        miningState.Message = string.Format("{0}/{1}",
+                            counterForMiningState, totalPages);
+                        counterForMiningState++;
+                    }
+                }
+                catch (Exception e)
+                {
+                    // log exceptions
+                    System.Console.WriteLine("\n--\nUrl: \"" + page.url + "\", " + e.ToString());
+                    // File.AppendAllText("C:\\netcore\\Log.txt", "\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
+                }
+                finally
+                {
+                    if (internalCount % 1000 == 0)
+                    {
+                        System.Console.WriteLine($"Downloaded: {internalCount / 1000}k");
+                    }
+                    internalCount++;
+                }
+            });
+            itemsDownloaded.CompleteAdding();
+        }
+
+        void SaveDownloaded(BlockingCollection<(string bookId, string lang, string text)> itemsDownloaded, Counter counter, int pagesCount)
+        {
+            int internalCount = 0;
+
+            foreach (var (bookId, lang, text) in itemsDownloaded.GetConsumingEnumerable())
+            {
+                storage.SavePage(text, lang, bookId);
+                if (internalCount % 1000 == 0)
+                {
+                    System.Console.WriteLine($"Saved: {internalCount / 1000}k");
+                }
+                internalCount++;
+            }
+        }
+
         /// <summary>
         /// Main method for begining of mining action. It runs in parallel for a speeded up performance.
         /// Change degree of parallelism with caution, when limit too high, then Wikipedia will trigger DOS
@@ -61,69 +160,40 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <param name="miningState">Link to mining proxy singleton monitoring instance</param>
         /// <param name="degreeOfParallelism">How many simultaneous operations should be executed</param>
         /// <param name="skipAlreadyDownloaded">True then page already in storage will be skiped.</param>
-        public void DownloadAndTrimPages(MiningState miningState = null, int degreeOfParallelism = 7, bool skipAlreadyDownloaded = true)
+        public void DownloadAndTrimPages()
         {
+
             if (miningState != null)
             {
                 miningState.CurrentState = MiningStateType.RunningQueryingEndpoint;
             }
+
             // Download wikipage address from endpoint
             // todo: Dependency injection
             var wikiPages = new WikiDataEndpointMiner().GetBooksWikiPages().ToList();
+
+            BlockingCollection<(string bookId, string lang, string url)> downloadList = new BlockingCollection<(string bookId, string lang, string url)>();
+            BlockingCollection<(string bookId, string lang, string text)> itemsDownloaded = new BlockingCollection<(string bookId, string lang, string text)>();
+
+            var counter = new Counter(wikiPages.Count);
 
             if (miningState != null)
             {
                 miningState.CurrentState = MiningStateType.Running;
             }
-            var counterForMiningState = 0;
-            // How many thread are going to be run in parallel
-            var options = new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism };
-
-
-            //File.Delete("C:\\netcore\\Log.txt");
-
-            // if disabled do not create counter
-            using (var counter = verbose ? new Counter(wikiPages.Count, 5) : null)
+            counterForMiningState = 0;
+            Task addAndSave = Task.Run(() =>
             {
+                AddPagesToDownload(downloadList, wikiPages, counter, counterForMiningState, wikiPages.Count);
+                SaveDownloaded(itemsDownloaded, counter, counterForMiningState);
+            });
 
-                var parLoop = Parallel.ForEach<(string bookId, string wikiPageUrl)>(wikiPages, options, page =>
-                // foreach (var page in wikiPages)
-                {
-                    try
-                    {
-                        string lang = GetLangFromWikiUrl(page.wikiPageUrl);
-                        bool skipDownload = skipAlreadyDownloaded && storage.PageExist(page.bookId, lang);
-                        if (!skipDownload)
-                        {
-                            var downloadedPage = downloader.DownloadPage(page.wikiPageUrl).Result;
-                            var trimmedPage = trimmer.Trim(downloadedPage);
-                            storage.SavePage(trimmedPage, lang, page.bookId);
-                        }
-                        if (miningState != null)
-                        {
-                            miningState.Message = string.Format("{0}/{1}",
-                                counterForMiningState, wikiPages.Count);
-                            counterForMiningState++;
-                        }
-                        if (verbose)
-                        {
-                            counter.Update();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        // log exceptions
-                        System.Console.WriteLine("\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
-                        // File.AppendAllText("C:\\netcore\\Log.txt", "\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
-                    }
-                });
-                // }
-            }
-            if (miningState != null)
+            Task download = Task.Run(() =>
             {
-                miningState.CurrentState = MiningStateType.Completed;
-                miningState.Message = DateTime.Now.ToString();
-            }
+                DownloadPages(downloadList, itemsDownloaded, counter, counterForMiningState, wikiPages.Count);
+            });
+
+            Task.WaitAll(addAndSave, download);
         }
         ///
         string GetLangFromWikiUrl(string url)
