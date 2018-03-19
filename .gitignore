@@ -8,7 +8,6 @@ wwwroot/*/*.min.*
 wwwroot/*.min.*
 
 
-Migrations/
 Properties/
 
 # User-specific files

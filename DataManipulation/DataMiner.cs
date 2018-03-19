@@ -9,7 +9,7 @@ using BookRecommender.Models;
 using BookRecommender.Models.Database;
 using System.Diagnostics;
 using BookRecommender.DataManipulation.WikiData;
-using BookRecommender.Tests;
+// using BookRecommender.Tests;
 using BookRecommender.DataManipulation.WikiPedia;
 using System.Threading.Tasks;
 

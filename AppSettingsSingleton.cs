@@ -12,7 +12,8 @@ namespace BookRecommender
         }
         public static class Database
         {
-            public static string Connection;
+            //default for creating the database file
+            public static string Connection = "Data Source=./BookRecommender.db;";
         }
     }
 }

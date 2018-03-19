@@ -5,6 +5,7 @@ using BookRecommender.DataManipulation;
 using System.Linq;
 using System.Reflection;
 using System;
+using Microsoft.AspNetCore;
 
 namespace BookRecommender
 {
@@ -48,11 +49,6 @@ namespace BookRecommender
             }
 
 
-            // var config = new ConfigurationBuilder()
-            //     .AddCommandLine(args)
-            //     .AddEnvironmentVariables(prefix: "ASPNETCORE_")
-            //     .Build();
-
             // Get environment variables
             var config = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
@@ -76,20 +72,31 @@ namespace BookRecommender
                 pickedPath = Directory.GetCurrentDirectory();
             }
 
-            var host = new WebHostBuilder()
-                .UseConfiguration(config)
+            BuildWebHost(args, url, pickedPath).Run();
+        }
+
+        public static IWebHost BuildWebHost(string[] args, string url, string rootFolder)
+        {
+            return WebHost.CreateDefaultBuilder(args)
                 // .UseKestrel(options =>{
                 //     options.UseHttps("C:\\netcore\\myCertificateAuthority\\myCertificates\\10.0.0.10\\10.0.0.10.pfx", "CFahojCFahoj25");
                 // })
                 .UseKestrel()
-                .UseContentRoot(pickedPath)
+                .UseContentRoot(rootFolder)
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 // .UseUrls($"https://{url}:443")
                 .UseUrls($"http://{url}:5000")
                 .Build();
-
-            host.Run();
+        }
+        
+        static void AppConfiguration(WebHostBuilderContext webHostBuilderContext, IConfigurationBuilder configurationBuilder){
+            var env = webHostBuilderContext.HostingEnvironment;
+            
+            configurationBuilder.SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
         }
     }
 }

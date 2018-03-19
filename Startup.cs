@@ -15,25 +15,19 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 
 namespace BookRecommender
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
 
-            // init config singleton
-            //AppSettingsSingleton.Initialize(Configuration);
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -76,12 +70,15 @@ namespace BookRecommender
                 options.Lockout.MaxFailedAccessAttempts = 10;
 
                 // Cookie settings
-                options.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromDays(150);
-                options.Cookies.ApplicationCookie.LoginPath = "/Account/LogIn";
-                options.Cookies.ApplicationCookie.LogoutPath = "/Account/LogOff";
+                // options.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromDays(150);
+                // options.Cookies.ApplicationCookie.LoginPath = "/Account/LogIn";
+                // options.Cookies.ApplicationCookie.LogoutPath = "/Account/LogOff";
 
                 // User settings
                 options.User.RequireUniqueEmail = true;
+
+                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedPhoneNumber = false;
             });
 
         }
@@ -110,7 +107,6 @@ namespace BookRecommender
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
             }
             else
             {
@@ -122,9 +118,8 @@ namespace BookRecommender
 
             app.UseStaticFiles();
 
-            app.UseIdentity();
-
-
+            app.UseAuthentication();
+            
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

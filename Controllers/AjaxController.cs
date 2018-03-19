@@ -121,7 +121,7 @@ namespace BookRecommender.Controllers
             }
 
             var recommendations = new List<Recommendation>();
-            recommendations = recList.Select(r => new Recommendation(r)).ToList();
+            recommendations = recList.Select(r => new Recommendation(r)).Take(howMany).ToList();
 
             return PartialView("Recommendation", recommendations);
         }
