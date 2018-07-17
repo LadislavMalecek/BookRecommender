@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using BookRecommender.Models.Database;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,11 +17,14 @@ namespace BookRecommender.DataManipulation.WikiPedia
     {
         // readonly string rootDir;
         BookRecommenderContext db;
+        HashSet<(string pageId, string lang)> existingPages;
 
         public WikiPageDatabaseStorage()
         {
             db = new BookRecommenderContext();
             db.Database.EnsureCreated();
+
+            existingPages = db.WikiStorage.ToList().Select(s => (s.Id, s.Lang)).ToHashSet();
         }
         /// <summary>
         /// Check if the page exists in this storage.
@@ -30,7 +34,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <returns>True if page with desired language exists.</returns>
         public override bool PageExist(string pageId, string lang)
         {
-            return db.WikiStorage.Find(pageId, lang) != null;
+            return existingPages.Contains((pageId, lang));
         }
         /// <summary>
         /// Command to remove page from storage
@@ -42,6 +46,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
             var page = db.WikiStorage.Find(pageId, lang);
             if (page != null)
             {
+                existingPages.Remove((pageId, lang));
                 db.WikiStorage.Remove(page);
                 db.SaveChanges();
             }
@@ -53,13 +58,32 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <param name="lang">Page language</param>
         /// <param name="pageId">Page id</param>
         /// <returns>True if the operation succeeds</returns>
-        public override bool SavePage(string text, string lang, string pageId)
+        public override bool SavePage(string text, string lang, string pageId, bool saveToDb = true)
         {
-            var page = db.WikiStorage.Find(pageId, lang );
-            if (page == null)
+            var alreadyAdded = existingPages.Contains((pageId, lang));
+            if (!alreadyAdded)
             {
                 db.WikiStorage.Add(new WikiStorageEntry(pageId, lang, text));
-                db.SaveChanges();
+                if (saveToDb)
+                {
+                    db.SaveChanges();
+                }
+                return true;
+            }
+            return false;
+        }
+
+
+        public async Task<bool> SavePageAsync(string text, string lang, string pageId, bool saveToDb = true)
+        {
+            var alreadyAdded = existingPages.Contains((pageId, lang));
+            if (!alreadyAdded)
+            {
+                db.WikiStorage.Add(new WikiStorageEntry(pageId, lang, text));
+                if (saveToDb)
+                {
+                    await db.SaveChangesAsync();
+                }
                 return true;
             }
             return false;
@@ -72,7 +96,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <returns>Data for the page, or null if the page does not exists</returns>
         public override string GetPage(string lang, string pageId)
         {
-            return db.WikiStorage.Find(pageId, lang )?.Text;
+            return db.WikiStorage.Find(pageId, lang)?.Text;
         }
         /// <summary>
         /// Returns the enumeration of all page ids in language.
@@ -100,6 +124,11 @@ namespace BookRecommender.DataManipulation.WikiPedia
         public override IEnumerable<string> GetLangs()
         {
             return db.WikiStorage.Select(ws => ws.Lang).Distinct();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await db.SaveChangesAsync();
         }
     }
 }

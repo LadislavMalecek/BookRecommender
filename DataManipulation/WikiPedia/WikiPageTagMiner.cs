@@ -20,7 +20,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
     class WikiPageTagMiner
     {
         WikiPageDownloader downloader = new WikiPageDownloader();
-        WikiPageStorage storage = new WikiPageDatabaseStorage();
+        WikiPageDatabaseStorage storage = new WikiPageDatabaseStorage();
         WikiPageTrimmer trimmer = new WikiPageTrimmer();
         readonly bool verbose;
         MiningState miningState;
@@ -48,7 +48,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
             }
             if (methodsList.Contains(0))
             {
-                DownloadAndTrimPages();
+                DownloadAndTrimPagesAsync().Wait();
             }
             if (methodsList.Contains(1))
             {
@@ -85,9 +85,9 @@ namespace BookRecommender.DataManipulation.WikiPedia
                         counterForMiningState++;
                     }
                 }
-                if (internalCount % 1000 == 0)
+                if (internalCount % 100 == 0)
                 {
-                    System.Console.WriteLine($"Added to download: {internalCount / 1000}k");
+                    System.Console.WriteLine($"Added to download: {internalCount}");
                 }
                 internalCount++;
             }
@@ -96,16 +96,17 @@ namespace BookRecommender.DataManipulation.WikiPedia
 
         void DownloadPages(BlockingCollection<(string bookId, string lang, string url)> downloadList, BlockingCollection<(string bookId, string lang, string text)> itemsDownloaded, Counter counter, int counterForMiningState, int totalPages)
         {
+            System.Console.WriteLine("Downloading pages started");
             int internalCount = 0;
 
             var options = new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism };
 
-            var parLoop = Parallel.ForEach<(string bookId, string lang, string url)>(downloadList.GetConsumingEnumerable(), options, page =>
+            Parallel.ForEach<(string bookId, string lang, string url)>(downloadList.GetConsumingEnumerable(), options, page =>
             // foreach (var page in wikiPages)
             {
                 try
                 {
-                    var downloadedPage = downloader.DownloadPage(page.url).Result;
+                    var downloadedPage = downloader.DownloadPageAsync(page.url).Result;
                     var trimmedPage = trimmer.Trim(downloadedPage);
                     itemsDownloaded.Add((page.bookId, page.lang, trimmedPage));
                     if (verbose)
@@ -121,35 +122,39 @@ namespace BookRecommender.DataManipulation.WikiPedia
                 }
                 catch (Exception e)
                 {
-                    // log exceptions
-                    System.Console.WriteLine("\n--\nUrl: \"" + page.url + "\", " + e.ToString());
-                    // File.AppendAllText("C:\\netcore\\Log.txt", "\n--\nUrl: \"" + page.wikiPageUrl + "\", " + e.ToString());
+                    System.Console.WriteLine("\n--\nUrl: \"" + page.url + "\", " + e.Message);
                 }
-                finally
+
+                if (internalCount % 100 == 0)
                 {
-                    if (internalCount % 1000 == 0)
-                    {
-                        System.Console.WriteLine($"Downloaded: {internalCount / 1000}k");
-                    }
-                    internalCount++;
+                    System.Console.WriteLine($"Downloaded: {internalCount}");
                 }
+                internalCount++;
+
             });
+            System.Console.WriteLine("Downloading finished");
             itemsDownloaded.CompleteAdding();
         }
 
-        void SaveDownloaded(BlockingCollection<(string bookId, string lang, string text)> itemsDownloaded, Counter counter, int pagesCount)
+        async Task SaveDownloadedAsync(BlockingCollection<(string bookId, string lang, string text)> itemsDownloaded, Counter counter, int pagesCount)
         {
+            System.Console.WriteLine("Saving downloaded pages started");
+
             int internalCount = 0;
 
             foreach (var (bookId, lang, text) in itemsDownloaded.GetConsumingEnumerable())
             {
-                storage.SavePage(text, lang, bookId);
-                if (internalCount % 1000 == 0)
-                {
-                    System.Console.WriteLine($"Saved: {internalCount / 1000}k");
-                }
+                await storage.SavePageAsync(text, lang, bookId, false);
                 internalCount++;
+                if (internalCount % 100 == 0)
+                {
+                    System.Console.WriteLine($"Saved: {internalCount}");
+                    await storage.SaveChangesAsync();
+                }
             }
+
+            System.Console.WriteLine("Save downloding finished");
+            await storage.SaveChangesAsync();
         }
 
         /// <summary>
@@ -160,7 +165,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <param name="miningState">Link to mining proxy singleton monitoring instance</param>
         /// <param name="degreeOfParallelism">How many simultaneous operations should be executed</param>
         /// <param name="skipAlreadyDownloaded">True then page already in storage will be skiped.</param>
-        public void DownloadAndTrimPages()
+        public async Task DownloadAndTrimPagesAsync()
         {
 
             if (miningState != null)
@@ -173,7 +178,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
             var wikiPages = new WikiDataEndpointMiner().GetBooksWikiPages().ToList();
 
             BlockingCollection<(string bookId, string lang, string url)> downloadList = new BlockingCollection<(string bookId, string lang, string url)>();
-            BlockingCollection<(string bookId, string lang, string text)> itemsDownloaded = new BlockingCollection<(string bookId, string lang, string text)>();
+            BlockingCollection<(string bookId, string lang, string text)> itemsDownloaded = new BlockingCollection<(string bookId, string lang, string text)>(1000);
 
             var counter = new Counter(wikiPages.Count);
 
@@ -185,7 +190,6 @@ namespace BookRecommender.DataManipulation.WikiPedia
             Task addAndSave = Task.Run(() =>
             {
                 AddPagesToDownload(downloadList, wikiPages, counter, counterForMiningState, wikiPages.Count);
-                SaveDownloaded(itemsDownloaded, counter, counterForMiningState);
             });
 
             Task download = Task.Run(() =>
@@ -193,7 +197,11 @@ namespace BookRecommender.DataManipulation.WikiPedia
                 DownloadPages(downloadList, itemsDownloaded, counter, counterForMiningState, wikiPages.Count);
             });
 
-            Task.WaitAll(addAndSave, download);
+            Task save = SaveDownloadedAsync(itemsDownloaded, counter, counterForMiningState);
+
+            await addAndSave;
+            await download;
+            await save;
         }
         ///
         string GetLangFromWikiUrl(string url)

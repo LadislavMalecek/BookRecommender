@@ -22,16 +22,18 @@ namespace BookRecommender.DataManipulation.WikiPedia
         ///  </summary>
         /// <param name="url">URL of a page to retrieve</param>
         /// <returns>Raw wikipedia page</returns>
-        public async Task<string> DownloadPage(string url)
+        public async Task<string> DownloadPageAsync(string url)
         {
             var request = HttpWebRequest.Create(url +UrlAppendix);
             request.Method = "GET";
             try
             {
                 var task = request.GetResponseAsync();
-                if (Task.WhenAny(task, Task.Delay(30000)).Result != task)
+                var taskOrDelay = await Task.WhenAny(task, Task.Delay(3000));
+
+                if(taskOrDelay != task)
                 {
-                    // Timeout
+                    // timeouted
                     return null;
                 }
 

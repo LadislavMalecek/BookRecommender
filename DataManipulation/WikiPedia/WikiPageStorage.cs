@@ -58,7 +58,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <param name="lang">Page language</param>
         /// <param name="pageId">Page id</param>
         /// <returns>True if the operation succeeds</returns>
-        public virtual  bool SavePage(string page, string lang, string pageId)
+        public virtual  bool SavePage(string page, string lang, string pageId, bool callSaveDb = true)
         {
             var dirpath = rootDir + lang + Path.DirectorySeparatorChar;
             if (!Directory.Exists(dirpath))
