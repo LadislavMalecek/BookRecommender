@@ -4,7 +4,7 @@
     <AssemblyName>BookRecommender</AssemblyName>
     <VersionPrefix>1.0</VersionPrefix>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <RuntimeIdentifiers>win10-x64;ubuntu.16.04-x64</RuntimeIdentifiers>
   </PropertyGroup>
@@ -39,11 +39,14 @@
   </ItemGroup>
 
   <Target Name="PrecompileScript" BeforeTargets="BeforeBuild" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
-    <Exec Command="dotnet bundle" />
+    <Exec Command="npm install" />
+    <Exec Command="gulp clean" />
+    <Exec Command="gulp min" />
+    <Exec Command="gulp lib" />
   </Target>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
-    <Exec Command="bower install" />
+    <Exec Command=" install" />
   </Target>
 
 </Project>
