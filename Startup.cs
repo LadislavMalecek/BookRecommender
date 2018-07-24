@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using System.Diagnostics;
 
 namespace BookRecommender
 {
@@ -81,10 +82,17 @@ namespace BookRecommender
                 options.SignIn.RequireConfirmedPhoneNumber = false;
             });
 
+            services.AddSingleton<SpreadingRecommenderCache>();
+            services.AddScoped<SpreadingRecommenderEngine>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(
+            IApplicationBuilder app,
+            IHostingEnvironment env,
+            ILoggerFactory loggerFactory,
+            BookRecommenderContext db,
+            SpreadingRecommenderCache spreadingRecommederCache)
         {
 
             // add values to the appsetting singleton from appsettings.json
@@ -128,6 +136,12 @@ namespace BookRecommender
             });
 
             app.UseResponseCompression();
+
+            System.Console.WriteLine("Spreading activation cache init started.");
+            var sw = Stopwatch.StartNew();
+            spreadingRecommederCache.Initialize(db);
+            sw.Stop();
+            System.Console.WriteLine($"Spreading activation cache initialized, it took: {sw.ElapsedMilliseconds}ms");
         }
     }
 }

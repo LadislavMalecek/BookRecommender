@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using static BookRecommender.DataManipulation.MiningStateType;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace BookRecommender.Controllers
 {
@@ -23,9 +24,13 @@ namespace BookRecommender.Controllers
     public class AjaxController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        public AjaxController(UserManager<ApplicationUser> userManager)
+        private readonly SpreadingRecommenderEngine _spreadingRecommenderEngine;
+        public AjaxController(
+            UserManager<ApplicationUser> userManager,
+            SpreadingRecommenderEngine spreadingRecommenderEngine)
         {
             _userManager = userManager;
+            _spreadingRecommenderEngine = spreadingRecommenderEngine;
         }
 
         /// <summary>
@@ -79,7 +84,7 @@ namespace BookRecommender.Controllers
         /// <param name="data">Parameters for the recommendation - bookPage, bookPageByTags: id of the book</param>
         /// <param name="howMany">How many items should be retrieved</param>
         /// <returns>Formated HTML that can be inserted into the page</returns>
-        public IActionResult Recommendation(string type, int data, int howMany = 6)
+        public IActionResult Recommendation(string type, int data, int howMany = 24)
         {
             IEnumerable<int> recList;
             string userId = null;
@@ -112,7 +117,9 @@ namespace BookRecommender.Controllers
                     recList = new RecommenderEngine().RecommendMostPopular(howMany, userId);
                     break;
                 case "spreadingActivations":
-                    recList = new SpreadingRecommenderEngine().RecommendBooksSimilarBySpreadingActivation(new List<int>() { data }, howMany).Select(b => b.BookId);
+                    var sw = Stopwatch.StartNew();
+                    recList = _spreadingRecommenderEngine.RecommendBooksSimilarBySpreadingActivation(new List<int>() { data }, howMany);
+                    System.Console.WriteLine($"Spreading recommendation took: {sw.ElapsedMilliseconds}ms");
                     break;
                 default:
                     return null;

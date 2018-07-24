@@ -7,46 +7,74 @@ namespace BookRecommender.DataManipulation
 {
     public class SpreadingRecommenderEngine
     {
-        public List<Book> RecommendBooksSimilarBySpreadingActivation(List<int> startingBooksIds, int howMany = 6, int howManySpreads = 50)
+        private const int MAX_LEVEL = 1;
+
+        private readonly BookRecommenderContext _db;
+        private readonly SpreadingRecommenderCache _spreadingRecommenderCache;
+
+
+
+        // dequeue only - used to take all books from one rating level
+        Queue<int> evalQueue;
+        // enqueue only - used to store books which will be used in eval queue in the next level
+        Queue<int> nextEvalQueue;
+        Dictionary<int, double> ratingForObjectsDictionary;
+
+
+        double currentRatingLevel;
+        int currentLevel;
+
+        public SpreadingRecommenderEngine(
+            BookRecommenderContext db,
+            SpreadingRecommenderCache spreadingRecommenderCache)
         {
-            var db = new BookRecommenderContext();
-            // dequeue only - used to take all books from one rating level
-            var evalQueue = new Queue<Book>();
-            // enqueue only - used to store books which will be used in eval queue in the next level
-            var nextEvalQueue = new Queue<Book>();
+            _db = db;
+            _spreadingRecommenderCache = spreadingRecommenderCache;
+        }
 
-            double currentRatingLevel = 1d;
-            int currentSpreadCount = 0;
-            bool isSpreadOver = false;
+        private void Initialize()
+        {
+            evalQueue = new Queue<int>();
+            nextEvalQueue = new Queue<int>();
+            currentRatingLevel = 1d;
+            currentLevel = 0;
+            ratingForObjectsDictionary = new Dictionary<int, double>();
+        }
 
-            // book and its current rating
-            var ratingForObjectsDictionary = new Dictionary<Book, double>();
+        public List<int> RecommendBooksSimilarBySpreadingActivation(List<int> startingBooksIds, int howMany = 6)
+        {
+            Initialize();
+            // bookId and its current rating
 
             // Not using .Include bsc of simplicity with previous work, would have to rewrite huge part of the app
-            var startingBooks = db.Books
+            var startingBooks = _db.Books
                 .Where(b => startingBooksIds.Contains(b.BookId))
                 .ToList();
 
-            EnqueueMany(evalQueue, startingBooks);
+            EnqueueMany(evalQueue, startingBooks.Select(b => b.BookId));
 
-            while (currentSpreadCount < howManySpreads && !isSpreadOver)
+            while (currentLevel <= MAX_LEVEL)
             {
-                foreach (var itemToEval in evalQueue.AsEnumerable())
+                System.Console.WriteLine($"EvalQueue size: {evalQueue.Count}");
+                foreach (var itemToEval in evalQueue)
                 {
-                    RunOne(itemToEval, nextEvalQueue, ratingForObjectsDictionary, currentSpreadCount, db);
-                    currentSpreadCount++;
-                    if (currentSpreadCount >= howManySpreads)
-                    {
-                        break;
-                    }
+                    RunOne(itemToEval, nextEvalQueue, ratingForObjectsDictionary, currentRatingLevel, _db);
                 }
+
+
+                System.Console.WriteLine($"Level {currentLevel} finished, next leven itemCount: {nextEvalQueue.Count}");
+                System.Console.WriteLine("Top ten in rating:");
+
+                var topTenBooks = ratingForObjectsDictionary.OrderByDescending(kvp => kvp.Value).Take(10);
+                foreach(var topBook in topTenBooks)
+                {
+                    System.Console.WriteLine($"Id: {topBook.Key}, Rat: {topBook.Value}, Name: {_spreadingRecommenderCache.GetName(topBook.Key)}");
+                }
+
+                currentLevel++;
                 evalQueue = nextEvalQueue;
-                nextEvalQueue = new Queue<Book>();
+                nextEvalQueue = new Queue<int>();
                 currentRatingLevel /= 2;
-                if(evalQueue.Count == 0)
-                {
-                    isSpreadOver = true;
-                }
             }
 
             return ratingForObjectsDictionary
@@ -56,33 +84,20 @@ namespace BookRecommender.DataManipulation
                 .ToList();
         }
 
-        private void RunOne(Book nextToEval, Queue<Book> evalQueue, Dictionary<Book, double> ratingDic, double currentLevelRating, BookRecommenderContext db)
+        private void RunOne(int nextToEval, Queue<int> evalQueue, Dictionary<int, double> ratingDic, double currentLevelRating, BookRecommenderContext db)
         {
-            var booksAuthors = nextToEval.GetAuthors(db);
-            var booksGenres = nextToEval.GetGenres(db);
-            // var booksCharacters = nextToEval.GetCharacters(db);
-            // var booksTags = nextToEval.GetTags(db);
+            var simBooksByAll = _spreadingRecommenderCache.GetSimilarBooksByAll(nextToEval);
 
-            foreach (var author in booksAuthors)
-            {
-                var books = author.GetBooks(db).ToList();
-                IncreaseCurrentForMany(books, ratingDic, currentLevelRating);
-                EnqueueMany(evalQueue, books);
-            }
-            foreach (var genre in booksGenres)
-            {
-                var books = genre.GetBooks(db).ToList();
-                EnqueueMany(evalQueue, books);
-                IncreaseCurrentForMany(books, ratingDic, currentLevelRating);
-            }
+            IncreaseCurrentForMany(simBooksByAll, ratingDic, currentLevelRating);
+            EnqueueMany(evalQueue, simBooksByAll);
         }
 
-        private void IncreaseCurrent(Book nextToEval, Dictionary<Book, double> ratingDic, double increaseAmount)
+        private void IncreaseCurrent(int nextToEval, Dictionary<int, double> ratingDic, double increaseAmount)
         {
             ratingDic.TryGetValue(nextToEval, out var currentRatingOfNext);
             ratingDic[nextToEval] = currentRatingOfNext + increaseAmount;
         }
-        private void IncreaseCurrentForMany(List<Book> booksToIncrease, Dictionary<Book, double> ratingDic, double increaseAmount)
+        private void IncreaseCurrentForMany(List<int> booksToIncrease, Dictionary<int, double> ratingDic, double increaseAmount)
         {
             foreach (var bookToIncrease in booksToIncrease)
             {
