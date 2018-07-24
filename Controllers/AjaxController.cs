@@ -111,6 +111,9 @@ namespace BookRecommender.Controllers
                 case "mostPopular":
                     recList = new RecommenderEngine().RecommendMostPopular(howMany, userId);
                     break;
+                case "spreadingActivations":
+                    recList = new SpreadingRecommenderEngine().RecommendBooksSimilarBySpreadingActivation(new List<int>() { data }, howMany).Select(b => b.BookId);
+                    break;
                 default:
                     return null;
             }

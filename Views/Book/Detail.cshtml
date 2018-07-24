@@ -88,6 +88,7 @@
     <ul class="nav nav-tabs nav-justified" style="margin-bottom: 10px;">
     <li class="active"><a data-toggle="tab" href="#recommendations">Recommendations</a></li>
     <li><a data-toggle="tab" href="#recommendations2">Recommendations by tags</a></li>
+    <li><a data-toggle="tab" href="#recommendations3" title="Recommendations by spreading activations">Spreading activations</a></li>
     <li><a data-toggle="tab" href="#reviews">Reviews</a></li>
     <li><a data-toggle="tab" href="#additionalData">Dynamic data</a></li>
     </ul>
@@ -98,6 +99,10 @@
         </div>
         
         <div id="recommendations2" class="tab-pane fade recommendation" data-type="bookPageByTags" data-data="@Model.Book.BookId">
+            <img class="center-block" style="width: 150px" src="/images/loading.svg">
+        </div>
+
+        <div id="recommendations3" class="tab-pane fade recommendation" data-type="spreadingActivations" data-data="@Model.Book.BookId">
             <img class="center-block" style="width: 150px" src="/images/loading.svg">
         </div>
 
