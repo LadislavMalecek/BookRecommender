@@ -222,7 +222,7 @@ namespace BookRecommender.DataManipulation
                     UpdateAuthors(methodList, miningState);
                     break;
                 case MiningEntityType.Genres:
-                    UpdateBooks(methodList, miningState);
+                    UpdateGenres(methodList, miningState);
                     break;
                 case MiningEntityType.Characters:
                     UpdateCharacters(methodList, miningState);

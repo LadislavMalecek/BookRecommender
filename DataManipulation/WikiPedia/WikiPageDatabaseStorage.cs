@@ -105,7 +105,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <return>Return list of pages in specified language.</return>
         public override IEnumerable<(string id, string text)> GetPagesInLang(string lang)
         {
-            return db.WikiStorage.Where(ws => ws.Lang == lang).ToList().Select(ws => (ws.Id, ws.Text));
+            return db.WikiStorage.Where(ws => ws.Lang == lang).ToList().Select(ws => (ws.Id, ws.Text)).ToList();
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <returns>Enum of all languages</returns>
         public override IEnumerable<string> GetLangs()
         {
-            return db.WikiStorage.Select(ws => ws.Lang).Distinct();
+            return db.WikiStorage.Select(ws => ws.Lang).Distinct().ToList();
         }
 
         public async Task SaveChangesAsync()

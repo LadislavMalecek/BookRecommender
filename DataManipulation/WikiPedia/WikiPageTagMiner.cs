@@ -107,8 +107,11 @@ namespace BookRecommender.DataManipulation.WikiPedia
                 try
                 {
                     var downloadedPage = downloader.DownloadPageAsync(page.url).Result;
-                    var trimmedPage = trimmer.Trim(downloadedPage);
-                    itemsDownloaded.Add((page.bookId, page.lang, trimmedPage));
+                    if(!string.IsNullOrWhiteSpace(downloadedPage))
+                    {
+                        var trimmedPage = trimmer.Trim(downloadedPage);
+                        itemsDownloaded.Add((page.bookId, page.lang, trimmedPage));
+                    }
                     if (verbose)
                     {
                         counter.Update();
@@ -229,6 +232,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
             }
             foreach (var lang in langs)
             {
+                Console.WriteLine("lang: " + lang);
                 var howManyLeft = langs.Count() - langDoneCount;
                 System.Console.WriteLine("---");
                 System.Console.WriteLine(lang);
@@ -240,9 +244,10 @@ namespace BookRecommender.DataManipulation.WikiPedia
                 System.Console.WriteLine("Loading pages from disk");
                 var pages = storage.GetPagesInLang(lang);
                 System.Console.Write("Loading pages from disk finished");
-
+                db.SaveChanges();
                 var pagesCount = storage.PagesInLangCount(lang);
 
+                System.Console.WriteLine("Pagees count: " + pagesCount);
                 // Update count table, used to speed up recommender engine
                 TagCount tc = db.TagsCount.Where(t => t.Lang == lang).FirstOrDefault();
                 if (tc == null)
@@ -260,6 +265,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
                     miningState.Message = string.Format("lang:{0}, left:{1} - {2}",
                             lang, howManyLeft, "Parsing");
                 }
+                var counter = 0;
                 foreach (var page in pages)
                 {
                     // basic parse
@@ -273,6 +279,11 @@ namespace BookRecommender.DataManipulation.WikiPedia
                         words = words.Select(w => stemmer.StemWord(w)).ToArray();
                     }
                     documents.Add((page.id, words));
+                    if(counter % 100 == 0)
+                    {
+                        System.Console.WriteLine("Documents stemmed = " + counter);
+                    }
+                    counter++;
                 }
                 if (miningState != null)
                 {

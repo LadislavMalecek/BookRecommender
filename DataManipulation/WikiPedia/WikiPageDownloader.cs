@@ -12,7 +12,7 @@ namespace BookRecommender.DataManipulation.WikiPedia
     /// </summary>
     class WikiPageDownloader
     {
-        const string UrlAppendix = "?&action=raw";
+        const string UrlAppendix = "?action=raw";
 
         /// <summary>
         /// Simple Http web request method that retrieves the specific page from wikipedia server.
@@ -24,29 +24,28 @@ namespace BookRecommender.DataManipulation.WikiPedia
         /// <returns>Raw wikipedia page</returns>
         public async Task<string> DownloadPageAsync(string url)
         {
-            var request = HttpWebRequest.Create(url +UrlAppendix);
-            request.Method = "GET";
+            var requestUrl = url + UrlAppendix;
+            // var request = (HttpWebRequest)HttpWebRequest.Create(url + UrlAppendix);
+            // request.Method = "GET";
+            // request.Timeout = 1500;
+            // request.UserAgent = "[any words that is more than 5 characters]";
+            // request.UseDefaultCredentials = true;
             try
             {
-                var task = request.GetResponseAsync();
-                var taskOrDelay = await Task.WhenAny(task, Task.Delay(3000));
-
-                if(taskOrDelay != task)
+                using (var client = new WebClient())
                 {
-                    // timeouted
-                    return null;
+                    return client.DownloadString(requestUrl);
                 }
+                // var httpResponse = (HttpWebResponse)await request.GetResponseAsync();
 
-                var httpResponse = (HttpWebResponse)await task;
-
-                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                {
-                    return streamReader.ReadToEnd();
-                }
+                // using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                // {
+                //     return streamReader.ReadToEnd();
+                // }
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine("Error while downloading page: " + ex);
+                System.Console.WriteLine("Error while downloading page, url: " + requestUrl + " ex: " + ex);
                 return null;
             }
         }
