@@ -90,7 +90,7 @@
     <li><a data-toggle="tab" href="#recommendations2">Recommendations by tags</a></li>
     <li><a data-toggle="tab" href="#recommendations3" title="Recommendations by spreading activations">Spreading activations</a></li>
     <li><a data-toggle="tab" href="#reviews">Reviews</a></li>
-    <li><a data-toggle="tab" href="#additionalData">Dynamic data</a></li>
+    <li><a data-toggle="tab" href="#additionalData">Information</a></li>
     </ul>
 
     <div class="tab-content">
@@ -110,7 +110,7 @@
             <ul class="list-group">
                 @if(Model.Ratings == null || Model.Ratings.Count() == 0){
                     <div class="container-fluid">
-                        <h3 class="text-center">No reviews yet available.</h3>
+                        <h3 class="text-center">No reviews yet</h3>
                     </div>
                 }else{
                     @foreach(var rating in Model.Ratings){

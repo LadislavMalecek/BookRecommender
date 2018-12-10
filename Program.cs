@@ -54,10 +54,6 @@ namespace BookRecommender
                 .AddEnvironmentVariables()
                 .Build();
 
-            var insideDocker = config["INSIDE_DOCKER"] == "yes";
-            System.Console.WriteLine("Are we inside docker: " + insideDocker);
-            string url = insideDocker ? "0.0.0.0" : "*";
-
 
             // this code pick the right path to root, because of Linux service does not run with
             // the path 1
@@ -72,21 +68,15 @@ namespace BookRecommender
                 pickedPath = Directory.GetCurrentDirectory();
             }
 
-            BuildWebHost(args, url, pickedPath).Run();
+            BuildWebHost(args, pickedPath).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args, string url, string rootFolder)
+        public static IWebHost BuildWebHost(string[] args, string rootFolder)
         {
             return WebHost.CreateDefaultBuilder(args)
-                // .UseKestrel(options =>{
-                //     options.UseHttps("C:\\netcore\\myCertificateAuthority\\myCertificates\\10.0.0.10\\10.0.0.10.pfx", "CFahojCFahoj25");
-                // })
                 .UseKestrel()
                 .UseContentRoot(rootFolder)
-                .UseIISIntegration()
                 .UseStartup<Startup>()
-                // .UseUrls($"https://{url}:443")
-                .UseUrls($"http://{url}:5000")
                 .Build();
         }
         

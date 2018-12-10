@@ -6,22 +6,15 @@
 ## docker run -d -p 5000:5000 <image name>
 
 
-FROM microsoft/aspnetcore
-
-ENV INSIDE_DOCKER="yes"
-
+FROM microsoft/dotnet:2.1-sdk
 
 # Copy database
-COPY C:/netcore/SQLite/BookRecommender.db /app/db/
+COPY BookRecommender.db /app/
 
 # COPY . /app
-
-COPY bin/Debug/netcoreapp1.1/publish/ /app/
+COPY . /app/
 WORKDIR /app
 
-# RUN ["dotnet", "restore"]
-# RUN ["dotnet", "build"]
-
-EXPOSE 5000
-
-CMD ["dotnet", "BookRecommender.dll"]
+RUN ["dotnet", "restore"]
+RUN ["dotnet", "build"]
+CMD ["dotnet", "run"]
