@@ -96,7 +96,7 @@ namespace BookRecommender.Controllers
             switch (type)
             {
                 case "bookPage":
-                    recList = new RecommenderEngine().RecommendBookSimilar(data, userId, howMany);
+                    recList = new RecommenderEngine().RecommendForDiversityEnhancedBookSimilarity(data, userId, howMany);
                     break;
                 case "bookPageByTags":
                     recList = new RecommenderEngine().RecommendBookSimilarByTags(data, userId, howMany);
