@@ -52,6 +52,6 @@ namespace BookRecommender.DataManipulation
             System.Console.WriteLine($"Spreading recommendation took: {sw.ElapsedMilliseconds}ms");
                         
             return result;
-        }
+        }        
     }
 }
