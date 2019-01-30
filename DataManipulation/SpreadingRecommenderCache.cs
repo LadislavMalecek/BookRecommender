@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using BookRecommender.Models.Database;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace BookRecommender.DataManipulation
 {
@@ -200,6 +202,16 @@ namespace BookRecommender.DataManipulation
             var all = byAuthors.Concat(byGenres).Concat(byCharacters).Concat(byTags).ToList();
 
             return all;
+        }
+
+        public List<Tuple<int, int>> GetSimilaritiesBooksWithQuantitiesByAll(int bookIDI)
+        {
+            List<int> listOfBookIDs = GetSimilarBooksByAll(bookIDI);
+
+            List<Tuple<int, int>> listOfBookIDsAndTheirQuantities = listOfBookIDs.GroupBy(b => b)
+                    .Select(group => new Tuple<int, int>(group.Key, group.Count())).ToList();
+
+            return listOfBookIDsAndTheirQuantities;
         }
 
         public string GetName(int bookId)
