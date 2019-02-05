@@ -14,6 +14,7 @@ using static BookRecommender.DataManipulation.MiningStateType;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using BookRecommender.DataManipulation.Recommender;
 
 namespace BookRecommender.Controllers
 {
@@ -24,13 +25,15 @@ namespace BookRecommender.Controllers
     public class AjaxController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SpreadingRecommenderEngine _spreadingRecommenderEngine;
+        private readonly SimilarityCacheModels _similarityCacheModels;
+
         public AjaxController(
             UserManager<ApplicationUser> userManager,
-            SpreadingRecommenderEngine spreadingRecommenderEngine)
+            SimilarityCacheModels similarityCacheModels
+            )
         {
             _userManager = userManager;
-            _spreadingRecommenderEngine = spreadingRecommenderEngine;
+            _similarityCacheModels = similarityCacheModels;
         }
 
         /// <summary>
@@ -96,30 +99,28 @@ namespace BookRecommender.Controllers
             switch (type)
             {
                 case "bookPage":
-                    recList = new RecommenderEngine().RecommendForDiversityEnhancedBookSimilarity(data, userId, howMany);
+                    recList = RecommenderEngine.RecommendForDiversityEnhancedBookSimilarity(data, userId, howMany);
                     break;
                 case "bookPageByTags":
-                    recList = new RecommenderEngine().RecommendBookSimilarByTags(data, userId, howMany);
+                    recList = RecommenderEngine.RecommendBookSimilarByTags(data, userId, howMany);
                     break;
                 case "userBased":
                     recList =
                        userId != null
-                       ? new RecommenderEngine().RecommendForUserUBased(userId, howMany)
+                       ? RecommenderEngine.RecommendForUserUBased(userId, howMany)
                        : null;
                     break;
                 case "contentBased":
                     recList =
                         userId != null
-                        ? new RecommenderEngine().RecommendForUserCBased(userId, howMany)
+                        ? RecommenderEngine.RecommendForUserCBased(userId, howMany)
                         : null;
                     break;
                 case "mostPopular":
-                    recList = new RecommenderEngine().RecommendMostPopular(howMany, userId);
+                    recList = RecommenderEngine.RecommendMostPopular(howMany, userId);
                     break;
                 case "spreadingActivations":
-                    var sw = Stopwatch.StartNew();
-                    recList = _spreadingRecommenderEngine.RecommendBooksSimilarBySpreadingActivation(new List<int>() { data }, howMany);
-                    System.Console.WriteLine($"Spreading recommendation took: {sw.ElapsedMilliseconds}ms");
+                    recList = RecommenderEngine.RecommendSpreadingActivation(data, _similarityCacheModels, userId, howMany);
                     break;
                 default:
                     return null;
